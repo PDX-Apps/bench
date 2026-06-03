@@ -1,0 +1,37 @@
+{
+  "name": "bench",
+  "version": "0.8.0-beta.1",
+  "description": "The AI engineering bench for Laravel + Vue/React projects. Skills + agents + patterns that adapt AI coding assistants to your project's conventions \u2014 monorepo layout, framework version, test framework, UI library, naming rules.",
+  "author": {
+    "name": "Irv"
+  },
+  "homepage": "https://pdxapps.com",
+  "keywords": [
+    "laravel",
+    "vue",
+    "react",
+    "php",
+    "typescript",
+    "fullstack",
+    "ai-coding",
+    "ai-agents",
+    "scaffold",
+    "code-generation",
+    "spec-driven",
+    "module-architecture",
+    "phpunit",
+    "pest",
+    "vitest",
+    "playwright",
+    "swagger",
+    "openapi",
+    "i18n",
+    "rag",
+    "embeddings",
+    "vector-search",
+    "laravel-13",
+    "php-8.5",
+    "addon-ecosystem",
+    "claude-code"
+  ]
+}

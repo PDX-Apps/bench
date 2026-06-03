@@ -1,0 +1,306 @@
+#!/usr/bin/env bash
+# bench — CLI dispatcher for Bench plugin operations.
+#
+# Symlink this to your PATH for global access:
+#   ln -s /path/to/Bench/bin/bench /usr/local/bin/bench
+#
+# Then from any project directory:
+#   bench init                  install into current project (.claude/plugins/)
+#   bench init --symlink        install via symlink (live updates from source)
+#   bench init --addon=PATH     install with an addon (repeatable)
+#   bench rebuild               re-run install.sh inside current project's plugin
+#   bench addon list            show registered addons for this project
+#   bench addon add PATH        add an addon and rebuild
+#   bench addon remove NAME-OR-PATH    remove an addon and rebuild
+#   bench status                show what's installed + versions detected
+#   bench help                  show this help
+
+set -euo pipefail
+
+# Resolve the actual script location, following symlinks
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+  SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+  SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+  [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+PLUGIN_SRC="$(dirname "$SCRIPT_DIR")"
+
+CMD="${1:-help}"
+shift || true
+
+TARGET="$PWD/.claude/plugins/$(basename "$PLUGIN_SRC")"
+ADDON_CONFIG_FILE="$TARGET/.install-addons-config"
+
+print_help() {
+  cat <<'EOF'
+bench — Bench plugin CLI
+
+Usage:
+  bench init [--symlink|--copy] [--project=DIR] [--addon=PATH ...] [--no-addon]
+            [--laravel=N --php=N --frontend=vue|react|none --vue=N]
+    Install plugin into current (or --project) directory's .claude/plugins/.
+    Auto-detects Laravel/PHP/Vue versions from composer.json + package.json.
+    Default mode is --copy (each project gets its own snapshot).
+    Use --symlink for live updates from the source workspace.
+    --addon=PATH loads an addon (see docs/addons.md). Repeatable. Persisted
+    across rebuilds. Project-local addons at ./.bench/ auto-discovered.
+    --no-addon skips ./.bench/ auto-discovery (debugging / isolation).
+
+  bench rebuild [--addon=PATH ...] [--no-addon] [--no-sync] [version flags]
+    Re-run install.sh inside the current project's plugin install.
+    By default re-syncs plugin source first (so source changes flow through).
+    Picks up version changes (e.g. after a Laravel upgrade).
+    With no --addon flags, re-applies the previously-registered addons.
+    With --addon flags, REPLACES the addon set (use bench addon add/remove
+    for incremental management).
+    --no-addon skips ./.bench/ auto-discovery for this rebuild.
+    --no-sync skips re-syncing source (use the installed copy as-is).
+
+  bench addon list
+    Show addons registered for the current project's install.
+
+  bench addon add PATH
+    Add an addon to the current project and rebuild.
+
+  bench addon remove NAME-OR-PATH
+    Remove an addon from the current project (matches by name from manifest
+    or by path) and rebuild.
+
+  bench status
+    Show what's installed in the current project, detected versions,
+    addon count, override count, and last install path.
+
+  bench help
+    Show this help.
+
+Project-scoped install is the default — different projects can run different
+Laravel/PHP/Vue versions and each will have its own materialized patterns.
+EOF
+}
+
+require_installed() {
+  if [[ ! -d "$TARGET" ]]; then
+    echo "ERROR: no plugin install found at $TARGET" >&2
+    echo "Run 'bench init' first." >&2
+    exit 1
+  fi
+}
+
+read_addons() {
+  # Echo current addon config (one path per line) — empty if none.
+  if [[ -f "$ADDON_CONFIG_FILE" ]]; then
+    cat "$ADDON_CONFIG_FILE"
+  fi
+}
+
+write_addons() {
+  # stdin: one path per line; writes the new config.
+  mkdir -p "$(dirname "$ADDON_CONFIG_FILE")"
+  cat > "$ADDON_CONFIG_FILE"
+}
+
+case "$CMD" in
+  init)
+    exec "$PLUGIN_SRC/scripts/init-project.sh" "$@"
+    ;;
+
+  rebuild)
+    require_installed
+    # Filter out deprecated legacy flags
+    REBUILD_ARGS=()
+    for arg in "$@"; do
+      case "$arg" in
+        --quasar=*|--quvel=*)
+          echo "  note: $arg is deprecated — UI library / framework patterns now ship as addon plugins, ignoring" >&2
+          ;;
+        --no-sync)
+          : # legacy flag, no-op now (source is always read fresh from PLUGIN_SRC)
+          ;;
+        *) REBUILD_ARGS+=("$arg") ;;
+      esac
+    done
+
+    # Find the bench source location.
+    # If TARGET has .install-source (slim install), use that.
+    # Otherwise fall back to PLUGIN_SRC (bench source / in-place mode).
+    SOURCE_RECORD="$TARGET/.install-source"
+    if [[ -f "$SOURCE_RECORD" ]]; then
+      BENCH_SOURCE="$(cat "$SOURCE_RECORD")"
+    else
+      BENCH_SOURCE="$PLUGIN_SRC"
+    fi
+
+    if [[ ! -d "$BENCH_SOURCE/scripts" ]]; then
+      echo "ERROR: bench source not found at $BENCH_SOURCE" >&2
+      echo "(The install records $SOURCE_RECORD as the bench source — did it move?)" >&2
+      exit 1
+    fi
+
+    # Run the source's install.sh — it mirrors fresh runtime essentials into TARGET
+    # and rebuilds patterns-built/ there. This is how source updates flow through.
+    exec "$BENCH_SOURCE/scripts/install.sh" \
+      --auto \
+      --project="$PWD" \
+      --target="$TARGET" \
+      "${REBUILD_ARGS[@]+${REBUILD_ARGS[@]}}"
+    ;;
+
+  addon)
+    SUB="${1:-list}"
+    shift || true
+    case "$SUB" in
+      list)
+        require_installed
+        addons="$(read_addons)"
+        if [[ -z "$addons" ]]; then
+          echo "No addons registered for $TARGET"
+        else
+          echo "Registered addons:"
+          echo "$addons" | sed 's|^|  |'
+        fi
+        # Show auto-discovered .bench/ if present
+        if [[ -d "$PWD/.bench" && -f "$PWD/.bench/.bench-addon.yaml" ]]; then
+          name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+          echo ""
+          echo "Auto-discovered project-local: $PWD/.bench  (name: ${name:-unknown})"
+        fi
+        ;;
+      add)
+        require_installed
+        NEW_ADDON="${1:?path required}"
+        if [[ ! -d "$NEW_ADDON" ]]; then
+          echo "ERROR: addon path not found: $NEW_ADDON" >&2
+          exit 1
+        fi
+        if [[ ! -f "$NEW_ADDON/.bench-addon.yaml" ]]; then
+          echo "ERROR: missing .bench-addon.yaml in $NEW_ADDON" >&2
+          exit 1
+        fi
+        # Resolve to absolute path
+        NEW_ADDON_ABS="$(cd "$NEW_ADDON" && pwd)"
+        # De-dup
+        current="$(read_addons)"
+        if echo "$current" | grep -Fxq "$NEW_ADDON_ABS"; then
+          echo "Already registered: $NEW_ADDON_ABS"
+          exit 0
+        fi
+        { echo "$current"; echo "$NEW_ADDON_ABS"; } | grep -v '^$' | write_addons
+        echo "Added addon: $NEW_ADDON_ABS"
+        echo "Rebuilding..."
+        exec "$TARGET/scripts/install.sh" --auto --project="$PWD"
+        ;;
+      remove)
+        require_installed
+        REMOVE="${1:?addon name or path required}"
+        current="$(read_addons)"
+        if [[ -z "$current" ]]; then
+          echo "No addons registered."
+          exit 0
+        fi
+        # Filter out matching path OR matching manifest name
+        filtered=""
+        removed=false
+        while IFS= read -r addon; do
+          [[ -z "$addon" ]] && continue
+          addon_name=""
+          if [[ -f "$addon/.bench-addon.yaml" ]]; then
+            addon_name=$(grep -E '^name:' "$addon/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+          fi
+          if [[ "$addon" == "$REMOVE" || "$addon_name" == "$REMOVE" ]]; then
+            removed=true
+            continue
+          fi
+          filtered+="$addon"$'\n'
+        done <<< "$current"
+        if ! $removed; then
+          echo "Not found: $REMOVE" >&2
+          exit 1
+        fi
+        printf '%s' "$filtered" | grep -v '^$' | write_addons 2>/dev/null || : > "$ADDON_CONFIG_FILE"
+        echo "Removed addon: $REMOVE"
+        echo "Rebuilding..."
+        exec "$TARGET/scripts/install.sh" --auto --project="$PWD"
+        ;;
+      *)
+        echo "Unknown addon subcommand: $SUB" >&2
+        echo "Use: bench addon [list|add PATH|remove NAME-OR-PATH]" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+
+  status)
+    echo "Source workspace: $PLUGIN_SRC"
+    echo "Current project:  $PWD"
+    if [[ -d "$TARGET" ]]; then
+      echo "Installed at:     $TARGET"
+      if [[ -L "$TARGET" ]]; then
+        echo "Install mode:     symlink → $(readlink "$TARGET")"
+      else
+        echo "Install mode:     copy"
+      fi
+      if [[ -f "$TARGET/.install-record" ]]; then
+        echo "Substituted for:  $(cat "$TARGET/.install-record")"
+      fi
+      addons="$(read_addons 2>/dev/null || true)"
+      if [[ -n "$addons" ]]; then
+        addon_count=$(echo "$addons" | grep -c .)
+        echo "Addons:           $addon_count registered"
+        echo "$addons" | sed 's|^|                    |'
+      else
+        echo "Addons:           none"
+      fi
+      if [[ -d "$TARGET/patterns-built" ]]; then
+        LARAVEL_BUILT=$( { find "$TARGET/patterns-built/laravel" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
+        VUE_BUILT=$( { find "$TARGET/patterns-built/frontend/vue" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
+        REACT_BUILT=$( { find "$TARGET/patterns-built/frontend/react" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
+        echo "Patterns built:   laravel=$LARAVEL_BUILT, frontend/vue=$VUE_BUILT, frontend/react=$REACT_BUILT"
+        # Read override count from source (raw patterns/ live there, not in slim install)
+        if [[ -f "$TARGET/.install-source" ]]; then
+          BENCH_SRC="$(cat "$TARGET/.install-source")"
+          OVERRIDE_COUNT=$( { find "$BENCH_SRC/patterns/laravel/overrides" "$BENCH_SRC/patterns/frontend/vue/overrides" "$BENCH_SRC/patterns/frontend/react/overrides" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
+          echo "Total overrides:  $OVERRIDE_COUNT available in source ($BENCH_SRC)"
+        fi
+      else
+        echo "Patterns:         NOT BUILT — run 'bench rebuild'"
+      fi
+    else
+      echo "Status:           NOT INSTALLED in this project"
+      echo "Run 'bench init' to install."
+    fi
+
+    # Show the versions actually configured at last install (persisted).
+    # Falls back to re-scanning root if no persisted config exists yet (pre-DX-4 installs).
+    VERSIONS_CONFIG_FILE="$TARGET/.install-versions-config"
+    if [[ -f "$VERSIONS_CONFIG_FILE" ]]; then
+      echo ""
+      echo "Configured at install (persisted):"
+      while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        echo "  $line"
+      done < "$VERSIONS_CONFIG_FILE"
+    elif [[ -f "$PWD/composer.json" ]]; then
+      L=$(grep -E '"laravel/framework"' "$PWD/composer.json" | head -1 | sed -E 's|.*"laravel/framework"[[:space:]]*:[[:space:]]*"[\^~>=<]*([0-9]+).*|\1|' || true)
+      P=$(grep -E '^[[:space:]]*"php"' "$PWD/composer.json" | head -1 | sed -E 's|.*"php"[[:space:]]*:[[:space:]]*"[\^~>=<]*([0-9]+\.[0-9]+).*|\1|' || true)
+      echo ""
+      echo "Detected from composer.json at PWD (no persisted versions yet): Laravel=$L PHP=$P"
+    fi
+
+    if [[ -d "$PWD/.bench" && -f "$PWD/.bench/.bench-addon.yaml" ]]; then
+      name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+      echo "Project-local addon: ./.bench  (name: ${name:-unknown}) [auto-discovered]"
+    fi
+    ;;
+
+  help|-h|--help)
+    print_help
+    ;;
+  *)
+    echo "Unknown command: $CMD" >&2
+    echo ""
+    print_help
+    exit 1
+    ;;
+esac

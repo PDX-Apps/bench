@@ -1,0 +1,13 @@
+# Base layer metadata for Laravel patterns.
+#
+# This base targets the LATEST stable versions — what new projects start with.
+# Older versions are expressed as overrides (laravel-12/, php-8.4/, etc.).
+#
+# When new Laravel / PHP versions ship, the base bumps and the previous
+# "latest" gets pinned as an override layer for projects still on it.
+
+target:
+  laravel: "13.x"
+  php: "8.5"
+
+updated: 2026-05-29

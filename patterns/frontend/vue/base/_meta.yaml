@@ -1,0 +1,15 @@
+# Base layer metadata for Vue patterns.
+#
+# This is the canonical pattern set targeting generic Vue 3 + Pinia + Vue I18n
+# + Zod + Vitest + Playwright. Quasar UI library lives in a separate addon
+# ();(private framework) lives in .
+
+target:
+  vue: "3.5.x"
+  pinia: "3.x"
+  vue-i18n: "11.x"
+  typescript: "5.9.x"
+  vitest: "4.x"
+  playwright: "1.57.x"
+
+generated: 2026-05-31

@@ -1,0 +1,15 @@
+# Generated output — rebuilt by scripts/build-patterns.sh
+patterns-built/
+
+# Install records — populated per-install location
+.install-record
+.install-addons
+.install-addons-config
+.install-addons-backup/
+.install-versions-config
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
