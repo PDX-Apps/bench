@@ -2,6 +2,12 @@
 
 All notable changes to Bench. Format loosely follows [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Bundled `bench-onboard` addon** (`addons/onboard/`) — AI-driven project onboarding. Ships seven slash commands (`/bench-onboard`, `/bench-update-claudemd`, `/bench-add-pattern`, `/bench-add-skill`, `/bench-add-agent`, `/bench-add-domain`, `/bench-audit`) backed by four specialist researcher agents (claudemd, pattern, skill, agent) that share a layered scan methodology. Skills support `--depth=shallow|standard|deep` budgets. `/bench-add-skill` always generates both the skill AND a paired worker agent. Auto-loaded by `bench init`; opt out with `--no-onboard`.
+
 ## [0.8.0-beta.1] — 2026-06-02
 
 First public beta. Bench is functional end-to-end but hasn't been battle-tested across many real-world projects yet. Treat the API (pattern locations, skill names, addon manifest format, CLI flags) as **soft-stable** until v1.0.0.

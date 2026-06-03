@@ -33,12 +33,28 @@ cd ~/my-laravel-project
 Open Claude Code in the project. Try `/help` to see what's available. Suggested first commands to try:
 
 ```
+/bench-onboard                            # AI scans your project + tailors Bench to it
 /api create endpoint to list user sessions
 /vue-component create SessionCard
 /orchestrate implement <feature-description>
 ```
 
 That's it. Day two onward, you mostly use slash commands inside Claude Code. The CLI only comes back for occasional rebuilds or addon management.
+
+### Onboarding (AI-driven, optional)
+
+Bench ships a bundled `bench-onboard` addon that adds slash commands for adapting Bench to *your* project:
+
+| Command | Purpose |
+|---|---|
+| `/bench-onboard` | First-time setup: scan the codebase, generate CLAUDE.md, propose pattern overrides + custom skills |
+| `/bench-update-claudemd` | Refresh CLAUDE.md from the current codebase |
+| `/bench-add-pattern {domain}` | Capture a project-specific convention as a pattern override |
+| `/bench-add-skill {name} "..."` | Scaffold a custom slash command + paired worker agent |
+| `/bench-add-domain {name}` | Onboard a single new module/feature area |
+| `/bench-audit` | Check whether CLAUDE.md and `.bench/` overrides have drifted |
+
+All support `--depth=shallow|standard|deep`. Skip the bundle with `bench init --no-onboard` if you'd rather configure CLAUDE.md and `.bench/` by hand.
 
 ---
 

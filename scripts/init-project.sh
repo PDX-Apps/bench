@@ -25,6 +25,14 @@
 #   --frontend=react     (uses patterns/frontend/react/ — skeleton at present)
 #   --frontend=none      (backend-only project, skip frontend patterns)
 #
+# Onboarding (bundled bench-onboard addon):
+#   By default, init loads the bench-onboard addon from addons/onboard/ which
+#   ships slash commands for AI-driven project scanning + CLAUDE.md generation
+#   + pattern/skill/agent scaffolding (/bench-onboard, /bench-add-pattern,
+#   /bench-add-skill, /bench-update-claudemd, /bench-audit, ...).
+#   --no-onboard  skip the bundled addon (strictly hand-configured install)
+#   --onboard     force-include (default — flag exists for explicitness)
+#
 # Re-running is safe — refreshes the project copy and rebuilds.
 
 set -euo pipefail
@@ -38,6 +46,7 @@ MODE="copy"   # copy | symlink
 PASSTHROUGH=()  # version flags forwarded to install.sh
 
 REGISTER_MODE="ask"   # ask | yes | no — controls whether init writes to .claude/settings.json
+LOAD_ONBOARD=true     # bundle the bench-onboard addon by default; --no-onboard opts out
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -48,12 +57,22 @@ while [[ $# -gt 0 ]]; do
       PASSTHROUGH+=("$1"); shift ;;
     --register)    REGISTER_MODE="yes"; shift ;;
     --no-register) REGISTER_MODE="no"; shift ;;
+    --no-onboard)  LOAD_ONBOARD=false; shift ;;
+    --onboard)     LOAD_ONBOARD=true; shift ;;
     -h|--help)
       grep -E '^#( |$)' "${BASH_SOURCE[0]}" | sed 's/^# //; s/^#//'
       exit 0 ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
+
+# Auto-load the bundled onboarding addon unless explicitly opted out.
+# This ships the bench-onboard, bench-add-*, bench-update-claudemd, and bench-audit
+# skills + their researcher agents — the AI-driven onboarding flow described in
+# README.md. Opt out with --no-onboard for a strictly hand-configured install.
+if $LOAD_ONBOARD && [[ -d "$PLUGIN_SRC/addons/onboard" ]]; then
+  PASSTHROUGH+=("--addon=$PLUGIN_SRC/addons/onboard")
+fi
 
 # ---------- Sanity checks ----------
 if [[ ! -d "$PROJECT_ROOT" ]]; then

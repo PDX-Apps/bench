@@ -1,0 +1,16 @@
+name: bench-onboard
+version: 0.1.0
+description: |
+  AI-driven project onboarding for Bench. Scans your codebase, optionally
+  interviews you about conventions that aren't visible in code, and generates
+  project-specific CLAUDE.md + .bench/ pattern overrides, skills, and agents
+  so AI coding assistants match your project on day one.
+
+  Ships bundled with Bench by default. Opt out via `bench init --no-onboard`
+  if you'd rather configure CLAUDE.md and .bench/ by hand.
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/PDX-Apps/bench
+license: MIT
