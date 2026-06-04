@@ -1,6 +1,12 @@
-# Bench — Addon Plugins
+# Bench — Addons
 
-Addons let third parties (or your own projects) contribute additional patterns, skills, and agents on top of the core Bench plugin. The mechanism is the same whether you're shipping a reusable addon (e.g., ``) or carrying project-specific extensions.
+Addons let third parties (or your own projects) contribute additional patterns, skills, and agents on top of core Bench. The mechanism is the same whether you're shipping a reusable addon, carrying project-specific extensions, or using one of the [bundled addons](#bundled-addons-shipped-in-the-repo) under `addons/`.
+
+For *how to write* one: see [Authoring an addon](#authoring-an-addon). For the architecture an addon plugs into: see [architecture.md](./architecture.md).
+
+---
+
+**Contents:** [Anatomy](#anatomy-of-an-addon) · [Manifest](#manifest-bench-addonyaml) · [How addons load](#how-addons-load) · [Precedence](#precedence-summary) · [Loading methods](#loading-methods) · [Bundled addons](#bundled-addons-shipped-in-the-repo) · [Persistence + management](#persistence--management) · [Authoring](#authoring-an-addon) · [Roadmap](#roadmap)
 
 ---
 
@@ -10,30 +16,29 @@ An addon is a directory with the same shape as core:
 
 ```
 my-addon/
-├── .bench-addon.yaml          # required — declares the addon
-├── patterns/                    # optional — merged into core's patterns-built/ output
-│   ├── laravel/
-│   │   ├── base/                # add or replace files in core's laravel base
-│   │   └── overrides/
-│   │       └── laravel-12/      # add or replace files in core's L12 overrides
+├── .bench-addon.yaml             # required — declares the addon
+├── patterns/                     # optional — merged into core's patterns-built/ output
+│   ├── laravel/                  #   put files at any path under patterns/ —
+│   │   ├── controllers/…         #   they land at patterns-built/{same-path}
+│   │   └── ai/…
 │   └── frontend/
-│       └── vue/
-│           ├── base/
-│           └── overrides/
-├── skills/                      # optional — installed alongside core's skills/
+│       └── vue/…
+├── skills/                       # optional — installed alongside core's skills/
 │   └── my-skill/
 │       └── SKILL.md
-└── agents/                      # optional — installed alongside core's agents/
+└── agents/                       # optional — installed alongside core's agents/
     └── my-agent.md
 ```
 
-Skills and agents inside the addon use the same `<PLUGIN_ROOT>` placeholder that core uses. Install-time substitution rewrites it to the actual install path.
+Skills and agents inside the addon can use the same `<PLUGIN_ROOT>` placeholder that core uses to reference paths in the install. Install-time substitution rewrites it to the actual install path.
+
+Optionally include a `README.md` at the addon root with usage instructions — the [bundled addons](#bundled-addons-shipped-in-the-repo) do this.
 
 ---
 
 ## Manifest: `.bench-addon.yaml`
 
-Minimal — the directory layout IS the contract.
+Minimal — the directory layout *is* the contract. The manifest just declares the addon's identity.
 
 ```yaml
 name: my-framework-kit            # required — unique identifier (kebab-case)
@@ -43,7 +48,7 @@ description: |                    # required — one-line summary
   Laravel + Vue: custom store wrappers, UI library conventions,
   test helpers.
 
-depends_on:                       # optional — fail install if core version mismatches
+depends_on:                       # optional — minimum core version
   bench: ">=0.8.0"
 
 # Optional metadata (informational only — not enforced by the loader)
@@ -52,19 +57,19 @@ author: Your Name
 license: MIT
 ```
 
-That's it. No declarative contribution lists — what the addon contributes is determined by what's in its `patterns/`, `skills/`, `agents/` directories.
+No declarative contribution lists — what the addon contributes is determined by what's in its `patterns/`, `skills/`, `agents/` directories.
 
 ---
 
 ## How addons load
 
-`bench init` (or `bench rebuild`) builds in this order:
+`bench init` (and `bench rebuild`) processes addons in this order:
 
-1. **Core build pass** — `build-patterns.sh` resolves core's base + version overrides into `patterns-built/laravel/` and `patterns-built/frontend/{vue,react}/`.
+1. **Core mirror + build pass** — mirrors core's `skills/` + `agents/` (flattened from source groups) and resolves `patterns/` (base + version overrides) into `patterns-built/`.
 2. **For each registered addon** (in declaration order):
    - Walk addon's `patterns/**/*.md` and copy each file into the matching `patterns-built/...` path. **Addon wins** on collision with the core-built file.
-   - Copy addon's `skills/*` into the installed plugin's `skills/` (addon wins on same-name).
-   - Copy addon's `agents/*.md` into the installed plugin's `agents/` (addon wins on same-name).
+   - Copy addon's `skills/*/` flat into the installed plugin's `skills/`. Addon wins on same-name. Backups of any overwritten core files are kept so removal restores them.
+   - Copy addon's `agents/*.md` flat into the installed plugin's `agents/`. Addon wins on same-name. Backups kept.
 3. **Path substitution pass** — `<PLUGIN_ROOT>` placeholders in all skill + agent files (core + addon) get rewritten to the actual install path.
 
 The output is a single `.claude/plugins/bench/` that Claude Code auto-discovers. From CC's perspective there's one plugin; addons are transparent.
@@ -76,89 +81,121 @@ When two sources provide the same file path, the later wins:
 ```
 core base
   ↓ overridden by
-core overrides (active version axis only)
+core version overrides (active axis only)
   ↓ overridden by
 addon 1 patterns/
   ↓ overridden by
 addon 2 patterns/   (later --addon= flag wins)
 ```
 
-For skills/agents: same rule — later addon wins, addons win over core.
+Same rule for skills + agents: later addon wins, addons win over core.
 
 ---
 
-## Three ways to load an addon
+## Loading methods
 
 ### 1. By path
 
 ```bash
-bench init --addon=~/Workspace/pdxapps.com/repos/
+bench init --addon=/path/to/your-addon
+bench addon add /path/to/your-addon
 ```
 
 Use this for reusable addons you've cloned locally.
 
-### 2. Auto-discovered project-local extensions
+### 2. Bundled (by short name)
 
-If `./.bench/` exists at the project root with a valid `.bench-addon.yaml`, it's loaded automatically. Use this for project-specific patterns/skills/agents that live alongside your code.
+The `addons/` directory at the bench source ships with built-in addons. Add by bare name — `bench addon add` resolves it via `.install-source` automatically:
+
+```bash
+bench addon add laravel-boost
+bench addon add onboard
+```
+
+See [Bundled addons](#bundled-addons-shipped-in-the-repo) below for what's available.
+
+### 3. Auto-discovered project-local extensions
+
+If `./.bench/` exists at the project root with a valid `.bench-addon.yaml`, it's loaded automatically — no `--addon=` flag needed. Use this for project-specific patterns/skills/agents that live alongside your code:
 
 ```
 my-project/
 ├── composer.json
 ├── .bench/
 │   ├── .bench-addon.yaml      (name: my-project-extensions)
-│   ├── patterns/
-│   ├── skills/
-│   └── agents/
+│   ├── patterns/…
+│   ├── skills/…
+│   └── agents/…
 └── src/
 ```
 
-### 3. Multiple addons
+The bundled [`bench-onboard`](../addons/onboard/README.md) addon writes here when generating project-local pattern overrides + custom skills.
+
+### 4. Multiple addons
 
 ```bash
 bench init \
-  --addon=~/path/to/my-framework-kit \
-  --addon=./vendor/internal/my-team-conventions
+  --addon=onboard \
+  --addon=laravel-boost \
+  --addon=~/path/to/internal/my-team-conventions
 ```
 
 Order matters — later addons win conflicts.
 
 ---
 
-## Persistence
+## Bundled addons (shipped in the repo)
 
-Addons passed via `--addon=` are recorded in `.install-record` alongside the install path. `bench rebuild` re-applies the same set automatically, so you don't have to re-specify them every time.
+Live under `addons/` at the bench source. Add by short name:
 
-Manage the persisted set:
+| Short name | What it does | Loaded by default? | Docs |
+|---|---|---|---|
+| `onboard` | AI-driven project onboarding — generates CLAUDE.md, proposes pattern overrides + custom skills via researcher agents | Yes — opt out with `bench init --no-onboard` | [addons/onboard/README.md](../addons/onboard/README.md) |
+| `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` skill that walks through composer install + `boost:install` + MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](../addons/laravel-boost/README.md) |
+
+The bundled addons are themselves a worked example of the addon spec — read their source for a reference implementation.
+
+---
+
+## Persistence + management
+
+Addons passed via `--addon=` (or added via `bench addon add`) are recorded in `.install-addons-config` inside the install. `bench rebuild` re-applies the same set automatically, so you don't have to re-specify them every time.
 
 ```bash
 bench addon list                       # show registered addons
-bench addon add PATH                   # add and rebuild
-bench addon remove NAME-OR-PATH        # remove and rebuild
+bench addon add PATH-OR-NAME           # add (path or bundled short name) and rebuild
+bench addon remove NAME-OR-PATH        # matches by manifest name or path; rebuilds
 ```
+
+The auto-discovered `./.bench/` extension is NOT persisted — it's re-discovered on every rebuild because it travels with the project repo.
 
 ---
 
 ## Authoring an addon
 
-1. Create a directory with `.bench-addon.yaml`
-2. Mirror core's `patterns/` layout for any pattern files you want to add or override
-3. Add skills under `skills/<skill-name>/SKILL.md` and agents under `agents/<agent-name>.md`
-4. Use `<PLUGIN_ROOT>` in any absolute path references — install-time substitution handles the rest
-5. Test against a real project: `bench init --addon=/path/to/your/addon`
+1. Create a directory with `.bench-addon.yaml` declaring `name`, `version`, `description`.
+2. Mirror core's `patterns/` layout for any pattern files you want to add or override (e.g., `patterns/laravel/controllers/CTRL-008-my-custom.md`).
+3. Add skills under `skills/<skill-name>/SKILL.md` and agents under `agents/<agent-name>.md`.
+4. Use `<PLUGIN_ROOT>` in any absolute path references inside skill / agent files — install-time substitution handles the rest.
+5. Test against a real project: `bench init --addon=/path/to/your/addon`.
+6. Optionally add a `README.md` at the addon root with usage docs.
 
 ### Tips
 
 - **Don't fork files unnecessarily.** If core's pattern is fine as-is, leave it; only contribute files that meaningfully diverge.
-- **Match core's pattern frontmatter format** if you want overrides validation to work.
+- **Match core's pattern frontmatter format** if you want the overrides validation tool (`scripts/validate-overrides.sh`) to work.
 - **One addon, one purpose.** Don't bundle unrelated additions — split into separate addons.
 - **Declare `depends_on` honestly.** Specify the minimum core version your addon was authored against.
+- **Pair skills with worker agents.** A skill that does its own code generation (instead of delegating to a worker) bloats the main conversation context — see [architecture.md](./architecture.md) for the skills-vs-agents split.
 
 ---
 
 ## Roadmap
 
-Future capabilities not in v1:
-- Git-URL addon loading (`bench init --addon=git+https://...`)
-- Addon registry / discovery
-- Per-addon version overrides (e.g., addon contributes a `vue-2` override)
-- Cross-addon dependencies
+Not in v1 yet:
+
+- Git-URL addon loading (`bench addon add git+https://...`)
+- Addon registry / `bench addon search`
+- Per-addon version overrides (e.g., addon contributes a vue-2 fallback)
+- Cross-addon dependencies (`depends_on` for sibling addons)
+- Addon publishing / signing / verification

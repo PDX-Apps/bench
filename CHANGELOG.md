@@ -7,6 +7,19 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
 ### Added
 
 - **Bundled `bench-onboard` addon** (`addons/onboard/`) — AI-driven project onboarding. Ships seven slash commands (`/bench-onboard`, `/bench-update-claudemd`, `/bench-add-pattern`, `/bench-add-skill`, `/bench-add-agent`, `/bench-add-domain`, `/bench-audit`) backed by four specialist researcher agents (claudemd, pattern, skill, agent) that share a layered scan methodology. Skills support `--depth=shallow|standard|deep` budgets. `/bench-add-skill` always generates both the skill AND a paired worker agent. Auto-loaded by `bench init`; opt out with `--no-onboard`.
+- **Bundled `bench-laravel-boost` addon** (`addons/laravel-boost/`) — Opt-in addon that makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) MCP tools (database-schema, tinker, list-routes, search-docs, …) and ships a `/boost-install` skill that walks through composer install + `php artisan boost:install` + MCP-server registration with explicit user permission at each state-modifying step. Install with `bench addon add laravel-boost`.
+- **Bundled-addon short names** — `bench addon add NAME` now resolves bare names (e.g., `laravel-boost`) by looking under the bench source's `addons/` directory, in addition to taking absolute paths.
+
+### Changed
+
+- **Source-side reorganization**: `skills/` and `agents/` are now grouped by language/framework at the source (`skills/laravel/`, `skills/vue/`, `skills/react/`, `skills/meta/`). The install still gets a flat layout (`skills/<name>/`, `agents/<name>.md`) — Claude Code's expected shape is unchanged. Install-time pruning derives the per-group prune set from the source layout instead of hardcoded lists, so adding a new vue-* or react-* skill in source no longer requires editing `install.sh`.
+- **Symmetric `/vue-ui` and `/react-ui` skills (closes v1.0 gating item #4)**: `/ui` was Vue-only — React projects had a `react-ui` agent but no slash command. Renamed `/ui` → `/vue-ui` (skill + agent both); added a parallel `/react-ui` skill that delegates to the existing `react-ui` agent. Naming now matches every other dual-frontend skill (`vue-component`/`react-component`, `vue-page`/`react-page`, …). Pruning at install time auto-selects the correct pair for the active frontend. *Breaking for users who type `/ui`* — switch to `/vue-ui`.
+- **Docs rework**: `README.md`, `docs/architecture.md`, and `docs/addons.md` audited and slimmed; each got a top-of-doc table of contents. README no longer duplicates content from `docs/` (dropped redundant `Addons` and `Project structure` sections). Architecture doc no longer carries historical "What Changed in the Latest Iteration" noise and now reflects the current source layout (grouped `skills/` + `agents/`, bundled `addons/` directory). Each bundled addon now ships its own `README.md` at `addons/{name}/README.md`, linked from the main README and `docs/addons.md`.
+
+### Fixed
+
+- `bench addon add` and `bench addon remove` previously execed `$TARGET/scripts/install.sh`, but the slim install doesn't ship `scripts/` — both commands broke after the source/install split. Now they resolve `$BENCH_SOURCE` from `.install-source` (same as `bench rebuild`) and exec the source's `install.sh` with `--target=$TARGET`.
+- Addon-manifest name extraction used `\s` (a GNU sed extension), which silently no-op'd on macOS BSD sed and left a leading space in the extracted name. Removing an addon by manifest name (`bench addon remove bench-onboard`) consequently failed with "Not found". Replaced with POSIX `[[:space:]]*` in `bin/bench`, `scripts/install.sh`, and `scripts/build-patterns.sh`.
 
 ## [0.8.0-beta.1] — 2026-06-02
 
