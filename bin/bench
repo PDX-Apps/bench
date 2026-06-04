@@ -162,16 +162,29 @@ case "$CMD" in
         fi
         # Show auto-discovered .bench/ if present
         if [[ -d "$PWD/.bench" && -f "$PWD/.bench/.bench-addon.yaml" ]]; then
-          name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+          name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
           echo ""
           echo "Auto-discovered project-local: $PWD/.bench  (name: ${name:-unknown})"
         fi
         ;;
       add)
         require_installed
-        NEW_ADDON="${1:?path required}"
+        NEW_ADDON="${1:?path or bundled addon name required}"
+        # Resolve a bundled short-name (e.g., "laravel-boost") to its source path
+        # by looking under {bench source}/addons/. Only kicks in if the literal
+        # argument isn't an existing directory.
+        if [[ ! -d "$NEW_ADDON" && -f "$TARGET/.install-source" ]]; then
+          BENCH_SRC="$(cat "$TARGET/.install-source")"
+          BUNDLED="$BENCH_SRC/addons/$NEW_ADDON"
+          if [[ -d "$BUNDLED" && -f "$BUNDLED/.bench-addon.yaml" ]]; then
+            echo "Resolved bundled addon: $NEW_ADDON → $BUNDLED"
+            NEW_ADDON="$BUNDLED"
+          fi
+        fi
         if [[ ! -d "$NEW_ADDON" ]]; then
-          echo "ERROR: addon path not found: $NEW_ADDON" >&2
+          echo "ERROR: addon not found: $NEW_ADDON" >&2
+          echo "       Pass a path to an addon directory, or a bundled addon name" >&2
+          echo "       (one of $(ls "$(cat "$TARGET/.install-source" 2>/dev/null)/addons" 2>/dev/null | tr '\n' ' '))" >&2
           exit 1
         fi
         if [[ ! -f "$NEW_ADDON/.bench-addon.yaml" ]]; then
@@ -189,7 +202,15 @@ case "$CMD" in
         { echo "$current"; echo "$NEW_ADDON_ABS"; } | grep -v '^$' | write_addons
         echo "Added addon: $NEW_ADDON_ABS"
         echo "Rebuilding..."
-        exec "$TARGET/scripts/install.sh" --auto --project="$PWD"
+        # Source's install.sh — same lookup as `bench rebuild` (slim install
+        # doesn't ship scripts/, so we read .install-source).
+        SOURCE_RECORD="$TARGET/.install-source"
+        if [[ -f "$SOURCE_RECORD" ]]; then
+          BENCH_SOURCE="$(cat "$SOURCE_RECORD")"
+        else
+          BENCH_SOURCE="$PLUGIN_SRC"
+        fi
+        exec "$BENCH_SOURCE/scripts/install.sh" --auto --project="$PWD" --target="$TARGET"
         ;;
       remove)
         require_installed
@@ -206,7 +227,7 @@ case "$CMD" in
           [[ -z "$addon" ]] && continue
           addon_name=""
           if [[ -f "$addon/.bench-addon.yaml" ]]; then
-            addon_name=$(grep -E '^name:' "$addon/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+            addon_name=$(grep -E '^name:' "$addon/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
           fi
           if [[ "$addon" == "$REMOVE" || "$addon_name" == "$REMOVE" ]]; then
             removed=true
@@ -221,7 +242,13 @@ case "$CMD" in
         printf '%s' "$filtered" | grep -v '^$' | write_addons 2>/dev/null || : > "$ADDON_CONFIG_FILE"
         echo "Removed addon: $REMOVE"
         echo "Rebuilding..."
-        exec "$TARGET/scripts/install.sh" --auto --project="$PWD"
+        SOURCE_RECORD="$TARGET/.install-source"
+        if [[ -f "$SOURCE_RECORD" ]]; then
+          BENCH_SOURCE="$(cat "$SOURCE_RECORD")"
+        else
+          BENCH_SOURCE="$PLUGIN_SRC"
+        fi
+        exec "$BENCH_SOURCE/scripts/install.sh" --auto --project="$PWD" --target="$TARGET"
         ;;
       *)
         echo "Unknown addon subcommand: $SUB" >&2
@@ -289,7 +316,7 @@ case "$CMD" in
     fi
 
     if [[ -d "$PWD/.bench" && -f "$PWD/.bench/.bench-addon.yaml" ]]; then
-      name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+      name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
       echo "Project-local addon: ./.bench  (name: ${name:-unknown}) [auto-discovered]"
     fi
     ;;

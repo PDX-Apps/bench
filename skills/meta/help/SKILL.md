@@ -37,8 +37,8 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 **Tests:** `/feature-test`, `/unit-test`
 
 ### 🎨 Frontend Coordinators
-- **/ui** `[feature]` — Vue version: generates the full UI stack (page + components + form + dialog + validators + i18n). Symmetric to `/api` on the backend.
-- **/react-ui** `[feature]` — React version: same as `/ui` but for React projects.
+- **/vue-ui** `[feature]` — Vue: generates the full UI stack (page + components + form + dialog + validators + i18n). Symmetric to `/api` on the backend.
+- **/react-ui** `[feature]` — React: same as `/vue-ui` but for React projects (with hooks for data fetching).
 
 ### 🎨 Frontend — Vue (single-artifact)
 **UI structure:** `/vue-component`, `/vue-page`, `/vue-layout`
@@ -69,14 +69,14 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 /api create endpoint to mark a bill paid
 /controller add MarkBillPaidController (invokable)
 /vue-component create HouseholdMemberCard
-/ui build the household member invitation flow
+/vue-ui build the household member invitation flow
 /help backend
 /help vue-component
 ```
 
 ## When in doubt
 
-- Describing a **feature** (multiple artifacts) → `/orchestrate` (workflows) or `/api` / `/ui` (single-stack feature)
+- Describing a **feature** (multiple artifacts) → `/orchestrate` (workflows) or `/api` / `/vue-ui` / `/react-ui` (single-stack feature)
 - Wanting **one specific file** → use the matching granular skill (`/controller`, `/vue-store`, etc.)
 - Looking up **what's available** → that's me, you're already here
 

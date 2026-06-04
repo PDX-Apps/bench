@@ -257,7 +257,7 @@ merge_addon_patterns() {
 
   local addon_name
   if [[ -f "$addon_dir/.bench-addon.yaml" ]]; then
-    addon_name=$(grep -E '^name:' "$addon_dir/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+    addon_name=$(grep -E '^name:' "$addon_dir/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
   else
     addon_name="$(basename "$addon_dir")"
   fi

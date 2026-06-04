@@ -35,9 +35,14 @@ PLUGIN_SRC="$(dirname "$SCRIPT_DIR")"   # where the bench source lives — patte
 
 # Files that must live at the source — never copy these into a project install
 SOURCE_ONLY=(scripts/ patterns/ docs/ README.md)
-# Files that MUST be in the project install for runtime
-RUNTIME_ESSENTIAL=(.claude-plugin/ skills/ agents/ bin/)
-[[ -d "$PLUGIN_SRC/hooks" ]] && RUNTIME_ESSENTIAL+=(hooks/)
+# Files that MUST be in the project install for runtime. Note: skills/ and agents/
+# are handled separately below — source organizes them in subgroups (laravel/, vue/,
+# react/, meta/) for maintainability, but the install gets them FLATTENED to depth-1
+# (skills/<name>/SKILL.md, agents/<name>.md) which is what Claude Code expects.
+RUNTIME_ESSENTIAL_FLAT=(.claude-plugin/ bin/)
+[[ -d "$PLUGIN_SRC/hooks" ]] && RUNTIME_ESSENTIAL_FLAT+=(hooks/)
+# Groups inside skills/ and agents/ at source. Order doesn't matter; mirror walks all.
+SKILL_AGENT_GROUPS=(laravel vue react meta)
 
 # ---------- Parse our own flags ----------
 EXPLICIT_ADDONS=()
@@ -158,16 +163,44 @@ SUBSTITUTE_DOCS=()
 # ---------- Mirror runtime essentials from PLUGIN_SRC to TARGET (if separate) ----------
 # This is the key DX-10 change: only ship what's needed at runtime, never internals.
 # Skipped when running "in place" at source (TARGET == PLUGIN_SRC).
+#
+# Two mirror passes:
+#   1. Flat essentials (.claude-plugin/, bin/, hooks/) — straight rsync.
+#   2. Skills + agents — source is grouped (skills/laravel/, skills/vue/, ...);
+#      install is FLAT (skills/<name>/, agents/<name>.md). We walk each group at
+#      source and rsync each entry to the flat install path.
 if [[ "$PLUGIN_SRC" != "$PLUGIN_ROOT" ]]; then
   echo "Mirroring runtime essentials from source → install:"
   echo "  source:   $PLUGIN_SRC"
   echo "  install:  $PLUGIN_ROOT"
-  for item in "${RUNTIME_ESSENTIAL[@]}"; do
+
+  # Pass 1 — flat essentials
+  for item in "${RUNTIME_ESSENTIAL_FLAT[@]}"; do
     if [[ -e "$PLUGIN_SRC/$item" ]]; then
       mkdir -p "$PLUGIN_ROOT/$(dirname "$item")" 2>/dev/null || true
       rsync -a --delete "$PLUGIN_SRC/$item" "$PLUGIN_ROOT/$item"
     fi
   done
+
+  # Pass 2 — skills + agents (flatten groups from source). Wipe destination first
+  # so renames/removals at source propagate; addon copies happen later and re-add.
+  rm -rf "$PLUGIN_ROOT/skills" "$PLUGIN_ROOT/agents"
+  mkdir -p "$PLUGIN_ROOT/skills" "$PLUGIN_ROOT/agents"
+  for group in "${SKILL_AGENT_GROUPS[@]}"; do
+    if [[ -d "$PLUGIN_SRC/skills/$group" ]]; then
+      while IFS= read -r -d '' skill_dir; do
+        name=$(basename "$skill_dir")
+        rsync -a "$skill_dir/" "$PLUGIN_ROOT/skills/$name/"
+      done < <(find "$PLUGIN_SRC/skills/$group" -mindepth 1 -maxdepth 1 -type d -print0)
+    fi
+    if [[ -d "$PLUGIN_SRC/agents/$group" ]]; then
+      while IFS= read -r -d '' agent_file; do
+        name=$(basename "$agent_file")
+        cp "$agent_file" "$PLUGIN_ROOT/agents/$name"
+      done < <(find "$PLUGIN_SRC/agents/$group" -mindepth 1 -maxdepth 1 -type f -name '*.md' -print0)
+    fi
+  done
+
   echo "  (source internals NOT copied: ${SOURCE_ONLY[*]})"
   # Record source location so `bench rebuild` from the install can find it
   echo "$PLUGIN_SRC" > "$SOURCE_RECORD"
@@ -260,7 +293,7 @@ if (( ${#ADDONS[@]} > 0 )); then
 
     addon_name=""
     if [[ -f "$addon/.bench-addon.yaml" ]]; then
-      addon_name=$(grep -E '^name:' "$addon/.bench-addon.yaml" | head -1 | sed -E 's/^name:\s*//; s/[[:space:]]+$//')
+      addon_name=$(grep -E '^name:' "$addon/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
     fi
     [[ -z "$addon_name" ]] && addon_name="$(basename "$addon")"
 
@@ -376,56 +409,32 @@ if [[ -d "$PLUGIN_ROOT/patterns-built/frontend/react" ]] && \
 fi
 
 prune_count=0
-prune_skill() {
-  local name="$1"
-  if [[ -d "$PLUGIN_ROOT/skills/$name" ]]; then
-    rm -rf "$PLUGIN_ROOT/skills/$name"
-    prune_count=$((prune_count + 1))
+# Pruning derives names from the SOURCE group dir, not a hardcoded list — so adding
+# a new vue-*/react-* skill in source doesn't require also touching this file.
+prune_group() {
+  local group="$1"
+  if [[ -d "$PLUGIN_SRC/skills/$group" ]]; then
+    while IFS= read -r -d '' skill_dir; do
+      name=$(basename "$skill_dir")
+      if [[ -d "$PLUGIN_ROOT/skills/$name" ]]; then
+        rm -rf "$PLUGIN_ROOT/skills/$name"
+        prune_count=$((prune_count + 1))
+      fi
+    done < <(find "$PLUGIN_SRC/skills/$group" -mindepth 1 -maxdepth 1 -type d -print0)
+  fi
+  if [[ -d "$PLUGIN_SRC/agents/$group" ]]; then
+    while IFS= read -r -d '' agent_file; do
+      name=$(basename "$agent_file")
+      if [[ -f "$PLUGIN_ROOT/agents/$name" ]]; then
+        rm -f "$PLUGIN_ROOT/agents/$name"
+        prune_count=$((prune_count + 1))
+      fi
+    done < <(find "$PLUGIN_SRC/agents/$group" -mindepth 1 -maxdepth 1 -type f -name '*.md' -print0)
   fi
 }
-prune_agent() {
-  local name="$1"
-  if [[ -f "$PLUGIN_ROOT/agents/$name.md" ]]; then
-    rm -f "$PLUGIN_ROOT/agents/$name.md"
-    prune_count=$((prune_count + 1))
-  fi
-}
 
-prune_vue_set() {
-  for name in vue-component vue-composable vue-i18n vue-layout vue-model vue-page \
-              vue-route vue-service vue-store vue-test vue-validator; do
-    prune_skill "$name"
-    prune_agent "$name"
-  done
-  # vue-only agents (no skill of same name)
-  for name in vue-bug-fix vue-exec-spec vue-new-module vue-refactor vue-update-spec; do
-    prune_agent "$name"
-  done
-  # /ui multi-artifact coordinator is Vue-flavored today
-  prune_skill "ui"
-  prune_agent "ui"
-}
-
-prune_react_set() {
-  for name in react-component react-hook react-i18n react-layout react-model \
-              react-page react-route react-service react-store react-test \
-              react-validator; do
-    prune_skill "$name"
-    prune_agent "$name"
-  done
-  # react-only agents (no skill of same name)
-  for name in react-bug-fix react-exec-spec react-new-module react-refactor \
-              react-ui react-update-spec; do
-    prune_agent "$name"
-  done
-}
-
-if ! $HAS_VUE_PATTERNS; then
-  prune_vue_set
-fi
-if ! $HAS_REACT_PATTERNS; then
-  prune_react_set
-fi
+$HAS_VUE_PATTERNS   || prune_group vue
+$HAS_REACT_PATTERNS || prune_group react
 
 if (( prune_count > 0 )); then
   active_frontends=""

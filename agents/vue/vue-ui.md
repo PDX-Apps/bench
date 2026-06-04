@@ -1,5 +1,5 @@
 ---
-name: ui
+name: vue-ui
 description: Generate a complete Vue UI feature — coordinates page + components + forms + dialogs + validators + i18n in one pass. Reads only the pattern files relevant to the artifacts being generated. Symmetric to the backend `api` agent.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
