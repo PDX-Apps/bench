@@ -6,6 +6,15 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
 
 ### Added
 
+- **Discovery + override flow for bundled defaults** (closes the "users can't customize bundled patterns/skills/agents via Claude" gap):
+  - New `/bench-list [patterns|skills|agents]` skill — browse what's bundled (with grouping: bundled core / bundled addons / project-local) plus optional fuzzy filter.
+  - New `/bench-show <type> <name>` skill — view the full body of a specific pattern, skill, or agent before deciding to fork it.
+  - New `/bench-status` skill — synthesized health check (versions, addons, CLAUDE.md presence, drift detection, suggested next steps); friendlier wrapper around `bench status` for the conversational entry point.
+  - `/bench-add-pattern` extended with FORK mode — read a bundled pattern, modify it per the user's described change, write under `./.bench/patterns/{same-path}` to shadow the bundled version. Auto-detects intent (FORK vs the existing CAPTURE-from-project-scan mode).
+  - `/bench-add-skill` extended with FORK mode — read a bundled `SKILL.md`, modify it, write under `./.bench/skills/{name}/` to shadow. Auto-detects by checking if a bundled skill with the given name exists. Optionally forks the paired agent if the change affects worker behavior.
+  - `/bench-add-agent` extended with FORK mode — same pattern for worker agents.
+  - Skill descriptions updated with trigger phrases for natural-language overrides ("I prefer global helpers over DI", "make /api skip tests", "show me the controller pattern") so users don't have to remember slash command names.
+  - New "Customize by talking to Claude" section in main README with concrete examples.
 - **Bundled `bench-onboard` addon** (`addons/onboard/`) — AI-driven project onboarding. Ships seven slash commands (`/bench-onboard`, `/bench-update-claudemd`, `/bench-add-pattern`, `/bench-add-skill`, `/bench-add-agent`, `/bench-add-domain`, `/bench-audit`) backed by four specialist researcher agents (claudemd, pattern, skill, agent) that share a layered scan methodology. Skills support `--depth=shallow|standard|deep` budgets. `/bench-add-skill` always generates both the skill AND a paired worker agent. Auto-loaded by `bench init`; opt out with `--no-onboard`.
 - **Bundled `bench-laravel-boost` addon** (`addons/laravel-boost/`) — Opt-in addon that makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) MCP tools (database-schema, tinker, list-routes, search-docs, …) and ships a `/boost-install` skill that walks through composer install + `php artisan boost:install` + MCP-server registration with explicit user permission at each state-modifying step. Install with `bench addon add laravel-boost`.
 - **Bundled-addon short names** — `bench addon add NAME` now resolves bare names (e.g., `laravel-boost`) by looking under the bench source's `addons/` directory, in addition to taking absolute paths.

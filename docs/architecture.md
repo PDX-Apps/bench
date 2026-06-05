@@ -6,7 +6,7 @@ For *what* Bench does and *how to use it*, see the [README](../README.md). For a
 
 ---
 
-**Contents:** [Core principles](#core-principles) · [Skills, agents, patterns](#skills-agents-patterns) · [Invocation paths](#invocation-paths) · [Pattern resolution](#pattern-resolution) · [Source vs install split](#source-vs-install-split) · [Build pipeline](#build-pipeline) · [Frontend filtering](#frontend-filtering) · [Source directory layout](#source-directory-layout) · [Install directory layout](#install-directory-layout) · [Constraints](#constraints) · [Rules](#rules)
+**Contents:** [Core principles](#core-principles) · [Skills, agents, patterns](#skills-agents-patterns) · [Invocation paths](#invocation-paths) · [Pattern resolution](#pattern-resolution) · [Source vs install split](#source-vs-install-split) · [Build pipeline](#build-pipeline) · [Frontend filtering](#frontend-filtering) · [Source directory layout](#source-directory-layout) · [Install directory layout](#install-directory-layout) · [User customization layers](#user-customization-layers) · [Constraints](#constraints) · [Rules](#rules)
 
 ---
 
@@ -247,6 +247,54 @@ After `bench init`, the project gets:
 ```
 
 Source organization (grouped skills/agents, raw pattern matrix) is hidden from the user — they only see the flat, materialized install.
+
+---
+
+## User customization layers
+
+Bench is designed so users can override any bundled default for their project without forking the source repo. Three layers, in increasing scope:
+
+### Layer 1 — `CLAUDE.md` (project memory)
+
+Free-form markdown at the project root. Every Bench worker agent reads it before generating. Anything documented here overrides defaults baked into agents — monorepo layout, test framework, naming rules, where new code lands, "use `cache()` not DI for one-shot reads."
+
+### Layer 2 — `.bench/` (project-local addon, auto-discovered)
+
+Project-specific overrides that aren't broad enough for CLAUDE.md prose — actual replacement pattern files, skill bodies, or worker agents. Lives at `{project}/.bench/` alongside the user's code; auto-discovered by every `bench init` / `bench rebuild`. Travels with the project repo.
+
+Override mechanism is **path-based shadowing**: a file at `.bench/patterns/laravel/controllers/CTRL-001-resource-controllers.md` shadows the bundled `patterns-built/laravel/controllers/CTRL-001-resource-controllers.md` after the build's addon merge pass. Same for skills (`.bench/skills/api/SKILL.md` shadows the bundled `/api`) and agents (`.bench/agents/controller.md` shadows the bundled `controller` worker).
+
+The bundled `bench-onboard` addon ships slash commands that walk the user through producing these overrides without manual file editing:
+
+- `/bench-list [patterns|skills|agents]` — see what's available to override
+- `/bench-show <type> <name>` — view a specific bundled file's body
+- `/bench-add-pattern {domain}` — auto-detects intent (FORK a bundled, or CAPTURE a project convention); writes to `.bench/patterns/`
+- `/bench-add-skill {name}` — auto-detects NEW vs FORK of a bundled skill; writes to `.bench/skills/` (and `.bench/agents/` for the paired worker)
+- `/bench-add-agent {name}` — same for standalone agents or forks of bundled workers
+
+The researchers behind these skills (`pattern-researcher`, `skill-researcher`, `agent-researcher`) handle both modes — capture-from-project-scan and fork-bundled-and-modify — so the user can say "I prefer global helpers over DI" without remembering paths or precedence rules.
+
+### Layer 3 — reusable addons (multi-project)
+
+Same shape as `.bench/` plus a `.bench-addon.yaml` manifest, but lives in its own repo and gets registered per-project via `bench addon add`. For conventions shared across multiple projects you maintain (an internal "company style" addon) or framework-specific extensions (Filament, Inertia, Quasar). See [addons.md](./addons.md) for the authoring spec.
+
+### Precedence
+
+For any given file path, last write wins:
+
+```
+core base
+  ↓ overridden by
+core version overrides (active L/PHP/Vue axis)
+  ↓ overridden by
+reusable addon patterns (in declaration order — later --addon flags win)
+  ↓ overridden by
+project-local .bench/  (auto-discovered last → always wins)
+  ↓ overridden by
+CLAUDE.md prose  (read by agents at runtime, supersedes any baked-in default)
+```
+
+The cumulative effect: a Bench install is **opinionated by default** (the bundled patterns reflect the maintainer's "right way to do X") but **fully customizable per-project** through any of these layers, with no source forking.
 
 ---
 

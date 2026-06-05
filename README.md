@@ -10,7 +10,7 @@ Built for [Claude Code](https://docs.claude.com/en/docs/claude-code) today. Desi
 
 ---
 
-**Contents:** [Quickstart](#quickstart) · [How it works](#how-it-works) · [What's in the box](#whats-in-the-box) · [Bundled addons](#bundled-addons) · [Per-project configuration](#per-project-configuration) · [CLI reference](#cli-reference) · [Roadmap](#roadmap) · [Docs](#docs) · [License](#license)
+**Contents:** [Quickstart](#quickstart) · [How it works](#how-it-works) · [What's in the box](#whats-in-the-box) · [Bundled addons](#bundled-addons) · [Customize by talking to Claude](#customize-by-talking-to-claude) · [Per-project configuration](#per-project-configuration) · [CLI reference](#cli-reference) · [Roadmap](#roadmap) · [Docs](#docs) · [License](#license)
 
 ---
 
@@ -99,6 +99,35 @@ Ship in this repo under `addons/`. Add by short name; bundled-name resolution is
 | [`laravel-boost`](./addons/laravel-boost/README.md) | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP tools + `/boost-install` skill that walks through composer install, `php artisan boost:install`, and MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](./addons/laravel-boost/README.md) |
 
 Want to write your own? See [docs/addons.md](./docs/addons.md) for the authoring spec.
+
+---
+
+## Customize by talking to Claude
+
+Bench ships opinionated defaults (DI over global helpers, dedicated form requests over inline validation, thin controllers — all the way Laravel does it internally). Your project may not want all of those. **Anything bundled can be overridden by just describing what you want different** — the [`bench-onboard`](./addons/onboard/README.md) addon's `/bench-add-*` skills auto-detect intent and fork the bundled file into `./.bench/`, which shadows it at install.
+
+**Examples** (no flags or paths to remember — just say what you want):
+
+```
+You: I prefer global helpers like cache() and auth() over DI in services for one-shot reads.
+Claude: → routes to /bench-add-pattern (FORK mode) → reads patterns-built/laravel/services/...,
+        proposes a modified version, asks you to approve, writes to .bench/patterns/laravel/services/,
+        runs bench rebuild. Done.
+
+You: Show me what the controller pattern looks like.
+Claude: → /bench-show pattern controller → displays the full bundled pattern body.
+
+You: What skills come bundled?
+Claude: → /bench-list skills → tables of bundled core + bundled addon + project-local.
+
+You: Make /api stop generating tests by default.
+Claude: → /bench-add-skill api (FORK mode) → reads skills/api/SKILL.md, removes the test step,
+        writes the modified version to .bench/skills/api/, rebuilds.
+```
+
+The skill descriptions (in each `SKILL.md` frontmatter) carry trigger phrases for all of this, so you don't need to remember the command name — Claude routes naturally based on what you said.
+
+Full list of override + discovery commands: [addons/onboard/README.md → Commands](./addons/onboard/README.md#commands).
 
 ---
 

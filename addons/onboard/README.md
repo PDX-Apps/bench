@@ -24,17 +24,45 @@ Everything is opt-in per step — the researcher agents present findings and pro
 
 ## Commands
 
+### Discovery (read-only)
+
+| Command | When to use |
+|---|---|
+| `/bench-list [patterns\|skills\|agents]` | See what's available — bundled defaults and project-local overrides. Pass no arg for a summary across all three. |
+| `/bench-show <type> <name>` | View the full body of a specific pattern, skill, or agent — typically before deciding to override it. |
+| `/bench-status` | Synthesized health check — versions, addons, CLAUDE.md presence, drift detection, suggested next steps. Friendlier wrapper around `bench status`. |
+
+### Add or override
+
+These commands handle both **adding new** and **overriding bundled defaults**. Each auto-detects intent: if you name a bundled artifact and describe a change, it forks; if you describe a project-specific workflow that doesn't exist yet, it adds new. If ambiguous, the researcher will ask.
+
+| Command | When to use |
+|---|---|
+| `/bench-add-pattern {domain}` | Add OR fork a Bench pattern. "Override the controller pattern to use cache() instead of DI" → FORK. "We extend BaseController in this project" → CAPTURE. |
+| `/bench-add-skill {name} "{desc}"` | Add OR fork a slash command. "Scaffold a /saga command" → NEW. "Make /api skip generating tests" → FORK. |
+| `/bench-add-agent {name} "{desc}"` | Add OR fork a worker agent. Standalone analyzers → NEW. "Override the controller agent's verification step" → FORK. (Most users want `/bench-add-skill` instead, which generates both skill + worker.) |
+
+### Lifecycle
+
 | Command | When to use |
 |---|---|
 | `/bench-onboard` | First-time setup. Walks the full flow: CLAUDE.md scaffold → propose pattern overrides → propose custom skills |
 | `/bench-update-claudemd` | Refresh CLAUDE.md from the current codebase (diff mode by default; `--force` to overwrite) |
-| `/bench-add-pattern {domain}` | Capture one convention (e.g., `controller`, `pinia-store`, `vue-component`) as a project-local pattern override |
-| `/bench-add-skill {name} "{desc}"` | Scaffold a new slash command + its paired worker agent for a project-specific workflow |
-| `/bench-add-agent {name} "{desc}"` | Scaffold a standalone worker agent (rare — most agents pair with a skill) |
 | `/bench-add-domain {name}` | Onboard one new module/feature area without rescanning the whole project |
 | `/bench-audit` | Check whether CLAUDE.md and `.bench/` overrides have drifted from the codebase |
 
 All commands support `--depth=shallow|standard|deep`.
+
+### Overriding by talking to Claude
+
+You don't need to remember the exact command. Just describe what you want different:
+
+- *"I prefer global helpers like cache() over DI in services"* — Claude routes to `/bench-add-pattern` in FORK mode, reads the bundled service pattern, modifies it, writes the override under `./.bench/patterns/...`, rebuilds.
+- *"Make /api skip generating tests"* — Claude routes to `/bench-add-skill api` in FORK mode, reads the bundled SKILL.md, modifies the relevant step, writes the override.
+- *"Show me what the controller pattern looks like"* — Claude routes to `/bench-show pattern controller`.
+- *"What skills come bundled?"* — Claude routes to `/bench-list skills`.
+
+The trigger phrases in each skill's description handle the routing automatically.
 
 ---
 
@@ -59,9 +87,11 @@ The addon ships **4 specialist researcher agents** that share a single [layered 
 | Researcher | Produces |
 |---|---|
 | `claudemd-researcher` | Project's root `CLAUDE.md` (or a diff against an existing one) |
-| `pattern-researcher` | A project-local pattern override under `./.bench/patterns/{group}/{name}.md` |
-| `skill-researcher` | A project-local slash command at `./.bench/skills/{name}/SKILL.md` (then delegates to agent-researcher for the worker) |
-| `agent-researcher` | A worker agent at `./.bench/agents/{name}.md` (typically `{skill-name}-worker`) |
+| `pattern-researcher` | A project-local pattern at `./.bench/patterns/{group}/{name}.md`. Modes: **CAPTURE** (scan project, write convention) or **FORK** (read bundled, modify it). |
+| `skill-researcher` | A project-local skill at `./.bench/skills/{name}/SKILL.md`. Modes: **NEW** (design from scratch) or **FORK** (read bundled SKILL.md, modify). Delegates to `agent-researcher` for the worker. |
+| `agent-researcher` | A worker agent at `./.bench/agents/{name}.md`. Modes: **NEW** (design from scratch) or **FORK** (read bundled, modify). |
+
+The `/bench-list` and `/bench-show` discovery skills are skill-only (no worker) — they just read the install + project state and report.
 
 Each researcher reads the [methodology](./patterns/onboarding/METHODOLOGY-layered-scan.md) plus its own artifact-specific lens (`RESEARCH-claudemd.md`, `RESEARCH-patterns.md`, `RESEARCH-skills.md`, `RESEARCH-agents.md`). The 7 slash commands are thin orchestrators — they parse the user's request, delegate to the right researcher, and surface the findings report + proposed files for user approval before anything gets written.
 

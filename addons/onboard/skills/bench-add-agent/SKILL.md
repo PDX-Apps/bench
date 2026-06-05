@@ -1,39 +1,63 @@
 ---
 name: bench-add-agent
 description: |
-  Use this skill when the user wants to add a standalone worker agent without
-  a paired slash command — typically a specialist analyzer called by other
-  agents, or a reusable subroutine. Triggers on "/bench-add-agent", "add a
-  worker agent", "create a {name} analyzer", or similar. For the common case
-  (skill + paired worker), use /bench-add-skill instead.
+  Use this skill when the user wants to add a NEW standalone worker agent OR
+  customize a BUNDLED agent. Handles two modes — (1) NEW: design a standalone
+  agent (specialist analyzer called by other agents, or reusable subroutine);
+  (2) FORK: read a bundled agent's body and modify it ("override the controller
+  agent to run pint with a custom config", "make the migration agent skip
+  phpstan", "change the api agent's report format"). Triggers on
+  "/bench-add-agent", "add a worker agent", "override the {name} agent",
+  "customize how the {name} agent behaves". For the common case (skill + paired
+  worker), use /bench-add-skill instead.
 ---
 
 # /bench-add-agent
 
-Designs a standalone project-local worker agent under `./.bench/agents/`.
+Adds a new standalone worker agent OR forks a bundled agent. Writes to
+`./.bench/agents/{name}.md` — which shadows the bundled agent at the same
+name during install.
 
-> **Note**: Most Bench workers are paired with a skill via `/bench-add-skill`,
-> which generates both at once. Use `/bench-add-agent` only when you need an
-> agent without a slash command — e.g., a specialist invoked by other agents.
+## Two modes
+
+**NEW** — design a brand-new standalone agent (no paired slash command).
+> "/bench-add-agent migration-reviewer 'post-generation review of migrations'"
+> "/bench-add-agent model-relationship-mapper 'summarize relationships for other agents'"
+
+**FORK** — modify how a bundled worker behaves.
+> "/bench-add-agent controller 'run pint with --preset=psr12'"
+> "Override the migration agent: skip the phpstan step"
+> "Make the api agent's report shorter"
+
+Auto-detects by checking if a bundled agent exists with that name.
+
+> **For the common case (slash command + paired worker)**, use `/bench-add-skill`
+> instead — it generates both in one flow. `/bench-add-agent` is for standalone
+> agents (no paired skill) or forking an existing bundled worker.
 
 ## Usage
 
 ```
-/bench-add-agent {name} "{description}"
-/bench-add-agent {name} "{description}" --depth=deep
+/bench-add-agent {name} "{description-or-change}"
+/bench-add-agent {name} "{description-or-change}" --depth=deep
 ```
 
 Examples:
-- `/bench-add-agent migration-reviewer "post-generation review of migrations"`
-- `/bench-add-agent model-relationship-mapper "summarize model relationships for other agents"`
+- `/bench-add-agent migration-reviewer "post-generation review of migrations"` → NEW
+- `/bench-add-agent controller "run pint with --preset=psr12"` → FORK (`controller` is bundled)
+- `/bench-add-agent model-relationship-mapper "summarize relationships"` → NEW
+
+Tip: see what's available with `/bench-list agents`. View an agent before forking with `/bench-show agent <name>`.
 
 ## What this skill does
 
-1. Parse `{name}` and `{description}`.
-2. Delegate to the `agent-researcher` agent with a synthetic "skill summary"
-   describing the standalone use case.
-3. Relay the proposed agent file to the user.
-4. On user approval, write to `.bench/agents/{name}.md` and run `bench rebuild`.
+1. Parse `{name}` and the description/change text.
+2. Delegate to the `agent-researcher` agent with intent `auto`.
+3. The researcher checks whether a bundled `{name}` agent exists:
+   - **Yes** → FORK mode: reads bundled agent, proposes modifications.
+   - **No** → NEW mode: designs a standalone agent (no paired skill).
+4. Relay the proposed file to the user.
+5. On approval, write to `.bench/agents/{name}.md` + run `bench rebuild`.
 
 ## What this skill does NOT do
 
@@ -45,20 +69,19 @@ Examples:
 ```
 Task(
   subagent_type: "agent-researcher",
-  description: "Design standalone {name} agent",
+  description: "Add or fork {name} agent",
   prompt: """
-  Design a standalone project-local worker agent (no paired slash command).
+  Add or fork a worker agent.
+  - intent: auto
   - name: {name}
-  - description: {description}
+  - change_request: {what the user said}
   - project_root: {cwd}
   - bench_install_root: {bench_install_root}
   - depth: {depth}
 
-  This is a standalone agent — invoked by other agents, not a /-command.
-  Define its inputs (from the caller), workflow, verification, and report
-  format per RESEARCH-agents.md.
-
-  Await user approval before writing.
+  Follow RESEARCH-agents.md. Detect NEW vs FORK by looking up the bundled
+  agent at {bench_install_root}/agents/{name}.md. Show the proposed file
+  (NEW) or diff (FORK) before writing. Await user approval.
   """
 )
 ```
