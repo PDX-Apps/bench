@@ -227,6 +227,31 @@ resolve_addon_dep() {   # name-or-path -> absolute addon dir, or empty. Always r
   return 0
 }
 _addons_has() { local x="$1" a; for a in "${ADDONS[@]+${ADDONS[@]}}"; do [[ "$a" == "$x" ]] && return 0; done; return 1; }
+
+# ---------- Rendering mode -> page-ownership addon ----------
+# A project declares its rendering model in .bench/rendering.yaml (written by the
+# `rendering` concern). We map the mode to the addon that owns page rendering and fold it
+# into ADDONS here — BEFORE dependency expansion, so the mapped addon's own deps resolve.
+# Consistent with concerns-produce-config / build-reacts: the concern never runs `addon add`.
+RENDERING_YAML="$PROJECT_ROOT/.bench/rendering.yaml"
+if [[ -f "$RENDERING_YAML" ]]; then
+  rmode=$(grep -E '^mode:' "$RENDERING_YAML" | head -1 | sed -E 's/^mode:[[:space:]]*//; s/[[:space:]#].*$//')
+  case "$rmode" in
+    blade) rmode_addon="bench-blade" ;;
+    spa|"") rmode_addon="" ;;
+    *) echo "WARNING: .bench/rendering.yaml mode '$rmode' unknown; expected spa|blade" >&2; rmode_addon="" ;;
+  esac
+  if [[ -n "$rmode_addon" ]]; then
+    rmode_path="$(resolve_addon_dep "$rmode_addon")"
+    if [[ -z "$rmode_path" ]]; then
+      echo "WARNING: rendering mode '$rmode' needs addon '$rmode_addon' — not found in $PLUGIN_SRC/addons" >&2
+    elif ! _addons_has "$rmode_path"; then
+      ADDONS+=("$rmode_path")
+      echo "  + rendering mode '$rmode' -> addon $rmode_addon"
+    fi
+  fi
+fi
+
 _expand=1
 while (( _expand )); do
   _expand=0
