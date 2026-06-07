@@ -12,20 +12,19 @@ questions:
     ask: "Roles/permissions used (e.g. admin, member, billing.manage) — list the key ones, or 'none yet'."
     default: none yet
 affects:
-  - laravel/policies/POLICY-001-resource-policies.md
-  - laravel/policies/POLICY-002-action-policies.md
+  - laravel/authorization/PERMISSION-001-model.md
 output: overrides
 ---
 
 ## Apply
 
-Write `.bench/patterns/...` overrides (mode `append`) capturing the project's **authorization model** (distinct from *how to write a policy* — that stays in the base POLICY patterns):
+Write a `.bench/` override (mode `append`) of **PERMISSION-001-model.md** capturing the project's **authorization model** — the dedicated model file, distinct from the POLICY patterns (which stay about *how to write policies*):
 
-- **POLICY-001 / POLICY-002** — how checks resolve for `{model}`:
-  - `spatie` → policies/gates consult `$user->can('permission')` / `hasRole()` backed by spatie's tables; name the key roles/permissions from `{roles}`.
-  - `gates` → checks via `Gate::define`/`Gate::allows`; where gates live.
-  - `policies-only` → standard policy classes; no role layer.
+- State the model `{model}` and how a check resolves:
+  - `spatie` → `$user->can('permission')` / `$user->hasRole('role')`, roles + permissions in DB.
+  - `gates` → `Gate::allows('ability')`; where gates are defined.
+  - `policies-only` → resource policies + `#[Authorize]`, no role layer.
   - `custom` → describe the project's mechanism.
-- List the project's roles/permissions (`{roles}`) so generated authz uses the real names.
+- List the project's roles/permissions (`{roles}`) so generated authz (policies, gates, `#[Authorize]`) uses the **real names**, not invented ones.
 
-(Idea: a dedicated `permissions` PATTERN file — the *model* — separate from POLICY files. Until then, this concern appends to the policy patterns. See working-notes.)
+The base POLICY-001/002 patterns are untouched — they teach how to write a policy; this override teaches what to check.
