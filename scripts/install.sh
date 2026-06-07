@@ -191,6 +191,59 @@ if ! $NO_AUTO_ADDON && [[ -d "$PROJECT_ROOT/.bench" ]] \
   fi
 fi
 
+# ---------- Expand addon dependencies (depends_on.addons) ----------
+# An addon can REQUIRE other addons instead of duplicating their content (e.g. a
+# quality-pipeline addon depends on bench-ci + bench-playwright). We resolve each
+# addon's declared addon-deps (bundled name -> $PLUGIN_SRC/addons/NAME, or a path),
+# transitively, deps-first, de-duped. Missing deps warn loudly.
+addon_dep_names() {   # echo the depends_on.addons entries from a manifest
+  local manifest="$1/.bench-addon.yaml"
+  [[ -f "$manifest" ]] || return 0
+  awk '
+    /^depends_on:/ { d=1; next }
+    d && /^[^[:space:]#]/ { d=0 }
+    d && /addons:[[:space:]]*\[/ { l=$0; sub(/.*\[/,"",l); sub(/\].*/,"",l)
+      n=split(l,a,","); for(i=1;i<=n;i++){ gsub(/[^A-Za-z0-9._\/-]/,"",a[i]); if(a[i]!="") print a[i] }; next }
+    d && /addons:[[:space:]]*$/ { bl=1; next }
+    d && bl && /^[[:space:]]*-/ { l=$0; sub(/^[[:space:]]*-[[:space:]]*/,"",l); gsub(/[^A-Za-z0-9._\/-]/,"",l); if(l!="") print l; next }
+    d && bl && /^[[:space:]]*[^-[:space:]#]/ { bl=0 }
+  ' "$manifest"
+}
+resolve_addon_dep() {   # name-or-path -> absolute addon dir, or empty. Always returns 0 (set -e safe).
+  local a="$1" m nm
+  # 1. a literal path
+  if [[ -d "$a" && -f "$a/.bench-addon.yaml" ]]; then (cd "$a" && pwd); return 0; fi
+  # 2. a bundled addon by directory name
+  if [[ -d "$PLUGIN_SRC/addons/$a" && -f "$PLUGIN_SRC/addons/$a/.bench-addon.yaml" ]]; then echo "$PLUGIN_SRC/addons/$a"; return 0; fi
+  # 3. a bundled addon by manifest name: (dir name may differ, e.g. laravel-ci → name bench-ci)
+  for m in "$PLUGIN_SRC"/addons/*/.bench-addon.yaml; do
+    [[ -f "$m" ]] || continue
+    nm=$(grep -E '^name:' "$m" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
+    if [[ "$nm" == "$a" ]]; then dirname "$m"; return 0; fi
+  done
+  return 0
+}
+_addons_has() { local x="$1" a; for a in "${ADDONS[@]+${ADDONS[@]}}"; do [[ "$a" == "$x" ]] && return 0; done; return 1; }
+_expand=1
+while (( _expand )); do
+  _expand=0
+  for a in "${ADDONS[@]+${ADDONS[@]}}"; do
+    while IFS= read -r dep; do
+      [[ -z "$dep" ]] && continue
+      deppath="$(resolve_addon_dep "$dep")"
+      if [[ -z "$deppath" ]]; then
+        echo "WARNING: addon '$(basename "$a")' requires addon '$dep' — not found; install it or generation may be incomplete" >&2
+        continue
+      fi
+      if ! _addons_has "$deppath"; then
+        ADDONS=("$deppath" "${ADDONS[@]}")   # deps load before dependents
+        echo "  + addon dependency: $dep (required by $(basename "$a"))"
+        _expand=1
+      fi
+    done < <(addon_dep_names "$a")
+  done
+done
+
 # Files to substitute paths in (core only — addon files are handled per-addon below)
 SUBSTITUTE_TARGETS=(
   "$PLUGIN_ROOT/agents"

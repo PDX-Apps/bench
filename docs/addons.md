@@ -48,8 +48,9 @@ description: |                    # required — one-line summary
   Laravel + Vue: custom store wrappers, UI library conventions,
   test helpers.
 
-depends_on:                       # optional — minimum core version
-  bench: ">=0.8.0"
+depends_on:                       # optional
+  bench: ">=0.8.0"                 #   minimum core version
+  addons: [bench-ci, bench-playwright]   # require other addons (auto-installed)
 
 # Optional metadata (informational only — not enforced by the loader)
 homepage: https://github.com/your-org/my-framework-kit
@@ -58,6 +59,10 @@ license: MIT
 ```
 
 No declarative contribution lists — what the addon contributes is determined by what's in its `patterns/`, `skills/`, `agents/` directories.
+
+### Addon dependencies (`depends_on.addons`)
+
+An addon can **require other addons** instead of duplicating their content — e.g. `bench-quality` declares `depends_on.addons: [bench-ci, bench-playwright]` and delegates to their `ci` / `e2e` agents. At install/rebuild, the loader **resolves each dependency** (by bundled directory name *or* by manifest `name:`), pulls it in **transitively** (deps load before dependents), and de-dups. A missing dependency warns loudly. Dependencies are resolved at build time, not persisted — they follow the dependent automatically. For composition to work, the depended-on functionality should be exposed as a **Task-delegatable agent** (not only a skill).
 
 ---
 
@@ -197,5 +202,4 @@ Not in v1 yet:
 - Git-URL addon loading (`bench addon add git+https://...`)
 - Addon registry / `bench addon search`
 - Per-addon version overrides (e.g., addon contributes a vue-2 fallback)
-- Cross-addon dependencies (`depends_on` for sibling addons)
 - Addon publishing / signing / verification
