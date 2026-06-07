@@ -1,0 +1,8 @@
+name: bench-chakra
+version: 0.1.0
+description: |
+  Build React UIs with Chakra UI. Appends Chakra UI component + theming conventions onto the
+  React component and styling patterns.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://chakra-ui.com
+license: MIT

@@ -1,6 +1,6 @@
 # Bench — Contribution System (override + aggregation)
 
-**Status:** Phases 1–2 IMPLEMENTED (2026-06-06) for **patterns + skills + agents** — `replace` (default, backward-compatible) + `append` + `anchor` (`after`/`before`/`replace-block`). Lives in `scripts/lib/contribution.sh`, wired into `scripts/build-patterns.sh` (version overrides + addon patterns) AND `scripts/install.sh` (addon skills/agents). Remaining: `merge`/`patch` modes; anchors added to base files. Supersedes the replace-only mechanism in [architecture.md](./architecture.md).
+**Status:** All modes IMPLEMENTED (Phases 1–3, 2026-06-06/07) for **patterns + skills + agents** — `replace` (default, backward-compatible) + `append` + `anchor` (`after`/`before`/`replace-block`) + `merge` (markdown table rows, located by header) + `patch` (gated literal `FIND`/`REPLACE` blocks, exact-once). Lives in `scripts/lib/contribution.sh`, wired into `scripts/build-patterns.sh` (version overrides + addon patterns) AND `scripts/install.sh` (addon skills/agents). Tested by `scripts/test-contribution.sh` (42 assertions). Optional remaining: `<!-- bench:anchor:NAME -->` markers added to specific base files on demand (merge already covers table-row insertion without them). Supersedes the replace-only mechanism in [architecture.md](./architecture.md).
 
 ## Implementation status
 
@@ -10,9 +10,9 @@
 | Pattern version overrides via modes | ✅ `build-patterns.sh` `resolve_and_copy` (base → override-by-mode) |
 | Addon pattern contributions via modes | ✅ `build-patterns.sh` `merge_addon_patterns` |
 | Loud-fail: missing anchor / unknown mode | ✅ |
-| Regression harness | ✅ `scripts/test-contribution.sh` (33 assertions, all green) |
-| `merge` (frontmatter / table rows) | ⬜ not yet (errors if used) |
-| `patch` (gated, `expected:`) | ⬜ not yet (errors if used) |
+| Regression harness | ✅ `scripts/test-contribution.sh` (42 assertions, all green) |
+| `merge` (markdown table rows, located by header) | ✅ `scripts/lib/contribution.sh` |
+| `patch` (gated literal `FIND`/`REPLACE` blocks, exact-once) | ✅ `scripts/lib/contribution.sh` (requires `python3`) |
 | Skill/agent contributions (`install.sh`) | ✅ `install.sh` addon copy applies by mode; reversal restores cleanly |
 | Anchors (`<!-- bench:anchor:NAME -->`) in base files | ⬜ added on demand |
 
@@ -43,9 +43,9 @@ Ordered by robustness (how well they survive base-file edits):
 |------|--------|--------------------------|---------|
 | `append` | Body appended as a trailing section | No | Add a section: a Boost-MCP note, an L12 caveat, an extra "When to Use" block |
 | `anchor` | Body inserted at a named marker in the base | Only the anchor name (a stable contract) | Mid-file inject: a Pattern-Lookup table row, a Key-Points bullet |
-| `merge` | Structured merge of a known region (frontmatter YAML, a markdown table, a bullet list) | The region's structure, not its text | `tools:` frontmatter, Pattern Lookup tables |
+| `merge` | The body's markdown table rows are spliced into the base table with the **same header** (located by the header row — no anchor marker needed) | The table header (a stable contract) | Add rows: a Pattern-Lookup row, a decision-table row |
 | `replace` | Whole file replaced (current behavior) | No (ignores base) | The file is fundamentally different |
-| `patch` | Find/replace declared text (escape hatch) | **Yes — exact text match** | Last resort; must be gated (§6) |
+| `patch` | Gated literal `FIND`/`REPLACE` blocks; each `FIND` must match the base **exactly once** | **Yes — exact text match, exact-once** | Last resort; surgical edit to existing prose |
 
 **Primary pair: `append` + `replace`.** They cover ~90% and are both robust (neither matches base text). `anchor` and `merge` handle precise mid-file needs. `patch` is a gated escape hatch, never the default.
 
@@ -64,10 +64,21 @@ mode: append                          # append | anchor | merge | replace | patc
 # --- mode-specific keys ---
 anchor: pattern-lookup                # (anchor) the marker name to insert at
 position: after                       # (anchor) before | after | replace-block
-region: frontmatter.tools             # (merge) what structured region to merge
-expected: "..."                       # (patch) the exact base text to replace — drift guard
 order: 50                             # optional; lower runs earlier when several target one file
 ---
+
+# (merge) the body holds a markdown table; rows are spliced into the base table
+#   with the same header. Example body:
+#     | Need | Read |
+#     |------|------|
+#     | New thing | <PLUGIN_ROOT>/patterns-built/.../NEW-001.md |
+#
+# (patch) the body holds one or more gated blocks; each FIND must match once:
+#     <<<<<<< FIND
+#     ...exact base text...
+#     =======
+#     ...replacement...
+#     >>>>>>> REPLACE
 
 <the contribution body>
 ```
@@ -116,14 +127,14 @@ This generalizes the current pipeline (base → version override → addon merge
 
 - **Append/anchor/merge never hard-conflict** — they compose. Two addons appending both sections both land (in order). Determinism comes from `order` + registration order.
 - **`replace` is exclusive** — last `replace` wins and is logged. Two addons both replacing the same file is a warning (the later silently wins today; the build should surface it).
-- **`patch` conflicts loudly** — if its `expected:` text isn't found (base drift, or an earlier contribution already changed it), the build **fails** for that file with a clear message. Never silently skip.
+- **`patch` conflicts loudly** — if a `FIND` block matches the base zero or 2+ times (base drift, or an earlier contribution already changed it), the build **fails** for that file with a clear message. Never silently skip.
 - The build emits a per-file **contribution manifest** (which contributors touched which file, in what order) for debuggability.
 
 ---
 
 ## 6. Validation (drift safety)
 
-- `patch` MUST declare `expected:` (the exact text being replaced). Build fails if not found → no silent breakage.
+- `patch` `FIND` blocks must match exactly once (the exact text being replaced). Build fails on 0 or 2+ matches → no silent breakage.
 - `anchor` MUST resolve its marker name in the (post-prior-stages) base. Build fails on a missing anchor.
 - `validate-overrides.sh` evolves: `replace`-mode version overrides still carry `base-hash` (unchanged). `append`/`anchor`/`merge` contributions are inherently drift-resilient and don't need a base-hash — which is the point (most version overrides should migrate off `replace`, shrinking the staleness surface).
 
@@ -149,7 +160,7 @@ This generalizes the current pipeline (base → version override → addon merge
 2. Sort by stage, then `order`, then registration.
 3. Apply each by mode (append concat, anchor splice, merge structured, replace reset, patch guarded find/replace).
 4. Emit the composed file + a contribution manifest.
-5. Fail loudly on unresolved anchors / missing `expected:` text.
+5. Fail loudly on unresolved anchors, no matching merge table, or a patch FIND that isn't exactly-once.
 
 The `<PLUGIN_ROOT>` substitution and frontmatter handling stay as they are.
 

@@ -59,10 +59,40 @@ assert_contains "$WORK/t" "NEWBLOCK" "anchor-replace-block: new"; assert_absent 
 # missing anchor → fail loudly
 printf 'no markers\n' > "$WORK/t"; printf -- '---\nmode: anchor\nanchor: nope\n---\nx\n' > "$WORK/c"
 assert_fails contrib_apply "$WORK/t" "$WORK/c"
-# unknown / unimplemented modes → fail loudly
+# unknown mode → fail loudly
 printf 'x\n' > "$WORK/t"; printf -- '---\nmode: bogus\n---\nx\n' > "$WORK/c"; assert_fails contrib_apply "$WORK/t" "$WORK/c"
+# merge/patch with bad input → fail loudly (no table / no blocks)
 printf 'x\n' > "$WORK/t"; printf -- '---\nmode: merge\n---\nx\n' > "$WORK/c"; assert_fails contrib_apply "$WORK/t" "$WORK/c"
 printf 'x\n' > "$WORK/t"; printf -- '---\nmode: patch\n---\nx\n' > "$WORK/c"; assert_fails contrib_apply "$WORK/t" "$WORK/c"
+
+# merge: splice rows into the target table with the same header
+printf '# Doc\n\n## Pattern Lookup\n\n| Need | Read |\n|------|------|\n| Base | base.md |\n\nMore text.\n' > "$WORK/t"
+printf -- '---\nmode: merge\n---\n\n| Need | Read |\n|------|------|\n| Extra | extra.md |\n' > "$WORK/c"
+contrib_apply "$WORK/t" "$WORK/c"
+assert_contains "$WORK/t" "Extra | extra.md" "merge: new row spliced in"
+assert_contains "$WORK/t" "Base | base.md" "merge: existing row kept"
+assert_contains "$WORK/t" "More text." "merge: trailing content kept"
+# row lands inside the table (before the blank line / 'More text.')
+awk '/\| Extra \| extra.md/{r=NR} /More text\./{m=NR} END{exit !(r<m)}' "$WORK/t" && ok "merge: row inside the table" || bad "merge: row placement"
+# merge with no matching header → fail loudly
+printf '| A | B |\n|---|---|\n| 1 | 2 |\n' > "$WORK/t"
+printf -- '---\nmode: merge\n---\n\n| X | Y |\n|---|---|\n| 9 | 9 |\n' > "$WORK/c"
+assert_fails contrib_apply "$WORK/t" "$WORK/c"
+
+# patch: gated literal find/replace
+printf 'tools: Read, Grep\nmodel: sonnet\n' > "$WORK/t"
+printf -- '---\nmode: patch\n---\n<<<<<<< FIND\ntools: Read, Grep\n=======\ntools: Read, Grep, Bash\n>>>>>>> REPLACE\n' > "$WORK/c"
+contrib_apply "$WORK/t" "$WORK/c"
+assert_contains "$WORK/t" "tools: Read, Grep, Bash" "patch: find/replace applied"
+assert_contains "$WORK/t" "model: sonnet" "patch: rest of file untouched"
+# patch FIND not unique → fail loudly (matches twice)
+printf 'dup\ndup\n' > "$WORK/t"
+printf -- '---\nmode: patch\n---\n<<<<<<< FIND\ndup\n=======\nx\n>>>>>>> REPLACE\n' > "$WORK/c"
+assert_fails contrib_apply "$WORK/t" "$WORK/c"
+# patch FIND not found → fail loudly
+printf 'aaa\n' > "$WORK/t"
+printf -- '---\nmode: patch\n---\n<<<<<<< FIND\nzzz\n=======\nx\n>>>>>>> REPLACE\n' > "$WORK/c"
+assert_fails contrib_apply "$WORK/t" "$WORK/c"
 
 # contrib_body: no frontmatter → whole file; frontmatter present → body only
 printf 'plain body\n' > "$WORK/c"; [[ "$(contrib_body "$WORK/c")" == "plain body" ]] && ok "contrib_body: no-frontmatter passthrough" || bad "contrib_body passthrough"

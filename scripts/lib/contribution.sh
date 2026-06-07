@@ -8,7 +8,10 @@
 #   replace  (default) — the whole file replaces the target (legacy behavior)
 #   append             — the contribution body is appended as a trailing section
 #   anchor             — the body is spliced at a named marker in the target
-#   merge / patch      — reserved (not yet implemented; treated as an error)
+#   merge              — the body's markdown table rows are spliced into the target
+#                        table with the same header (located by header, no anchor)
+#   patch              — gated literal find/replace blocks; each FIND must match
+#                        the target exactly once (<<<<<<< FIND / ======= / >>>>>>> REPLACE)
 #
 # A file with NO `mode:` key is treated as `replace` — so every existing override
 # and addon file keeps working unchanged.
@@ -95,8 +98,60 @@ contrib_apply() {
         }
       ' "$target" > "$tmp" && mv "$tmp" "$target"
       ;;
-    merge|patch)
-      echo "ERROR: contribution mode '$mode' not yet implemented ($contribution)" >&2; return 1
+    merge)
+      # Merge the contribution's markdown table rows into the target table that has
+      # the SAME header row (located by the header — no anchor marker needed).
+      local cbody cheader crows
+      cbody="$(contrib_body "$contribution")"
+      cheader="$(printf '%s\n' "$cbody" | awk '/^[[:space:]]*\|/{print; exit}')"
+      crows="$(printf '%s\n' "$cbody" | awk '/^[[:space:]]*\|/{n++; if(n>=3) print}')"
+      if [[ -z "$cheader" || -z "$crows" ]]; then
+        echo "ERROR: merge contribution needs a markdown table (header + separator + data row[s]): $contribution" >&2; return 1
+      fi
+      local tmp; tmp="$(mktemp)"
+      if ! awk -v header="$cheader" -v rows="$crows" '
+        function norm(s){ gsub(/[[:space:]]/,"",s); return s }
+        BEGIN { hn=norm(header) }
+        { lines[NR]=$0 }
+        END {
+          for (i=1;i<=NR;i++) if (norm(lines[i])==hn) { hrow=i; break }
+          if (!hrow) exit 3
+          last=hrow
+          for (i=hrow+1;i<=NR;i++) { if (lines[i] ~ /^[[:space:]]*\|/) last=i; else break }
+          for (i=1;i<=NR;i++) { print lines[i]; if (i==last) print rows }
+        }
+      ' "$target" > "$tmp"; then
+        echo "ERROR: merge found no target table matching header in $target (from $contribution)" >&2
+        rm -f "$tmp"; return 1
+      fi
+      mv "$tmp" "$target"
+      ;;
+    patch)
+      # Gated literal find/replace. Body holds one or more blocks:
+      #   <<<<<<< FIND
+      #   ...exact target text...
+      #   =======
+      #   ...replacement...
+      #   >>>>>>> REPLACE
+      # Each FIND must match the target EXACTLY ONCE, else the whole patch fails.
+      command -v python3 >/dev/null 2>&1 || { echo "ERROR: patch mode requires python3 ($contribution)" >&2; return 1; }
+      if ! contrib_body "$contribution" | python3 -c '
+import sys, re
+body = sys.stdin.read()
+path = sys.argv[1]
+target = open(path).read()
+blocks = re.findall(r"<<<<<<< FIND\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE", body, re.S)
+if not blocks:
+    sys.stderr.write("no FIND/REPLACE blocks\n"); sys.exit(1)
+for find, repl in blocks:
+    n = target.count(find)
+    if n != 1:
+        sys.stderr.write("FIND matched %d times (need exactly 1): %r\n" % (n, find[:80])); sys.exit(1)
+    target = target.replace(find, repl)
+open(path, "w").write(target)
+' "$target"; then
+        echo "ERROR: patch failed to apply cleanly ($contribution → $target)" >&2; return 1
+      fi
       ;;
     *)
       echo "ERROR: unknown contribution mode '$mode' ($contribution)" >&2; return 1
