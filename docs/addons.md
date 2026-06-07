@@ -68,7 +68,7 @@ An addon can **require other addons** instead of duplicating their content — e
 
 ## How addons load
 
-`bench init` (and `bench rebuild`) processes addons in this order:
+`bench build` (and `bench rebuild`) processes addons in this order:
 
 1. **Core mirror + build pass** — mirrors core's `skills/` + `agents/` (flattened from source groups) and resolves `patterns/` (base + version overrides) into `patterns-built/`.
 2. **For each registered addon** (in declaration order):
@@ -102,7 +102,7 @@ Same rule for skills + agents: later addon wins, addons win over core.
 ### 1. By path
 
 ```bash
-bench init --addon=/path/to/your-addon
+bench build --addon=/path/to/your-addon
 bench addon add /path/to/your-addon
 ```
 
@@ -139,7 +139,7 @@ The bundled [`bench-manager`](../addons/bench-manager/README.md) addon writes he
 ### 4. Multiple addons
 
 ```bash
-bench init \
+bench build \
   --addon=onboard \
   --addon=laravel-boost \
   --addon=~/path/to/internal/my-team-conventions
@@ -151,14 +151,89 @@ Order matters — later addons win conflicts.
 
 ## Bundled addons (shipped in the repo)
 
-Live under `addons/` at the bench source. Add by short name:
+Live under `addons/` at the bench source. Add by short name (`bench addon add <name>`) or path. Each addon's own `README.md` has the detail; each is a worked example of the addon spec.
 
-| Short name | What it does | Loaded by default? | Docs |
-|---|---|---|---|
-| `bench-manager` | The `/bench-*` project-tailoring toolkit — `/bench-init`, `/bench-override`, `/bench-slice`, `/bench-list`, `/bench-show`, `/bench-status` + the authoring agents behind them | Yes — opt out with `bench init --no-onboard` | [addons/bench-manager/README.md](../addons/bench-manager/README.md) |
-| `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` skill that walks through composer install + `boost:install` + MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](../addons/laravel-boost/README.md) |
+`bench-manager` is the only one **loaded by default** (opt out with `bench build --no-onboard`); everything else is opt-in.
 
-The bundled addons are themselves a worked example of the addon spec — read their source for a reference implementation.
+### Setup & workflow
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-manager` | The `/bench-*` toolkit — `/bench-init`, `/bench-configure`, `/bench-override`, `/bench-slice`, `/bench-list/show/status` + the authoring agents (default-loaded) |
+| `bench-plan` | Turn a ticket/PRD into a technical plan the `implement` workflow can execute (`/plan`) |
+| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `laravel-ci` + `bench-playwright` |
+| `laravel-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
+| `tdd` | Test-first bug-fix loop (`/bug-fix`) |
+| `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` |
+
+### Laravel packages
+
+| Addon | What it does |
+|-------|--------------|
+| `laravel-ai` | The official `laravel/ai` SDK — agents + tools (`/ai-agent`, `/ai-tool`) |
+| `laravel-swagger` | OpenAPI/Swagger from PHP attributes (`/swagger`) |
+| `laravel-query-builder` | spatie/laravel-query-builder filtering/sorting/includes (`/query-builder`) |
+| `laravel-public-id` | ULID/UUID public identifiers over a fast internal PK |
+| `laravel-repository` | The repository pattern (interface + Eloquent impl + binding) (`/repository`) |
+| `laravel-octane` | Long-running-runtime safety guidance (Swoole/FrankenPHP/RoadRunner) |
+| `laravel-compliance` | PII / audit-logging / retention patterns (`/compliance-check`) |
+| `laravel-modules` | nwidart/laravel-modules awareness — `Modules\{X}\` layout (`/module`) |
+| `cashier` | Stripe billing — subscriptions, invoices, webhooks (`/cashier`) |
+| `scout` | Full-text search — the Searchable trait + drivers (`/scout`) |
+| `horizon` | Redis queue config + conventions |
+| `socialite` | OAuth social login — redirect/callback flow (`/socialite`) |
+
+### Laravel UI
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-blade` | Server-rendered Blade UI — components, layouts, forms, pages (`/blade`) |
+| `bench-livewire` | Livewire 3 (+ Volt) reactive components (`/livewire`) |
+| `bench-filament` | Filament 3 admin panels — resources/forms/tables (`/filament-resource`) |
+| `bench-inertia` | Inertia.js v2 server-driven SPA (Laravel + Vue/React) (`/inertia`) |
+
+### Frontend styling
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-tailwind` | Tailwind CSS v4 (CSS-first) styling for generated components |
+| `bench-unocss` | UnoCSS atomic, on-demand styling |
+
+### Frontend component libraries
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-shadcn-vue` / `bench-shadcn` | shadcn (Vue / React) copy-paste components |
+| `bench-primevue` · `bench-vuetify` · `bench-quasar` | Vue component libraries |
+| `bench-radix` · `bench-mui` · `bench-chakra` | React component libraries |
+
+### Frontend data & routing
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-pinia-colada` | Pinia Colada data layer (replaces the base Vue TanStack Query) |
+| `bench-tanstack-router` | Type-safe TanStack Router (replaces the base React Router) |
+
+### Meta-frameworks
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-nextjs` | Next.js App Router (replaces the plain React SPA routing/data) |
+| `bench-nuxt` | Nuxt file-based routing + data (replaces the plain Vue SPA) |
+| `bench-remix` | Remix / React Router v7 framework mode |
+
+### Testing
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-playwright` | End-to-end tests as Playwright spec files (`/e2e`) |
+| `bench-e2e` | Live Chrome-MCP click-through that exercises a flow and reports (no spec file) (`/e2e-run`) |
+
+### Documentation
+
+| Addon | What it does |
+|-------|--------------|
+| `bench-docs` | Generate/refresh docs from code — ADRs, READMEs (`/docs`) |
 
 ---
 
@@ -182,7 +257,7 @@ The auto-discovered `./.bench/` extension is NOT persisted — it's re-discovere
 2. Mirror core's `patterns/` layout for any pattern files you want to add or override (e.g., `patterns/laravel/controllers/CTRL-008-my-custom.md`).
 3. Add skills under `skills/<skill-name>/SKILL.md` and agents under `agents/<agent-name>.md`.
 4. Use `<PLUGIN_ROOT>` in any absolute path references inside skill / agent files — install-time substitution handles the rest.
-5. Test against a real project: `bench init --addon=/path/to/your/addon`.
+5. Test against a real project: `bench build --addon=/path/to/your/addon`.
 6. Optionally add a `README.md` at the addon root with usage docs.
 
 ### Tips

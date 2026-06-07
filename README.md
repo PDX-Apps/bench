@@ -1,214 +1,138 @@
 # Bench
 
-> Teach AI coding assistants the conventions of *your* Laravel + Vue/React project — once, then they generate code that fits.
+> Teach AI coding assistants the conventions of *your* Laravel + Vue/React project — once — so the code they generate lands in the right place, in the right shape, the first time.
 
-**Status: beta (v0.8.x).** Functional end-to-end, not battle-tested across many projects yet. API soft-stable until v1.0.0. See [CHANGELOG.md](./CHANGELOG.md) for what's shipped and the gating criteria for stable.
+**Status: beta (v0.8.x).** Works end-to-end; not yet battle-tested across many projects. API soft-stable until v1.0.0 — see [CHANGELOG.md](./CHANGELOG.md).
 
-Most AI coding assistants generate generic-best-practices code. That works for greenfield, but real projects have their own monorepo layouts, framework versions, test frameworks, UI libraries, file conventions, naming rules. Bench is a pluggable kit of slash commands + worker agents + framework knowledge that adapts to *your* project, so AI-generated code lands in the right place, in the right shape, the first time.
-
-Built for [Claude Code](https://docs.claude.com/en/docs/claude-code) today. Designed to extend to other AI CLIs.
+Built for [Claude Code](https://docs.claude.com/en/docs/claude-code) today; designed to extend to other AI CLIs.
 
 ---
 
-**Contents:** [Quickstart](#quickstart) · [How it works](#how-it-works) · [What's in the box](#whats-in-the-box) · [Bundled addons](#bundled-addons) · [Customize by talking to Claude](#customize-by-talking-to-claude) · [Per-project configuration](#per-project-configuration) · [CLI reference](#cli-reference) · [Roadmap](#roadmap) · [Docs](#docs) · [License](#license)
+## The problem
+
+AI coding assistants generate *generic*-best-practices code. But real projects have a specific framework version, a test runner, an auth strategy, a response shape, a folder layout, a UI library. Generic code fights all of that — so you spend the review fixing placement and idioms.
+
+Bench is a pluggable kit of **slash commands + worker agents + versioned framework knowledge** that adapts to *your* project. You describe a feature; Bench routes it to a worker that reads only the relevant conventions and produces code that fits.
 
 ---
 
-## Quickstart
+**Contents:** [Install](#install) · [Using Bench](#using-bench) · [How it works](#how-it-works) · [Addons](#addons) · [CLI reference](#cli-reference) · [Docs](#docs) · [License](#license)
+
+---
+
+## Install
+
+One-time per project: build Bench for it, then open Claude Code.
 
 ```bash
 # One-time: clone Bench somewhere stable
-git clone git@github.com:PDX-Apps/bench.git ~/path/to/bench
+git clone git@github.com:PDX-Apps/bench.git ~/tools/bench
 
-# Each project: run init from the project root
-cd ~/my-laravel-project
-~/path/to/bench/bin/bench init
+# In each project, from its root:
+cd ~/my-app
+~/tools/bench/bin/bench build
 ```
 
-`init` will:
+`bench build` detects your Laravel / PHP / Vue / React versions, **builds a copy of the plugin for this project** into `.claude/plugins/bench/` (patterns resolved for your versions, your `.bench/` overrides + addons merged), and registers it in `.claude/settings.json`.
 
-- Auto-detect Laravel / PHP / Vue / React versions (with an interactive monorepo scan when there's no root `composer.json`/`package.json`)
-- **Build the plugin for *this* project** into `.claude/plugins/bench/` (patterns resolved for your versions, your `.bench/` overrides merged, your addons)
-- Register it in `.claude/settings.json` as a project-local plugin (or print the manual `/plugin` commands)
-- Auto-load the bundled [`bench-manager`](./addons/bench-manager/README.md) addon — the `/bench-*` commands for tailoring Bench to your project (opt out with `--no-onboard`)
+> **Bench is per-project, not a global plugin.** Each project gets its own built copy — there is no single build that's correct for every version + override set. Your project must be its own git root.
 
-> **Bench is per-project, not a global plugin.** Each project gets its own built copy via `bench init` (correct versions, its own overrides). Don't install Bench from a global marketplace — there's no single build that's correct for every project. Your project must be its own git root for the project-local registration to resolve.
+Now open Claude Code in the project and head to **[Using Bench](#using-bench)** → start with `/bench-init`.
 
-Open Claude Code in the project. Try `/help` to see what's available. Suggested first commands:
+---
 
-```
-/bench-init                               # scan your project + set up .bench/ overrides for its conventions
-/laravel create endpoint to list user sessions
-/vue-component create SessionCard
-/bench implement <feature-description>    # multi-file feature, routed to the right workers
-```
+## Using Bench
 
-That's it. Day two onward you mostly use slash commands inside Claude Code. The CLI comes back only for occasional rebuilds or addon management.
+You work inside Claude Code with slash commands. Onboard the project first, then generate code, and tailor Bench as you discover the project's quirks.
+
+### 1. Onboard — `/bench-init`
+
+The first thing to run in a new project. It walks the **concerns** — a guided interview over the essentials (auth strategy, test framework, permissions model, response shape, layout), where each concern knows exactly which patterns it owns and updates *all* of them — then offers to scan for anything else non-standard. Everything it captures lands in a committed **`.bench/`** folder that travels with your repo. Re-run a single concern anytime with `/bench-configure <name>`.
+
+Bench **never writes your `CLAUDE.md`** — your project context lives in `.bench/`.
+
+### 2. Generate code
+
+Describe what you want; Bench routes it to the right worker(s):
+
+- **One artifact** — `/laravel create an endpoint to list a user's orders` · `/vue-component OrderCard`
+- **A whole feature** — `/bench implement <feature, PRD, or ticket>` spawns the agents in dependency order (migration → model → controller → … → tests).
+- **Frontend** — `/frontend <request>` routes to your Vue *or* React stack (fixed at build, no guessing).
+- `/help` lists everything available in this project.
+
+### 3. Tailor to your conventions
+
+When generated code doesn't match how *your* team does it, teach Bench — no core edits. Both commands write to your committed `.bench/` folder; run `bench rebuild` afterward to re-resolve.
+
+- **`/bench-override`** — change how an *existing* artifact is generated. Describe it in plain language — "we don't use `toDto`, we return a `Mapper`", "controllers extend `ApiController`", "tests are Pest, co-located" — and Bench writes a targeted override of the affected pattern(s), layered onto core so a Bench upgrade won't clobber it.
+- **`/bench-slice`** — teach Bench a *new* artifact type unique to your project. Point it at one of your own domains (`/bench-slice app/Reports`) and it scaffolds a full Bench-grade slice — a `/report` skill, a worker agent, and the pattern(s) describing how your reports are built — so every future report generates the same way.
+
+How overrides and addons actually layer onto core — append, replace, and the rest — is covered in [Layering](./docs/layering.md).
 
 ---
 
 ## How it works
 
-Three concepts:
+Three layers. The main conversation stays at the **feature level** — you say what you want; the implementation details and pattern files stay out of your context window.
 
-| Concept | What it is | Where it lives |
-|---|---|---|
-| **Patterns** | Markdown docs describing how to write a given artifact (a Laravel controller, a Vue component, a Pinia store). The shared knowledge base. | `patterns/` at source → resolved into `patterns-built/` per project |
-| **Skills** | Slash commands like `/bench`, `/laravel`, `/vue-component`. Each parses your request, inspects your project, resolves any ambiguity, then delegates to a worker agent with structured context. | `skills/` |
-| **Agents** | Subagents that do the actual code generation. Read only the relevant patterns, scaffold the artifact, return a summary. Isolated context. | `agents/` |
-
-The main Claude Code conversation stays at the **feature level** — you describe what you want, agents handle implementation details, pattern files stay out of your context window.
-
-**Adaptive — not opinionated.** Every Bench agent reads your project's `CLAUDE.md` before generating. If it says "Laravel lives at `apps/cloud/`, tests use Pest, shared Vue components go in `packages/ui/`" — agents follow that, not the plugin's defaults.
-
-For the full internal design (skill anatomy, pattern resolution, build pipeline, source/install split), see [docs/architecture.md](./docs/architecture.md).
-
----
-
-## What's in the box
-
-**Patterns** (83 base + 9 version overrides)
-
-- 43 Laravel patterns: controllers, models, actions, services, migrations, DTOs/data objects, jobs, listeners, policies, enums, casts, providers, tests
-- 20 Vue patterns: components, pages, layouts, routes, Pinia stores, services, models, Zod validators, vue-i18n, composables, Vitest
-- 20 React patterns: React 18 + TS + React Router v6 + Zustand + TanStack Query + react-hook-form + react-i18next + @testing-library/react
-- 9 version overrides for Laravel 12 / PHP 8.4 fallbacks (base targets Laravel 13 / PHP 8.5)
-
-**Skills** (55 source, filtered at install)
-
-- 27 Laravel skills (`/controller`, `/model`, `/migration`, `/event`, `/job`, `/policy`, `/feature-test`, …)
-- 12 Vue skills (`/vue-component`, `/vue-page`, `/vue-store`, `/vue-ui` coordinator, …)
-- 12 React skills (`/react-component`, `/react-page`, `/react-store`, `/react-ui` coordinator, …)
-- 4 router skills (`/bench`, `/laravel`, `/frontend`, `/help`) — the delegation tier
-
-**Agents** (54 source, filtered at install)
-
-- 28 Laravel workers + 13 Vue workers + 13 React workers
-- Workflow agent (`implement`) for multi-file features, reached via `/bench` / `/laravel`
-
-Two install **profiles**: `standard` (default — every skill) and `compact` (just the routers + `/help`; the routers NL-route to the same agents, so generation is identical). The install also prunes the inactive frontend — a Vue project doesn't see `/react-*` and vice versa.
-
----
-
-## Bundled addons
-
-Ship in this repo under `addons/`. Add by short name; bundled-name resolution is built into `bench addon add`:
-
-| Addon | What it gives you | Loaded by default? | Docs |
-|---|---|---|---|
-| [`bench-manager`](./addons/bench-manager/README.md) | The `/bench-*` toolkit for tailoring Bench to a project: `/bench-init` (scan for deviations → set up `.bench/` overrides), `/bench-override` (change a default), `/bench-slice` (generate a skill→agent→pattern for your own domain), and `/bench-list` / `/bench-show` / `/bench-status` (inspect) + the authoring agents behind them | Yes — opt out with `bench init --no-onboard` | [addons/bench-manager/README.md](./addons/bench-manager/README.md) |
-| [`laravel-boost`](./addons/laravel-boost/README.md) | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP tools + `/boost-install` skill that walks through composer install, `php artisan boost:install`, and MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](./addons/laravel-boost/README.md) |
-
-Want to write your own? See [docs/addons.md](./docs/addons.md) for the authoring spec.
-
----
-
-## Customize by talking to Claude
-
-Bench ships opinionated defaults (DI over global helpers, dedicated form requests over inline validation, thin controllers — all the way Laravel does it internally). Your project may not want all of those. **Anything bundled can be overridden by just describing what you want different** — the [`bench-manager`](./addons/bench-manager/README.md) addon's `/bench-override` and `/bench-slice` commands write project-local contributions into `./.bench/`, which layer onto the bundled defaults at build time (append / anchor / replace).
-
-**Examples** (no flags or paths to remember — just say what you want):
+| Layer | What it is | Example |
+|-------|-----------|---------|
+| **Skills** | Slash commands — thin routers. Parse your request, inspect the project, resolve ambiguity, then delegate. | `/bench`, `/laravel`, `/frontend`, `/vue-component` |
+| **Agents** | Subagents that do the work in isolated context — read only the patterns a task needs, scaffold the artifact, return a summary. | `controller`, `vue-component`, `migration` |
+| **Patterns** | Version-aware markdown describing *how* to write each artifact. The shared knowledge base. | `CONTROLLER-001`, `STORE-001`, `MIGRATION-001` |
 
 ```
-You: I prefer global helpers like cache() over DI in services for one-shot reads.
-Claude: → /bench-override → the pattern author reads the bundled service pattern, proposes a
-        contribution (append the convention, or replace if it fundamentally differs), you approve,
-        it writes to .bench/patterns/laravel/... and rebuilds. Done.
-
-You: Show me what the controller pattern looks like.
-Claude: → /bench-show pattern controller → displays the full bundled pattern body.
-
-You: What skills come bundled?
-Claude: → /bench-list skills → tables of bundled core + bundled addon + project-local.
-
-You: Teach Bench my app/Reports/ domain so it scaffolds reports like core does controllers.
-Claude: → /bench-slice Reports → scans the domain, generates a /report skill → agent → pattern
-        triple into .bench/, rebuilds. Now /report create X works.
+you → /laravel "add an Orders API"
+        └─ skill routes → controller · request · resource · route agents
+              └─ each reads its pattern(s) → writes code that matches your project
 ```
 
-The skill descriptions (in each `SKILL.md` frontmatter) carry trigger phrases for all of this, so you don't need to remember the command name — Claude routes naturally based on what you said.
+**Patterns are the only version-aware layer.** `base/` targets the latest idioms — currently **Laravel 13 + PHP 8.5** (and Vue 3 / current React) — while `overrides/laravel-12/`, `overrides/php-8.4/` carry rollbacks for older versions. Skills and agents are single-copy and name no version-specific syntax — so the same agent emits L13 *or* L12 code depending on what your project resolved at build.
 
-Full command list: [addons/bench-manager/README.md](./addons/bench-manager/README.md).
+Out of the box: **4 routers** (`/bench`, `/laravel`, `/frontend`, `/help`) + **27 Laravel** and **10 Vue / 10 React** component skills, backed by version-aware patterns for both stacks.
 
 ---
 
-## Per-project configuration
+## Addons
 
-Three layers, in increasing scope:
+Addons are opt-in plugins that extend — or *replace* — what core ships: adding commands, agents, and patterns, or swapping a default (the data layer, the router, the styling system) for an alternative. They layer on the same way as your own overrides (see [Layering](./docs/layering.md)), and can declare `depends_on.addons` so installing one pulls in what it needs (e.g. `bench-quality` pulls `laravel-ci` + `bench-playwright` and delegates to their agents instead of duplicating them).
 
-1. **`CLAUDE.md`** at your project root — *yours*. Every Bench agent has it in context. Document your monorepo layout, test framework, UI library, naming rules — anything project-specific. Bench never writes or overwrites it; project conventions that affect generation live in `.bench/` overrides (each pattern carries its own paths), so `CLAUDE.md` stays lean and human-owned.
+```bash
+bench addon add bench-tailwind     # by bundled name
+bench addon add /path/to/my-addon  # or a path
+```
 
-2. **`.bench/`** at your project root — **the home for everything project-specific.** Auto-discovered (whenever it contains `patterns/`, `skills/`, or `agents/` — no manifest required): pattern overrides, custom slash commands, custom worker agents. Same shape as core; layered onto the defaults at build time. Travels with your repo — **commit it.** Written by `/bench-override` and `/bench-slice` from the bench-manager addon (or by hand).
+One addon — **`bench-manager`** — is bundled and loaded by default; it provides the `/bench-*` commands above. Everything else is opt-in. Bench ships **40 addons** across:
 
-3. **Reusable addons** for conventions you want to share across multiple projects. Same shape as `.bench/` plus a `.bench-addon.yaml`. Install per-project with `bench addon add /path/to/addon` (or bare short name for bundled ones). See [docs/addons.md](./docs/addons.md).
+[Setup & workflow](./docs/addons.md#setup--workflow) · [Laravel packages](./docs/addons.md#laravel-packages) · [Laravel UI](./docs/addons.md#laravel-ui) · [Frontend styling](./docs/addons.md#frontend-styling) · [Component libraries](./docs/addons.md#frontend-component-libraries) · [Data & routing](./docs/addons.md#frontend-data--routing) · [Meta-frameworks](./docs/addons.md#meta-frameworks) · [Testing](./docs/addons.md#testing) · [Docs](./docs/addons.md#documentation)
+
+Full catalog + how to author your own: [docs/addons.md](./docs/addons.md).
 
 ---
 
 ## CLI reference
 
-Daily usage is slash commands inside Claude Code. The CLI is for setup + occasional maintenance:
-
 ```bash
-bench init                      # one-time per project
-bench status                    # what's installed in the current project
-bench rebuild                   # re-mirror source + rebuild patterns (after pulling bench updates)
-bench addon list                # registered addons for the current project
-bench addon add NAME-OR-PATH    # add an addon (bare name resolves bundled; full path also works)
-bench addon remove NAME-OR-PATH # remove an addon and rebuild
+bench build    [--copy|--symlink] [--addon=NAME ...]   # build + register Bench for this project
+bench rebuild  [--addon=NAME ...]                      # re-resolve after editing .bench/ or upgrading a dependency
+bench addon    list | add <name|path> | remove <name>  # manage addons
+bench profile  [show | set <compact|standard>]         # compact = router/help skills only (agents always ship)
+bench status                                           # detected versions, addons, profile, install path
 ```
 
-For these to work as bare `bench` (not `~/path/to/bench/bin/bench`):
-
-```bash
-# (a) Shell alias — add to ~/.zshrc:
-alias bench='./.claude/plugins/bench/bin/bench'
-
-# (b) Global symlink (one time, no sudo, drops to ~/.local/bin):
-~/path/to/bench/scripts/install-cli.sh
-```
-
-Both optional — the fully-qualified path always works.
-
-`bench init` flags:
-
-| Flag | Purpose |
-|---|---|
-| `--register` / `--no-register` | Auto-write to `.claude/settings.json` or print manual `/plugin install` path |
-| `--symlink` | Plugin-dev mode — symlink source into project (internals visible). Default is copy. |
-| `--addon=PATH` | Load an addon (repeatable, persisted) |
-| `--no-onboard` | Skip the bundled `bench-manager` addon |
-| `--profile=compact\|standard` | Skill surface: `compact` (routers + help only) or `standard` (all skills, default) |
-| `--laravel=N` / `--php=N` / `--frontend=vue\|react\|none` / `--vue=N` | Override version detection |
-| `--no-addon` | Skip auto-discovery of `./.bench/` (debugging) |
-
----
-
-## Roadmap
-
-- **Public addons**: addon authoring is supported today; community addons for popular ecosystems (Filament, Inertia, Nuxt, Vuetify, Radix, shadcn/ui) would land as separate repos.
-- **React parity**: React patterns are written but haven't been battle-tested against a real React project yet. Vue side has been tested against a complex monorepo.
-- **Multi-CLI**: Bench is Claude-Code-shaped today (skills, agents, `Task` tool semantics). Patterns are CLI-agnostic. The source structure leaves room for `targets/{gemini,codex,cursor}/` adapters when there's demand.
-- **One-line install**: today you clone Bench then run `init`. Once there's a public release channel (GitHub Releases / brew tap / npm), a single `curl | bash` should suffice.
-
-Full v1.0 gating criteria + post-v1 backlog: [CHANGELOG.md](./CHANGELOG.md).
+**Version flags** — `build` and `rebuild` auto-detect versions from `composer.json` / `package.json`; pass any of `--laravel=13 --php=8.5 --frontend=vue|react|none --vue=3` to override that detection. Run **`bench help`** for the complete, always-current flag reference.
 
 ---
 
 ## Docs
 
-- [docs/architecture.md](./docs/architecture.md) — how Bench is built internally: skills vs agents vs patterns, pattern resolution, source/install split, build pipeline, frontend filtering
-- [docs/addons.md](./docs/addons.md) — addon authoring spec: anatomy, manifest, load order, precedence, bundled addons, persistence
-- [docs/contribution-system.md](./docs/contribution-system.md) — how `.bench/` overrides + addons layer onto core (append / anchor / replace)
-- [addons/bench-manager/README.md](./addons/bench-manager/README.md) — the `/bench-*` project-tailoring toolkit
-- [addons/laravel-boost/README.md](./addons/laravel-boost/README.md) — laravel/boost MCP integration addon
-- [CHANGELOG.md](./CHANGELOG.md) — release notes + v1.0 gating criteria
+- [docs/architecture.md](./docs/architecture.md) — the layers + build pipeline in depth
+- [docs/addons.md](./docs/addons.md) — addon catalog + how to author one
+- [docs/layering.md](./docs/layering.md) — override/addon modes in full
+- [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
-
-## Author
-
-[PDX Apps](https://pdxapps.com) — Irv Gomez.
+MIT — see [LICENSE](./LICENSE).
