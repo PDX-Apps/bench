@@ -53,7 +53,7 @@ while [[ $# -gt 0 ]]; do
     --symlink) MODE="symlink"; shift ;;
     --copy)    MODE="copy"; shift ;;
     --project=*) PROJECT_ROOT="${1#*=}"; shift ;;
-    --laravel=*|--php=*|--vue=*|--frontend=*|--addon=*|--quasar=*|--quvel=*)
+    --laravel=*|--php=*|--vue=*|--frontend=*|--addon=*|--profile=*|--quasar=*|--quvel=*)
       PASSTHROUGH+=("$1"); shift ;;
     --register)    REGISTER_MODE="yes"; shift ;;
     --no-register) REGISTER_MODE="no"; shift ;;

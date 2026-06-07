@@ -35,6 +35,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_SRC_DEFAULT="$(dirname "$SCRIPT_DIR")"   # where this script lives (the bench source)
 
+# Contribution composer (replace / append / anchor). A file with no `mode:` in its
+# frontmatter is treated as a full replace — so legacy overrides/addons are unaffected.
+# shellcheck source=lib/contribution.sh
+source "$SCRIPT_DIR/lib/contribution.sh"
+
 AUTO=false
 PROJECT_ROOT="$PWD"
 LARAVEL=""
@@ -186,25 +191,29 @@ resolve_and_copy() {
       continue
     fi
 
-    local resolved="$base_file"
+    # Find the most-specific override (if any).
+    local override_path=""
     for candidate in "${candidates[@]}"; do
-      local override_path="$override_root/$candidate/$rel"
-      if [[ -f "$override_path" ]]; then
-        resolved="$override_path"
+      if [[ -f "$override_root/$candidate/$rel" ]]; then
+        override_path="$override_root/$candidate/$rel"
         break
       fi
     done
 
     local out_path="$out_dir/$rel"
     mkdir -p "$(dirname "$out_path")"
-    cp "$resolved" "$out_path"
+    # Always start from base, then layer the override by its mode (replace/append/anchor).
+    # No override → base verbatim. Legacy overrides (no `mode:`) replace, as before.
+    cp "$base_file" "$out_path"
 
     total=$((total + 1))
-    if [[ "$resolved" == "$base_dir/"* ]]; then
-      from_base=$((from_base + 1))
-    else
+    if [[ -n "$override_path" ]]; then
+      contrib_apply "$out_path" "$override_path"
+      local mode; mode="$(contrib_frontmatter_get "$override_path" mode)"; [[ -z "$mode" ]] && mode="replace"
       from_override=$((from_override + 1))
-      override_log+=("    $rel  ←  ${resolved#$override_root/}")
+      override_log+=("    $rel  ←  ${override_path#$override_root/}  ($mode)")
+    else
+      from_base=$((from_base + 1))
     fi
   done < <(find "$base_dir" -type f -print0)
 
@@ -279,12 +288,19 @@ merge_addon_patterns() {
     [[ -f "$out_path" ]] && was_present=true
 
     mkdir -p "$(dirname "$out_path")"
-    cp "$addon_file" "$out_path"
+    local mode; mode="$(contrib_frontmatter_get "$addon_file" mode)"; [[ -z "$mode" ]] && mode="replace"
+    # append/anchor onto an absent target makes no sense — fall back to creating it.
+    if [[ "$mode" != "replace" && "$was_present" == false ]]; then
+      echo "  WARNING: $addon_name contributes '$mode' to $rel but core has no such file; treating as new file" >&2
+      contrib_body "$addon_file" > "$out_path"
+    else
+      contrib_apply "$out_path" "$addon_file"
+    fi
 
     merged=$((merged + 1))
     if $was_present; then
       overridden=$((overridden + 1))
-      merge_log+=("    $rel  ←  $addon_name (overrides core)")
+      merge_log+=("    $rel  ←  $addon_name ($mode core)")
     else
       new_files=$((new_files + 1))
       merge_log+=("    $rel  ←  $addon_name (new)")

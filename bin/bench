@@ -12,6 +12,7 @@
 #   bench addon list            show registered addons for this project
 #   bench addon add PATH        add an addon and rebuild
 #   bench addon remove NAME-OR-PATH    remove an addon and rebuild
+#   bench profile [set NAME]    show or set the skill profile (compact|standard)
 #   bench status                show what's installed + versions detected
 #   bench help                  show this help
 
@@ -40,6 +41,7 @@ bench — Bench plugin CLI
 Usage:
   bench init [--symlink|--copy] [--project=DIR] [--addon=PATH ...] [--no-addon]
             [--laravel=N --php=N --frontend=vue|react|none --vue=N]
+            [--profile=compact|standard]
     Install plugin into current (or --project) directory's .claude/plugins/.
     Auto-detects Laravel/PHP/Vue versions from composer.json + package.json.
     Default mode is --copy (each project gets its own snapshot).
@@ -47,6 +49,8 @@ Usage:
     --addon=PATH loads an addon (see docs/addons.md). Repeatable. Persisted
     across rebuilds. Project-local addons at ./.bench/ auto-discovered.
     --no-addon skips ./.bench/ auto-discovery (debugging / isolation).
+    --profile=compact installs only the routers (/bench, /laravel, /frontend,
+    /help); component skills stay hidden (agents always ship). Default standard.
 
   bench rebuild [--addon=PATH ...] [--no-addon] [--no-sync] [version flags]
     Re-run install.sh inside the current project's plugin install.
@@ -68,9 +72,13 @@ Usage:
     Remove an addon from the current project (matches by name from manifest
     or by path) and rebuild.
 
+  bench profile [show | set <compact|standard>]
+    Show or change the skill profile. 'set' persists + rebuilds.
+    compact = routers + help only; standard = every core skill.
+
   bench status
     Show what's installed in the current project, detected versions,
-    addon count, override count, and last install path.
+    addon count, override count, profile, and last install path.
 
   bench help
     Show this help.
@@ -279,6 +287,11 @@ case "$CMD" in
       else
         echo "Addons:           none"
       fi
+      if [[ -f "$TARGET/.install-profile-config" ]]; then
+        echo "Profile:          $(head -n1 "$TARGET/.install-profile-config" | tr -d '[:space:]')"
+      else
+        echo "Profile:          standard (default)"
+      fi
       if [[ -d "$TARGET/patterns-built" ]]; then
         LARAVEL_BUILT=$( { find "$TARGET/patterns-built/laravel" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
         VUE_BUILT=$( { find "$TARGET/patterns-built/frontend/vue" -name "*.md" 2>/dev/null || true; } | wc -l | tr -d ' ')
@@ -319,6 +332,37 @@ case "$CMD" in
       name=$(grep -E '^name:' "$PWD/.bench/.bench-addon.yaml" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
       echo "Project-local addon: ./.bench  (name: ${name:-unknown}) [auto-discovered]"
     fi
+    ;;
+
+  profile)
+    SUB="${1:-show}"
+    PROFILE_CONFIG_FILE="$TARGET/.install-profile-config"
+    case "$SUB" in
+      show|"")
+        if [[ -f "$PROFILE_CONFIG_FILE" ]]; then
+          echo "Profile: $(head -n1 "$PROFILE_CONFIG_FILE" | tr -d '[:space:]')"
+        else
+          echo "Profile: standard (default)"
+        fi
+        echo "  compact  — routers + help only (/bench, /laravel, /frontend, /help)"
+        echo "  standard — every core skill (default)"
+        ;;
+      set)
+        require_installed
+        NAME="${2:-}"
+        case "$NAME" in
+          compact|standard|full) ;;
+          *) echo "ERROR: 'bench profile set' needs one of: compact | standard | full" >&2; exit 1 ;;
+        esac
+        SOURCE_RECORD="$TARGET/.install-source"
+        if [[ -f "$SOURCE_RECORD" ]]; then BENCH_SOURCE="$(cat "$SOURCE_RECORD")"; else BENCH_SOURCE="$PLUGIN_SRC"; fi
+        echo "Setting profile to '$NAME' and rebuilding..."
+        exec "$BENCH_SOURCE/scripts/install.sh" --auto --project="$PWD" --target="$TARGET" --profile="$NAME"
+        ;;
+      *)
+        echo "Usage: bench profile [show | set <compact|standard|full>]" >&2
+        exit 1 ;;
+    esac
     ;;
 
   help|-h|--help)

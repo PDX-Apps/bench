@@ -33,6 +33,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_SRC="$(dirname "$SCRIPT_DIR")"   # where the bench source lives — patterns/, scripts/, bin/, etc.
 
+# Contribution composer — lets addon skill/agent files use mode: append|anchor
+# (no `mode:` key → replace, the legacy behavior). See docs/contribution-system.md.
+# shellcheck source=lib/contribution.sh
+source "$SCRIPT_DIR/lib/contribution.sh"
+
 # Files that must live at the source — never copy these into a project install
 SOURCE_ONLY=(scripts/ patterns/ docs/ README.md)
 # Files that MUST be in the project install for runtime. Note: skills/ and agents/
@@ -47,6 +52,7 @@ SKILL_AGENT_GROUPS=(laravel vue react meta)
 # ---------- Parse our own flags ----------
 EXPLICIT_ADDONS=()
 EXPLICIT_VERSIONS=()
+EXPLICIT_PROFILE=""
 PASSTHROUGH=()
 PROJECT_ROOT=""
 TARGET=""
@@ -58,6 +64,9 @@ for arg in "$@"; do
       ;;
     --no-addon)
       NO_AUTO_ADDON=true
+      ;;
+    --profile=*)
+      EXPLICIT_PROFILE="${arg#*=}"
       ;;
     --laravel=*|--php=*|--vue=*|--frontend=*)
       EXPLICIT_VERSIONS+=("$arg")
@@ -101,7 +110,15 @@ ADDON_RECORD="$TARGET/.install-addons"
 ADDON_BACKUP_DIR="$TARGET/.install-addons-backup"
 ADDON_CONFIG="$TARGET/.install-addons-config"
 VERSIONS_CONFIG="$TARGET/.install-versions-config"
+PROFILE_CONFIG="$TARGET/.install-profile-config"
 SOURCE_RECORD="$TARGET/.install-source"   # records where bench source lives, so rebuild can find it
+
+# Skill profiles — which CORE skills get installed. Agents ALWAYS install (the
+# routers spawn them), so a profile only hides skills from the user; it never
+# breaks generation. The frontend prune still applies on top.
+#   compact  — routers + help only (the delegation tier)
+#   standard — every core skill (default)
+PROFILE_COMPACT_SKILLS="bench laravel frontend help"
 
 # Treat TARGET as PLUGIN_ROOT for the rest of the script — substitution/install logic
 # operates on TARGET's files. PLUGIN_SRC stays as the source-of-truth for patterns/.
@@ -134,6 +151,21 @@ elif [[ -f "$ADDON_CONFIG" ]]; then
     ADDONS+=("$line")
   done < "$ADDON_CONFIG"
 fi
+
+# Persisted profile resolution (same replace-or-replay rule as versions/addons):
+#   - explicit --profile=X REPLACES the persisted value
+#   - otherwise replay the persisted profile; default to "standard"
+if [[ -n "$EXPLICIT_PROFILE" ]]; then
+  PROFILE="$EXPLICIT_PROFILE"
+  echo "$PROFILE" > "$PROFILE_CONFIG"
+elif [[ -f "$PROFILE_CONFIG" ]]; then
+  PROFILE="$(head -n1 "$PROFILE_CONFIG" | tr -d '[:space:]')"
+fi
+PROFILE="${PROFILE:-standard}"
+case "$PROFILE" in
+  compact|standard|full) ;;
+  *) echo "WARNING: unknown --profile='$PROFILE' (use compact|standard|full); falling back to standard." >&2; PROFILE="standard" ;;
+esac
 
 # Auto-discover project-local addon at ${PROJECT_ROOT}/.bench/
 # (always added unless --no-addon; never persisted — it travels with the project repo)
@@ -190,6 +222,10 @@ if [[ "$PLUGIN_SRC" != "$PLUGIN_ROOT" ]]; then
     if [[ -d "$PLUGIN_SRC/skills/$group" ]]; then
       while IFS= read -r -d '' skill_dir; do
         name=$(basename "$skill_dir")
+        # compact profile: install only the router/help tier; agents still ship below
+        if [[ "$PROFILE" == "compact" ]] && [[ " $PROFILE_COMPACT_SKILLS " != *" $name "* ]]; then
+          continue
+        fi
         rsync -a "$skill_dir/" "$PLUGIN_ROOT/skills/$name/"
       done < <(find "$PLUGIN_SRC/skills/$group" -mindepth 1 -maxdepth 1 -type d -print0)
     fi
@@ -308,14 +344,18 @@ if (( ${#ADDONS[@]} > 0 )); then
         while IFS= read -r -d '' f; do
           rel="${f#$skill_dir/}"
           target="$dest/$rel"
+          a_mode="$(contrib_frontmatter_get "$f" mode)"; [[ -z "$a_mode" ]] && a_mode="replace"
           if [[ -f "$target" ]]; then
-            # Back up the core file we're about to overwrite
+            # Back up the core file before we modify/overwrite it (so reversal restores it)
             backup_path="$ADDON_BACKUP_DIR/skills/$skill_name/$rel"
             mkdir -p "$(dirname "$backup_path")"
             cp "$target" "$backup_path"
+            contrib_apply "$target" "$f"
+          else
+            # No core file to layer onto — write the contribution body as a new file
+            mkdir -p "$(dirname "$target")"
+            if [[ "$a_mode" == "replace" ]]; then cp "$f" "$target"; else contrib_body "$f" > "$target"; fi
           fi
-          mkdir -p "$(dirname "$target")"
-          cp "$f" "$target"
           echo "$target" >> "$ADDON_RECORD"
           copied=$((copied + 1))
         done < <(find "$skill_dir" -type f -print0)
@@ -327,13 +367,16 @@ if (( ${#ADDONS[@]} > 0 )); then
       while IFS= read -r -d '' f; do
         agent_name="$(basename "$f")"
         dest="$PLUGIN_ROOT/agents/$agent_name"
+        a_mode="$(contrib_frontmatter_get "$f" mode)"; [[ -z "$a_mode" ]] && a_mode="replace"
         if [[ -f "$dest" ]]; then
-          # Back up the core agent we're about to overwrite
+          # Back up the core agent before modify/overwrite (so reversal restores it)
           backup_path="$ADDON_BACKUP_DIR/agents/$agent_name"
           mkdir -p "$(dirname "$backup_path")"
           cp "$dest" "$backup_path"
+          contrib_apply "$dest" "$f"
+        else
+          if [[ "$a_mode" == "replace" ]]; then cp "$f" "$dest"; else contrib_body "$f" > "$dest"; fi
         fi
-        cp "$f" "$dest"
         echo "$dest" >> "$ADDON_RECORD"
         copied=$((copied + 1))
       done < <(find "$addon/agents" -maxdepth 1 -type f -name "*.md" -print0)

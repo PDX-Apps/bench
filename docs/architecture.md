@@ -29,14 +29,14 @@ The main Claude Code conversation stays at the **feature level** — the user de
 | Shape | Example | What it does |
 |---|---|---|
 | **Granular** (single-artifact) | `/controller`, `/vue-component`, `/migration` | Generates one type of file. Skill parses + inspects + delegates to a 1:1 paired agent. |
-| **Coordinator** (multi-artifact) | `/api`, `/vue-ui`, `/react-ui`, `/orchestrate` | Generates a whole feature spanning several files. Skill resolves the feature shape, then delegates to a multi-artifact agent. |
+| **Router** | `/bench`, `/laravel`, `/frontend` | `/bench` classifies stack + intent and delegates to `/laravel` or `/frontend`, which decompose the request and spawn the right component/workflow agents. The compact-profile tier. |
 
 ### Two kinds of agents
 
 | Kind | Example | Notes |
 |---|---|---|
 | **Component agent** | `controller`, `vue-component`, `migration` | One artifact type. Paired 1:1 with a granular skill. |
-| **Workflow agent** | `exec-spec`, `bug-fix`, `refactor`, `new-module` (with `vue-*` / `react-*` siblings) | Multi-step work. Invoked by `/orchestrate`. Embeds pattern lookups directly (subagents can't spawn subagents — see [Constraints](#constraints)). |
+| **Workflow agent** | `implement` (with `vue-*` / `react-*` siblings) | Multi-step work (a whole spec/feature). Spawned by `/laravel` / `/frontend`. Embeds pattern lookups directly (subagents can't spawn subagents — see [Constraints](#constraints)). |
 
 ### Pattern files
 
@@ -52,28 +52,27 @@ Pattern files are version-aware markdown that lives in the source under `pattern
 User: /controller add InviteMemberController (invokable)
   ↓ /controller skill (inspects, resolves type, builds context)
   ↓ Task tool
-controller agent (reads HTTP-005 only) → scaffolds, implements
-  ↓ Returns "Created InviteMemberController. Auth via ->can() on route."
+controller agent (reads CONTROLLER-002 only) → scaffolds, implements
+  ↓ Returns "Created InviteMemberController. Authorized via #[Authorize] on the action."
 ```
 
-### Path 2 — Multi-artifact feature (coordinator skill → coordinator agent)
+### Path 2 — Multi-artifact feature (router → component agents)
 
 ```
-User: /api implement endpoint to invite a member
-  ↓ /api skill (inspects, resolves CRUD/invokable/grouped, builds full context)
-  ↓ Task tool
-api agent (reads HTTP-001..006 + DTO patterns as needed) → scaffolds all
-  ↓ Returns "Created controller + request + resource + route."
+User: /laravel endpoint to invite a member
+  ↓ /laravel skill (classifies as an invokable endpoint, decomposes)
+  ↓ Task → controller agent, Task → request agent, Task → route agent (each isolated)
+  ↓ Returns "Created controller + request + route."
 ```
 
 ### Path 3 — Orchestrated full-stack (workflow agent)
 
 ```
-User: /orchestrate implement SPEC-014-invite-member (covers API + UI)
-  ↓ /orchestrate skill (classifies as exec-spec, full-stack)
-  ↓ Task → exec-spec agent (backend; pattern lookups embedded)
+User: /bench implement the member-invitation feature (covers API + UI)
+  ↓ /bench (classifies full-stack) → /laravel then /frontend
+  ↓ /laravel → Task → implement agent (backend; pattern lookups embedded)
     ↓ controller + request + resource + route + action + migration + tests
-  ↓ Task → vue-exec-spec agent (frontend; pattern lookups embedded)
+  ↓ /frontend → Task → vue-implement agent (frontend; pattern lookups embedded)
     ↓ dialog + form + validator + i18n + service method
   ↓ Synthesizes: "Feature complete. API live, UI wired, both sides green."
 ```
@@ -181,7 +180,7 @@ bench/                                # the source repo
 │   ├── laravel/                      # 32
 │   ├── vue/                          # 12 (incl. vue-ui coordinator)
 │   ├── react/                        # 12 (incl. react-ui coordinator)
-│   └── meta/                         # 4 (ci, help, mcp-tools, orchestrate)
+│   └── meta/                         # routers + help (bench, laravel, frontend, help)
 │
 ├── agents/                           # 71 source agents, grouped by stack
 │   ├── laravel/                      # 37
@@ -262,7 +261,7 @@ Free-form markdown at the project root. Every Bench worker agent reads it before
 
 Project-specific overrides that aren't broad enough for CLAUDE.md prose — actual replacement pattern files, skill bodies, or worker agents. Lives at `{project}/.bench/` alongside the user's code; auto-discovered by every `bench init` / `bench rebuild`. Travels with the project repo.
 
-Override mechanism is **path-based shadowing**: a file at `.bench/patterns/laravel/controllers/CTRL-001-resource-controllers.md` shadows the bundled `patterns-built/laravel/controllers/CTRL-001-resource-controllers.md` after the build's addon merge pass. Same for skills (`.bench/skills/api/SKILL.md` shadows the bundled `/api`) and agents (`.bench/agents/controller.md` shadows the bundled `controller` worker).
+Override mechanism is **path-based shadowing**: a file at `.bench/patterns/laravel/controllers/CTRL-001-resource-controllers.md` shadows the bundled `patterns-built/laravel/controllers/CTRL-001-resource-controllers.md` after the build's addon merge pass. Same for skills (`.bench/skills/laravel/SKILL.md` shadows the bundled `/laravel`) and agents (`.bench/agents/controller.md` shadows the bundled `controller` worker).
 
 The bundled `bench-onboard` addon ships slash commands that walk the user through producing these overrides without manual file editing:
 
@@ -302,7 +301,7 @@ The cumulative effect: a Bench install is **opinionated by default** (the bundle
 
 These are Claude Code platform constraints that shaped Bench's design:
 
-1. **Subagents cannot spawn subagents.** That's why workflow agents (`exec-spec`, `bug-fix`, etc.) embed their own pattern lookups instead of delegating to component agents.
+1. **Subagents cannot spawn subagents.** That's why workflow agents (`implement`, etc.) embed their own pattern lookups instead of delegating to component agents.
 2. **Subagent files are flat** in `agents/` at the install — no subdirectories. Source groups them for organization, but the mirror flattens.
 3. **Skills can invoke subagents** via the Task tool. Skills are the entry point from the main conversation.
 
