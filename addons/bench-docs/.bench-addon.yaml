@@ -1,0 +1,15 @@
+name: bench-docs
+version: 0.1.0
+description: |
+  Generate or refresh project documentation FROM the code — an ADR (architecture
+  decision record), a README section, or API docs — grounded in the actual files,
+  not guesswork. Scans the feature/module first, then writes docs that match what
+  the code really does.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-docs
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

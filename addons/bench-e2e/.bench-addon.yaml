@@ -1,0 +1,16 @@
+name: bench-e2e
+version: 0.1.0
+description: |
+  Live browser click-through verification — drive a real Chrome via MCP to
+  *exercise* a user flow and report what happened (steps taken, failures,
+  console errors), WITHOUT writing any test file. For "click through the
+  checkout flow and tell me if it works" exploratory checks. Distinct from
+  bench-playwright, which WRITES .spec files; bench-e2e writes nothing.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-e2e
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT
