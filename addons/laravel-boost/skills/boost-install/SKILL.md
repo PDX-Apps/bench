@@ -31,7 +31,7 @@ modifies the project, package list, or settings.
 1. **Resolve the Laravel root**. Try in order:
    - `--laravel-root=PATH` if provided
    - Project root (if `composer.json` is there)
-   - Read CLAUDE.md for a documented Laravel path (e.g., `apps/cloud/`)
+   - Read CLAUDE.md for a documented Laravel path (e.g., `apps/api/`)
    - Ask the user if ambiguous
 
 2. **Check the current state** (read-only, no permission needed):

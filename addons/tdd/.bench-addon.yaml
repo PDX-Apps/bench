@@ -1,0 +1,15 @@
+name: bench-tdd
+version: 0.1.0
+description: |
+  A test-driven bug-fix loop: reproduce with a failing test, make the smallest
+  fix, verify the test passes and nothing else broke. Ships a /bug-fix command
+  routed to a Laravel, Vue, or React worker that detects and runs the project's
+  own test runner. No project-specific CI assumptions.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/tdd
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

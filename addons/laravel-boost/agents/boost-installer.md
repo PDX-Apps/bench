@@ -172,7 +172,7 @@ Full guidance: `patterns-built/laravel/boost-awareness.md`
 ```
 
 (Use a relative path for `{relative-laravel-root}` from project root — e.g.,
-`apps/cloud/` in a monorepo, or `.` in a flat project.)
+`apps/api/` in a monorepo, or `.` in a flat project.)
 
 If CLAUDE.md doesn't exist, suggest running `/bench-update-claudemd` first.
 

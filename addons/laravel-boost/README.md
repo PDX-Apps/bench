@@ -50,7 +50,7 @@ After install, restart Claude Code so the MCP server connects. The next agent in
 ```
 /boost-install --no-mcp          # composer install + boost:install only, skip MCP verification
 /boost-install --no-claude-md    # don't append the awareness section to CLAUDE.md
-/boost-install --laravel-root=apps/cloud   # explicit Laravel root (monorepos)
+/boost-install --laravel-root=apps/api   # explicit Laravel root (monorepos)
 ```
 
 ---

@@ -1,0 +1,16 @@
+name: bench-laravel-swagger
+version: 0.1.0
+description: |
+  Generate OpenAPI/Swagger documentation from PHP attributes (#[OA\...]) using
+  darkaonline/l5-swagger. Adds a /swagger command + agent that annotate Models,
+  Form Requests, API Resources, and Controllers, and a CODE-002 pattern for the
+  attribute conventions (schemas defined once, controllers reference via ref).
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-swagger
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/DarkaOnLine/L5-Swagger
+license: MIT

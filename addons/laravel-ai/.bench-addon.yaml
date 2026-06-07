@@ -1,0 +1,17 @@
+name: bench-laravel-ai
+version: 0.1.0
+description: |
+  Build AI features with the official laravel/ai SDK — class-based Agents
+  (instructions, attributes, structured output, conversation memory, streaming,
+  queueing, middleware), Tools (function calling), and embeddings + vector
+  similarity search (RAG). Ships /ai-agent and /ai-tool commands + agents + the
+  AI-001/002/003 patterns.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-ai
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/laravel/ai
+license: MIT
