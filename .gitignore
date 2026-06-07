@@ -19,5 +19,8 @@ patterns-built/
 CLAUDE.md
 docs/working-notes.md
 docs/working-notes/
-addons/onboard-legacy/
 sandbox/
+
+# frontend rebuild — old vue patterns kept locally for reference
+patterns/frontend/vue-legacy/
+patterns/frontend/react-legacy/

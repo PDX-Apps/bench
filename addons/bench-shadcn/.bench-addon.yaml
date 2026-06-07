@@ -1,0 +1,9 @@
+name: bench-shadcn
+version: 0.1.0
+description: |
+  Build React UIs with shadcn/ui — copy-paste components (Radix primitives +
+  Tailwind + CVA) that you own in components/ui/. Appends shadcn conventions onto
+  the component + styling patterns.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://ui.shadcn.com
+license: MIT

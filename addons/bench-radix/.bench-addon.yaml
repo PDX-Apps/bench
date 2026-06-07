@@ -1,0 +1,8 @@
+name: bench-radix
+version: 0.1.0
+description: |
+  Build React UIs with Radix UI (Primitives). Appends Radix UI (Primitives) component + theming conventions onto the
+  React component and styling patterns.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://www.radix-ui.com/primitives
+license: MIT

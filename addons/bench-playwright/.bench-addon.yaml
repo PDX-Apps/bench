@@ -1,0 +1,11 @@
+name: bench-playwright
+version: 0.1.0
+description: |
+  End-to-end testing with Playwright — user-flow tests across real browsers, with
+  page objects, role-based locators, and auth setup. Ships an /e2e command + agent
+  and a TEST-002-e2e pattern (the base ships Vitest unit/component tests; this adds
+  the e2e layer). Framework-agnostic (Vue or React).
+depends_on:
+  bench: ">=0.8.0"
+homepage: https://playwright.dev
+license: MIT

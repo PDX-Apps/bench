@@ -1,0 +1,8 @@
+name: bench-primevue
+version: 0.1.0
+description: |
+  Build Vue UIs with PrimeVue. Appends PrimeVue component + theming conventions onto the
+  Vue component and styling patterns.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://primevue.org
+license: MIT
