@@ -237,9 +237,11 @@ RENDERING_YAML="$PROJECT_ROOT/.bench/rendering.yaml"
 if [[ -f "$RENDERING_YAML" ]]; then
   rmode=$(grep -E '^mode:' "$RENDERING_YAML" | head -1 | sed -E 's/^mode:[[:space:]]*//; s/[[:space:]#].*$//')
   case "$rmode" in
-    blade) rmode_addon="bench-blade" ;;
-    spa|"") rmode_addon="" ;;
-    *) echo "WARNING: .bench/rendering.yaml mode '$rmode' unknown; expected spa|blade" >&2; rmode_addon="" ;;
+    blade)    rmode_addon="bench-blade" ;;
+    inertia)  rmode_addon="bench-inertia" ;;
+    livewire) rmode_addon="bench-livewire" ;;   # bench-livewire depends_on bench-blade (pulled transitively)
+    spa|"")   rmode_addon="" ;;
+    *) echo "WARNING: .bench/rendering.yaml mode '$rmode' unknown; expected spa|blade|inertia|livewire" >&2; rmode_addon="" ;;
   esac
   if [[ -n "$rmode_addon" ]]; then
     rmode_path="$(resolve_addon_dep "$rmode_addon")"

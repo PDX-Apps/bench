@@ -13,6 +13,7 @@ description: |
 
 depends_on:
   bench: ">=0.8.0"
+  addons: [bench-blade]   # Livewire is Blade + reactive components — inherit Blade page/layout/route ownership
 
 homepage: https://livewire.laravel.com
 license: MIT
