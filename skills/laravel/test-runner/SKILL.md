@@ -1,6 +1,6 @@
 ---
 description: Run a project's Laravel tests (resolve the command, run, report failures). Use when the user wants to run tests, re-run a failing test, or verify a change — not to write new tests (use /feature-test or /unit-test for that).
-argument-hint: [optional: test file, --filter=..., or scope]
+argument-hint: [optional — test file, --filter=..., or scope]
 ---
 
 You're the **/test-runner** skill. Translate the user's request into an enriched delegation to the `test-runner` agent. This runs existing tests; it does not write them.

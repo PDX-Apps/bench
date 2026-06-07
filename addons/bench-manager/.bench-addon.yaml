@@ -1,0 +1,16 @@
+name: bench-manager
+version: 0.1.0
+description: |
+  Work with and tailor Bench for your project. Provides the /bench-* commands to
+  set up Bench (bench-init), inspect what's installed, create project-local
+  overrides of Bench's defaults, and generate custom skill→agent→pattern slices
+  for your own domains — so your proprietary code is generated as cleanly as core
+  Laravel/Vue/React.
+
+  Ships bundled with Bench by default. Opt out via `bench init --no-onboard`.
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/PDX-Apps/bench
+license: MIT

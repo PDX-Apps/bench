@@ -129,7 +129,7 @@ my-project/
 └── src/
 ```
 
-The bundled [`bench-onboard`](../addons/onboard/README.md) addon writes here when generating project-local pattern overrides + custom skills.
+The bundled [`bench-manager`](../addons/bench-manager/README.md) addon writes here (via `/bench-override` and `/bench-slice`) when capturing project-local overrides + custom slices.
 
 ### 4. Multiple addons
 
@@ -150,7 +150,7 @@ Live under `addons/` at the bench source. Add by short name:
 
 | Short name | What it does | Loaded by default? | Docs |
 |---|---|---|---|
-| `onboard` | AI-driven project onboarding — generates CLAUDE.md, proposes pattern overrides + custom skills via researcher agents | Yes — opt out with `bench init --no-onboard` | [addons/onboard/README.md](../addons/onboard/README.md) |
+| `bench-manager` | The `/bench-*` project-tailoring toolkit — `/bench-init`, `/bench-override`, `/bench-slice`, `/bench-list`, `/bench-show`, `/bench-status` + the authoring agents behind them | Yes — opt out with `bench init --no-onboard` | [addons/bench-manager/README.md](../addons/bench-manager/README.md) |
 | `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` skill that walks through composer install + `boost:install` + MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](../addons/laravel-boost/README.md) |
 
 The bundled addons are themselves a worked example of the addon spec — read their source for a reference implementation.

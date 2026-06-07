@@ -1,6 +1,6 @@
 ---
 description: List the Bench plugin's skills organized by category. Use when the user asks "what skills are available", "what can this plugin do", "list skills", or any meta-question about the plugin's capabilities.
-argument-hint: [optional: backend | frontend | workflow | category-name]
+argument-hint: [optional — backend | frontend | workflow | category-name]
 ---
 
 You're the **/help** skill. Show the user the plugin's skill catalog. The user's filter (if any): **$ARGUMENTS**

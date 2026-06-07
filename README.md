@@ -28,18 +28,19 @@ cd ~/my-laravel-project
 `init` will:
 
 - Auto-detect Laravel / PHP / Vue / React versions (with an interactive monorepo scan when there's no root `composer.json`/`package.json`)
-- Offer to scaffold a starter `CLAUDE.md` documenting your project layout
-- Install the plugin into `.claude/plugins/bench/`
-- Offer to register it in `.claude/settings.json` (or print the manual `/plugin` commands)
-- Auto-load the bundled [`onboard`](./addons/onboard/README.md) addon for AI-driven project onboarding (opt out with `--no-onboard`)
+- **Build the plugin for *this* project** into `.claude/plugins/bench/` (patterns resolved for your versions, your `.bench/` overrides merged, your addons)
+- Register it in `.claude/settings.json` as a project-local plugin (or print the manual `/plugin` commands)
+- Auto-load the bundled [`bench-manager`](./addons/bench-manager/README.md) addon — the `/bench-*` commands for tailoring Bench to your project (opt out with `--no-onboard`)
+
+> **Bench is per-project, not a global plugin.** Each project gets its own built copy via `bench init` (correct versions, its own overrides). Don't install Bench from a global marketplace — there's no single build that's correct for every project. Your project must be its own git root for the project-local registration to resolve.
 
 Open Claude Code in the project. Try `/help` to see what's available. Suggested first commands:
 
 ```
-/bench-onboard                            # AI scans your project + tailors Bench to it
-/bench create endpoint to list user sessions
+/bench-init                               # scan your project + set up .bench/ overrides for its conventions
+/laravel create endpoint to list user sessions
 /vue-component create SessionCard
-/bench implement <feature-description>
+/bench implement <feature-description>    # multi-file feature, routed to the right workers
 ```
 
 That's it. Day two onward you mostly use slash commands inside Claude Code. The CLI comes back only for occasional rebuilds or addon management.
@@ -66,26 +67,26 @@ For the full internal design (skill anatomy, pattern resolution, build pipeline,
 
 ## What's in the box
 
-**Patterns** (90 base + 9 version overrides)
+**Patterns** (83 base + 9 version overrides)
 
-- 50 Laravel patterns: controllers, models, actions, services, migrations, DTOs, jobs, listeners, policies, tests
+- 43 Laravel patterns: controllers, models, actions, services, migrations, DTOs/data objects, jobs, listeners, policies, enums, casts, providers, tests
 - 20 Vue patterns: components, pages, layouts, routes, Pinia stores, services, models, Zod validators, vue-i18n, composables, Vitest
 - 20 React patterns: React 18 + TS + React Router v6 + Zustand + TanStack Query + react-hook-form + react-i18next + @testing-library/react
 - 9 version overrides for Laravel 12 / PHP 8.4 fallbacks (base targets Laravel 13 / PHP 8.5)
 
-**Skills** (60 source, filtered at install)
+**Skills** (55 source, filtered at install)
 
-- Laravel skills (`/controller`, `/model`, `/migration`, `/event`, `/job`, `/policy`, `/feature-test`, …)
+- 27 Laravel skills (`/controller`, `/model`, `/migration`, `/event`, `/job`, `/policy`, `/feature-test`, …)
 - 12 Vue skills (`/vue-component`, `/vue-page`, `/vue-store`, `/vue-ui` coordinator, …)
 - 12 React skills (`/react-component`, `/react-page`, `/react-store`, `/react-ui` coordinator, …)
-- Router + tooling skills (`/bench`, `/laravel`, `/frontend`, `/help`)
+- 4 router skills (`/bench`, `/laravel`, `/frontend`, `/help`) — the delegation tier
 
-**Agents** (71 source, filtered at install)
+**Agents** (54 source, filtered at install)
 
-- 37 Laravel workers + 17 Vue workers + 17 React workers
-- Workflow agent (`implement`) per stack, reached via `/bench`
+- 28 Laravel workers + 13 Vue workers + 13 React workers
+- Workflow agent (`implement`) for multi-file features, reached via `/bench` / `/laravel`
 
-The install prunes the inactive frontend automatically — a Vue project doesn't see `/react-*` and vice versa.
+Two install **profiles**: `standard` (default — every skill) and `compact` (just the routers + `/help`; the routers NL-route to the same agents, so generation is identical). The install also prunes the inactive frontend — a Vue project doesn't see `/react-*` and vice versa.
 
 ---
 
@@ -95,7 +96,7 @@ Ship in this repo under `addons/`. Add by short name; bundled-name resolution is
 
 | Addon | What it gives you | Loaded by default? | Docs |
 |---|---|---|---|
-| [`onboard`](./addons/onboard/README.md) | AI-driven project onboarding: 7 slash commands (`/bench-onboard`, `/bench-update-claudemd`, `/bench-add-pattern`, `/bench-add-skill`, `/bench-add-agent`, `/bench-add-domain`, `/bench-audit`) + 4 researcher agents that scan your codebase and write `CLAUDE.md` + `.bench/` overrides | Yes — opt out with `bench init --no-onboard` | [addons/onboard/README.md](./addons/onboard/README.md) |
+| [`bench-manager`](./addons/bench-manager/README.md) | The `/bench-*` toolkit for tailoring Bench to a project: `/bench-init` (scan for deviations → set up `.bench/` overrides), `/bench-override` (change a default), `/bench-slice` (generate a skill→agent→pattern for your own domain), and `/bench-list` / `/bench-show` / `/bench-status` (inspect) + the authoring agents behind them | Yes — opt out with `bench init --no-onboard` | [addons/bench-manager/README.md](./addons/bench-manager/README.md) |
 | [`laravel-boost`](./addons/laravel-boost/README.md) | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP tools + `/boost-install` skill that walks through composer install, `php artisan boost:install`, and MCP registration with permission prompts | Opt-in: `bench addon add laravel-boost` | [addons/laravel-boost/README.md](./addons/laravel-boost/README.md) |
 
 Want to write your own? See [docs/addons.md](./docs/addons.md) for the authoring spec.
@@ -104,15 +105,15 @@ Want to write your own? See [docs/addons.md](./docs/addons.md) for the authoring
 
 ## Customize by talking to Claude
 
-Bench ships opinionated defaults (DI over global helpers, dedicated form requests over inline validation, thin controllers — all the way Laravel does it internally). Your project may not want all of those. **Anything bundled can be overridden by just describing what you want different** — the [`bench-onboard`](./addons/onboard/README.md) addon's `/bench-add-*` skills auto-detect intent and fork the bundled file into `./.bench/`, which shadows it at install.
+Bench ships opinionated defaults (DI over global helpers, dedicated form requests over inline validation, thin controllers — all the way Laravel does it internally). Your project may not want all of those. **Anything bundled can be overridden by just describing what you want different** — the [`bench-manager`](./addons/bench-manager/README.md) addon's `/bench-override` and `/bench-slice` commands write project-local contributions into `./.bench/`, which layer onto the bundled defaults at build time (append / anchor / replace).
 
 **Examples** (no flags or paths to remember — just say what you want):
 
 ```
-You: I prefer global helpers like cache() and auth() over DI in services for one-shot reads.
-Claude: → routes to /bench-add-pattern (FORK mode) → reads patterns-built/laravel/services/...,
-        proposes a modified version, asks you to approve, writes to .bench/patterns/laravel/services/,
-        runs bench rebuild. Done.
+You: I prefer global helpers like cache() over DI in services for one-shot reads.
+Claude: → /bench-override → the pattern author reads the bundled service pattern, proposes a
+        contribution (append the convention, or replace if it fundamentally differs), you approve,
+        it writes to .bench/patterns/laravel/... and rebuilds. Done.
 
 You: Show me what the controller pattern looks like.
 Claude: → /bench-show pattern controller → displays the full bundled pattern body.
@@ -120,14 +121,14 @@ Claude: → /bench-show pattern controller → displays the full bundled pattern
 You: What skills come bundled?
 Claude: → /bench-list skills → tables of bundled core + bundled addon + project-local.
 
-You: Make /laravel stop generating tests by default.
-Claude: → /bench-add-skill laravel (FORK mode) → reads the laravel skill, removes the test step,
-        writes the modified version to .bench/skills/laravel/, rebuilds.
+You: Teach Bench my app/Reports/ domain so it scaffolds reports like core does controllers.
+Claude: → /bench-slice Reports → scans the domain, generates a /report skill → agent → pattern
+        triple into .bench/, rebuilds. Now /report create X works.
 ```
 
 The skill descriptions (in each `SKILL.md` frontmatter) carry trigger phrases for all of this, so you don't need to remember the command name — Claude routes naturally based on what you said.
 
-Full list of override + discovery commands: [addons/onboard/README.md → Commands](./addons/onboard/README.md#commands).
+Full command list: [addons/bench-manager/README.md](./addons/bench-manager/README.md).
 
 ---
 
@@ -135,9 +136,9 @@ Full list of override + discovery commands: [addons/onboard/README.md → Comman
 
 Three layers, in increasing scope:
 
-1. **`CLAUDE.md`** at your project root. Every Bench agent reads it. Document your monorepo layout, test framework choice, UI library, naming rules — anything that overrides defaults. `bench init` offers to scaffold one, or run `/bench-onboard` to have AI generate it from a codebase scan.
+1. **`CLAUDE.md`** at your project root — *yours*. Every Bench agent has it in context. Document your monorepo layout, test framework, UI library, naming rules — anything project-specific. Bench never writes or overwrites it; project conventions that affect generation live in `.bench/` overrides (each pattern carries its own paths), so `CLAUDE.md` stays lean and human-owned.
 
-2. **`.bench/`** at your project root. Auto-discovered project-local extensions: pattern overrides, custom slash commands, custom worker agents. Same shape as core. Travels with your project repo. Generated automatically by `/bench-add-pattern` / `/bench-add-skill` from the onboard addon.
+2. **`.bench/`** at your project root — **the home for everything project-specific.** Auto-discovered (whenever it contains `patterns/`, `skills/`, or `agents/` — no manifest required): pattern overrides, custom slash commands, custom worker agents. Same shape as core; layered onto the defaults at build time. Travels with your repo — **commit it.** Written by `/bench-override` and `/bench-slice` from the bench-manager addon (or by hand).
 
 3. **Reusable addons** for conventions you want to share across multiple projects. Same shape as `.bench/` plus a `.bench-addon.yaml`. Install per-project with `bench addon add /path/to/addon` (or bare short name for bundled ones). See [docs/addons.md](./docs/addons.md).
 
@@ -175,7 +176,8 @@ Both optional — the fully-qualified path always works.
 | `--register` / `--no-register` | Auto-write to `.claude/settings.json` or print manual `/plugin install` path |
 | `--symlink` | Plugin-dev mode — symlink source into project (internals visible). Default is copy. |
 | `--addon=PATH` | Load an addon (repeatable, persisted) |
-| `--no-onboard` | Skip the bundled `onboard` addon |
+| `--no-onboard` | Skip the bundled `bench-manager` addon |
+| `--profile=compact\|standard` | Skill surface: `compact` (routers + help only) or `standard` (all skills, default) |
 | `--laravel=N` / `--php=N` / `--frontend=vue\|react\|none` / `--vue=N` | Override version detection |
 | `--no-addon` | Skip auto-discovery of `./.bench/` (debugging) |
 
@@ -196,7 +198,8 @@ Full v1.0 gating criteria + post-v1 backlog: [CHANGELOG.md](./CHANGELOG.md).
 
 - [docs/architecture.md](./docs/architecture.md) — how Bench is built internally: skills vs agents vs patterns, pattern resolution, source/install split, build pipeline, frontend filtering
 - [docs/addons.md](./docs/addons.md) — addon authoring spec: anatomy, manifest, load order, precedence, bundled addons, persistence
-- [addons/onboard/README.md](./addons/onboard/README.md) — AI-driven onboarding addon
+- [docs/contribution-system.md](./docs/contribution-system.md) — how `.bench/` overrides + addons layer onto core (append / anchor / replace)
+- [addons/bench-manager/README.md](./addons/bench-manager/README.md) — the `/bench-*` project-tailoring toolkit
 - [addons/laravel-boost/README.md](./addons/laravel-boost/README.md) — laravel/boost MCP integration addon
 - [CHANGELOG.md](./CHANGELOG.md) — release notes + v1.0 gating criteria
 

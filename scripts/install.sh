@@ -169,8 +169,16 @@ esac
 
 # Auto-discover project-local addon at ${PROJECT_ROOT}/.bench/
 # (always added unless --no-addon; never persisted — it travels with the project repo)
+# The project-local .bench/ is THE home for project overrides/slices, so a manifest
+# is OPTIONAL: discover it whenever it carries patterns/, skills/, or agents/ — so
+# overrides written by the authoring agents (or by hand) are picked up without anyone
+# having to remember a .bench-addon.yaml.
 # Dedupe: skip if user already listed it via --addon
-if ! $NO_AUTO_ADDON && [[ -d "$PROJECT_ROOT/.bench" && -f "$PROJECT_ROOT/.bench/.bench-addon.yaml" ]]; then
+if ! $NO_AUTO_ADDON && [[ -d "$PROJECT_ROOT/.bench" ]] \
+   && { [[ -f "$PROJECT_ROOT/.bench/.bench-addon.yaml" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/patterns" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/skills" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/agents" ]]; }; then
   already_listed=false
   for a in "${ADDONS[@]+${ADDONS[@]}}"; do
     if [[ "$a" == "$PROJECT_ROOT/.bench" ]]; then
@@ -213,6 +221,30 @@ if [[ "$PLUGIN_SRC" != "$PLUGIN_ROOT" ]]; then
       rsync -a --delete "$PLUGIN_SRC/$item" "$PLUGIN_ROOT/$item"
     fi
   done
+
+  # Generate the directory-marketplace manifest INTO the built copy so Claude Code
+  # can load it as a project-local marketplace (bench init registers this dir as a
+  # marketplace; CC reads this file to find the plugin). It is deliberately NOT
+  # shipped in the source repo: a source marketplace.json lets someone
+  # `/plugin marketplace add <repo>` and install the UNBUILT, version-agnostic repo
+  # (no resolved patterns-built/, no overrides, no addons) — wrong, because bench is
+  # built per-project. This file only exists in a real, built install.
+  mkdir -p "$PLUGIN_ROOT/.claude-plugin"
+  PLUGIN_VERSION=$(grep -E '"version"' "$PLUGIN_SRC/.claude-plugin/plugin.json" 2>/dev/null | head -1 | sed -E 's/.*"version"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/')
+  cat > "$PLUGIN_ROOT/.claude-plugin/marketplace.json" <<EOF
+{
+  "name": "pdx-apps",
+  "owner": { "name": "PDX Apps", "url": "https://pdxapps.com" },
+  "plugins": [
+    {
+      "name": "bench",
+      "version": "${PLUGIN_VERSION:-0.0.0}",
+      "description": "Bench, built for THIS project (resolved patterns + overrides + addons). Installed via 'bench init' — do not install the source repo directly.",
+      "source": "./"
+    }
+  ]
+}
+EOF
 
   # Pass 2 — skills + agents (flatten groups from source). Wipe destination first
   # so renames/removals at source propagate; addon copies happen later and re-add.

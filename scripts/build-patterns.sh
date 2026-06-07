@@ -86,7 +86,13 @@ OUTPUT_DIR="${OUTPUT_DIR:-$PATTERN_SOURCE/patterns-built}"
 
 # Auto-discover project-local extensions at ${PROJECT_ROOT}/.bench/
 # (skip if --no-addon, or if it was already passed via --addon)
-if ! $NO_AUTO_ADDON && [[ -d "$PROJECT_ROOT/.bench" && -f "$PROJECT_ROOT/.bench/.bench-addon.yaml" ]]; then
+# Manifest OPTIONAL — discovered whenever .bench/ carries patterns/, skills/, or
+# agents/, so hand-written or agent-written overrides apply without a .bench-addon.yaml.
+if ! $NO_AUTO_ADDON && [[ -d "$PROJECT_ROOT/.bench" ]] \
+   && { [[ -f "$PROJECT_ROOT/.bench/.bench-addon.yaml" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/patterns" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/skills" ]] \
+        || [[ -d "$PROJECT_ROOT/.bench/agents" ]]; }; then
   already_listed=false
   for a in "${ADDONS[@]+${ADDONS[@]}}"; do
     if [[ "$a" == "$PROJECT_ROOT/.bench" ]]; then

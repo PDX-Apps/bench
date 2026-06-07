@@ -25,11 +25,12 @@
 #   --frontend=react     (uses patterns/frontend/react/ — skeleton at present)
 #   --frontend=none      (backend-only project, skip frontend patterns)
 #
-# Onboarding (bundled bench-onboard addon):
-#   By default, init loads the bench-onboard addon from addons/onboard/ which
-#   ships slash commands for AI-driven project scanning + CLAUDE.md generation
-#   + pattern/skill/agent scaffolding (/bench-onboard, /bench-add-pattern,
-#   /bench-add-skill, /bench-update-claudemd, /bench-audit, ...).
+# Bench-manager addon (bundled by default):
+#   By default, init loads the bench-manager addon from addons/bench-manager/ which
+#   ships the /bench-* commands to tailor Bench to this project: /bench-init (scan
+#   for deviations + set up .bench/ overrides), /bench-override (change a default),
+#   /bench-slice (skill→agent→pattern for your own domains), and /bench-list,
+#   /bench-show, /bench-status (inspect).
 #   --no-onboard  skip the bundled addon (strictly hand-configured install)
 #   --onboard     force-include (default — flag exists for explicitness)
 #
@@ -46,7 +47,7 @@ MODE="copy"   # copy | symlink
 PASSTHROUGH=()  # version flags forwarded to install.sh
 
 REGISTER_MODE="ask"   # ask | yes | no — controls whether init writes to .claude/settings.json
-LOAD_ONBOARD=true     # bundle the bench-onboard addon by default; --no-onboard opts out
+LOAD_ONBOARD=true     # bundle the bench-manager addon by default; --no-onboard opts out
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -66,12 +67,12 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Auto-load the bundled onboarding addon unless explicitly opted out.
-# This ships the bench-onboard, bench-add-*, bench-update-claudemd, and bench-audit
-# skills + their researcher agents — the AI-driven onboarding flow described in
-# README.md. Opt out with --no-onboard for a strictly hand-configured install.
-if $LOAD_ONBOARD && [[ -d "$PLUGIN_SRC/addons/onboard" ]]; then
-  PASSTHROUGH+=("--addon=$PLUGIN_SRC/addons/onboard")
+# Auto-load the bundled bench-manager addon unless explicitly opted out.
+# This ships the /bench-init, /bench-override, /bench-slice, /bench-list,
+# /bench-show, and /bench-status skills + their authoring agents — the flow for
+# tailoring Bench to a project. Opt out with --no-onboard for a hand-configured install.
+if $LOAD_ONBOARD && [[ -d "$PLUGIN_SRC/addons/bench-manager" ]]; then
+  PASSTHROUGH+=("--addon=$PLUGIN_SRC/addons/bench-manager")
 fi
 
 # ---------- Sanity checks ----------

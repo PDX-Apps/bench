@@ -1,5 +1,5 @@
 ---
-description: Top-level entry for Bench — routes any build request (a single artifact, a multi-file feature, or a spec/PRD/ticket) to the right stack and delegates. Use for "build / implement / add …" work in a Bench project. (Note: `/bench-*` commands configure Bench itself; this `/bench` produces project code.)
+description: Top-level entry for Bench — routes any build request (a single artifact, a multi-file feature, or a spec/PRD/ticket) to the right stack and delegates. Use for build / implement / add work in a Bench project. (The /bench-* commands configure Bench itself; this /bench produces project code.)
 argument-hint: [what you want built or fixed]
 ---
 

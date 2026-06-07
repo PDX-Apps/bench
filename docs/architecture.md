@@ -189,12 +189,14 @@ bench/                                # the source repo
 │   └── meta/                         # (empty — meta skills delegate to other agents)
 │
 ├── addons/                           # bundled addons (opt-in unless noted)
-│   ├── onboard/                      # AI-driven onboarding — auto-loaded by bench init
+│   ├── bench-manager/                # /bench-* project-tailoring toolkit — auto-loaded by bench init
 │   └── laravel-boost/                # laravel/boost MCP awareness + /boost-install
 │
 ├── .claude-plugin/
-│   ├── plugin.json                   # Claude Code plugin manifest
-│   └── marketplace.json              # Claude Code marketplace manifest
+│   └── plugin.json                   # Claude Code plugin manifest
+│                                     # (marketplace.json is NOT shipped here — it's generated
+│                                     #  into each built install by install.sh; a source-repo
+│                                     #  marketplace.json would let people install the unbuilt repo)
 │
 ├── docs/
 │   ├── architecture.md               # this file
@@ -217,18 +219,18 @@ After `bench init`, the project gets:
 │   │   ├── .claude-plugin/           # plugin + marketplace manifests
 │   │   ├── bin/bench                 # CLI shim that resolves back to source via .install-source
 │   │   ├── skills/                   # FLAT (depth-1) — Claude Code's expected shape
-│   │   │   ├── api/SKILL.md
+│   │   │   ├── laravel/SKILL.md         (router)
 │   │   │   ├── controller/SKILL.md
 │   │   │   ├── vue-component/SKILL.md   (only one frontend's skills, after pruning)
 │   │   │   └── …
 │   │   ├── agents/                   # FLAT — *.md files
-│   │   │   ├── api.md
+│   │   │   ├── implement.md
 │   │   │   ├── controller.md
 │   │   │   └── …
 │   │   ├── patterns-built/           # resolved pattern set (base + overrides + addons)
 │   │   │   ├── laravel/
 │   │   │   ├── frontend/{vue|react}/
-│   │   │   └── onboarding/           (only if bench-onboard is loaded)
+│   │   │   └── authoring/            (only if bench-manager is loaded)
 │   │   ├── .install-source           # records source path so rebuild can find it
 │   │   ├── .install-record           # records install path so re-installs can reverse cleanly
 │   │   ├── .install-addons           # list of files copied from addons (for clean removal)
@@ -237,12 +239,12 @@ After `bench init`, the project gets:
 │   │   └── .install-versions-config  # persisted version flags
 │   └── settings.json                 # plugin registration (extraKnownMarketplaces + enabledPlugins)
 │
-├── CLAUDE.md                         # project memory — read by every Bench agent (you author this)
-└── .bench/                           # optional project-local extensions (auto-discovered)
-    ├── .bench-addon.yaml
-    ├── patterns/…
-    ├── skills/…
-    └── agents/…
+├── CLAUDE.md                         # project memory — in every Bench agent's context (you author this; Bench never writes it)
+└── .bench/                           # project-local extensions (auto-discovered; commit it)
+    ├── patterns/…                    #   overrides + new patterns
+    ├── skills/…                      #   custom slash commands
+    ├── agents/…                      #   custom workers
+    └── .bench-addon.yaml             #   OPTIONAL — discovery works without it
 ```
 
 Source organization (grouped skills/agents, raw pattern matrix) is hidden from the user — they only see the flat, materialized install.
@@ -255,23 +257,26 @@ Bench is designed so users can override any bundled default for their project wi
 
 ### Layer 1 — `CLAUDE.md` (project memory)
 
-Free-form markdown at the project root. Every Bench worker agent reads it before generating. Anything documented here overrides defaults baked into agents — monorepo layout, test framework, naming rules, where new code lands, "use `cache()` not DI for one-shot reads."
+Free-form markdown at the project root. Claude Code injects it into every agent's context. Document monorepo layout, test framework, naming rules, domain language — anything project-specific. **Bench never writes or overwrites it** (agents don't even carry a "read CLAUDE.md" step — it's auto-injected). Conventions that affect *generation* belong in `.bench/` overrides (Layer 2), where each pattern carries its own paths; that keeps `CLAUDE.md` lean and human-owned.
 
 ### Layer 2 — `.bench/` (project-local addon, auto-discovered)
 
-Project-specific overrides that aren't broad enough for CLAUDE.md prose — actual replacement pattern files, skill bodies, or worker agents. Lives at `{project}/.bench/` alongside the user's code; auto-discovered by every `bench init` / `bench rebuild`. Travels with the project repo.
+The home for everything project-specific — pattern overrides, custom skills, custom workers. Lives at `{project}/.bench/`; **auto-discovered whenever it contains `patterns/`, `skills/`, or `agents/`** (a `.bench-addon.yaml` manifest is optional). Travels with the project repo — commit it.
 
-Override mechanism is **path-based shadowing**: a file at `.bench/patterns/laravel/controllers/CTRL-001-resource-controllers.md` shadows the bundled `patterns-built/laravel/controllers/CTRL-001-resource-controllers.md` after the build's addon merge pass. Same for skills (`.bench/skills/laravel/SKILL.md` shadows the bundled `/laravel`) and agents (`.bench/agents/controller.md` shadows the bundled `controller` worker).
+Contributions layer onto the bundled base **by `mode:` frontmatter** (see [contribution-system.md](./contribution-system.md)):
 
-The bundled `bench-onboard` addon ships slash commands that walk the user through producing these overrides without manual file editing:
+- **`append`** (default) — add a section/convention; the base stays. Upgrade-safe.
+- **`anchor`** — splice into a named marker in the base.
+- **`replace`** (no `mode:` = legacy) — a full fork at the mirrored path (e.g. `.bench/patterns/laravel/http/controllers/CONTROLLER-001-resource.md` replaces the bundled one). Drifts on upgrade; use only when the project genuinely contradicts the base.
 
-- `/bench-list [patterns|skills|agents]` — see what's available to override
-- `/bench-show <type> <name>` — view a specific bundled file's body
-- `/bench-add-pattern {domain}` — auto-detects intent (FORK a bundled, or CAPTURE a project convention); writes to `.bench/patterns/`
-- `/bench-add-skill {name}` — auto-detects NEW vs FORK of a bundled skill; writes to `.bench/skills/` (and `.bench/agents/` for the paired worker)
-- `/bench-add-agent {name}` — same for standalone agents or forks of bundled workers
+The bundled [`bench-manager`](../addons/bench-manager/README.md) addon produces these without manual file editing:
 
-The researchers behind these skills (`pattern-researcher`, `skill-researcher`, `agent-researcher`) handle both modes — capture-from-project-scan and fork-bundled-and-modify — so the user can say "I prefer global helpers over DI" without remembering paths or precedence rules.
+- `/bench-list [patterns|skills|agents]` · `/bench-show <type> <name>` — discover + inspect
+- `/bench-override <change>` — change a bundled default (routes to `pattern-author` / `skill-author` / `agent-author`, which pick the lightest contribution mode)
+- `/bench-slice <domain>` — generate a skill→agent→pattern triple for one of your own domains
+- `/bench-init` — scan the project for deviations and offer to capture each
+
+So the user can say "I prefer global helpers over DI" or "teach Bench my `app/Reports/` domain" without remembering paths or precedence rules.
 
 ### Layer 3 — reusable addons (multi-project)
 

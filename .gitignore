@@ -13,3 +13,11 @@ patterns-built/
 .idea/
 .vscode/
 *.swp
+
+
+# Task scaffolding — internal, never tracked/shipped
+CLAUDE.md
+docs/working-notes.md
+docs/working-notes/
+addons/onboard-legacy/
+sandbox/
