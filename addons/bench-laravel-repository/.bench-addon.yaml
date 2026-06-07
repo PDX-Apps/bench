@@ -1,0 +1,15 @@
+name: bench-laravel-repository
+version: 0.1.0
+description: |
+  The repository pattern for teams that want it: an interface + Eloquent
+  implementation + container binding, with controllers and services depending on
+  the abstraction. Opinionated (core Bench uses Eloquent directly), so it ships as
+  an addon. Provides the REPOSITORY-001 pattern plus a /repository command + agent.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-laravel-repository
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

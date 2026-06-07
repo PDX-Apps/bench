@@ -1,0 +1,16 @@
+name: bench-horizon
+version: 0.1.0
+description: |
+  Laravel Horizon conventions for Redis-backed queues: code-driven supervisor
+  configuration (config/horizon.php), queue naming + balancing strategies, job
+  tags, metrics, zero-downtime deployment (horizon:terminate), and failed-job
+  handling. Ships the HORIZON-001 pattern and appends a Horizon note to the core
+  JOB pattern.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-horizon
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

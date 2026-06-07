@@ -1,0 +1,18 @@
+name: bench-livewire
+version: 0.1.0
+description: |
+  Build server-rendered, reactive UI for Laravel with Livewire 3 (optionally
+  Volt) — a Blade-based alternative to a Vue/React SPA. Ships class-based
+  component conventions (public properties, #[Computed], actions, wire:model,
+  #[Validate], lifecycle hooks, events), Form objects + file uploads, and Volt
+  single-file functional components. Provides a /livewire command + agent + the
+  LIVEWIRE-001/002/003 patterns.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-livewire
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://livewire.laravel.com
+license: MIT
