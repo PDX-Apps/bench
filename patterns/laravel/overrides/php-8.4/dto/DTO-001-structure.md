@@ -1,26 +1,17 @@
 ---
-overrides: base/dto/DTO-001-request-data.md
+overrides: base/dto/DTO-001-structure.md
 target: php-8.4
 reason: PHP 8.4 doesn't have clone($obj, [...]) syntax — DSL methods on readonly DTOs must use 'new self(...all fields...)' to produce an updated copy.
-base-hash: 3d9f71
+base-hash: 7c06b9
 ---
 
 > ⚠️ **PHP 8.4 — no 'clone with' syntax.** This override exists for projects still on this older version. New projects should use the base (latest version) patterns.
 
-# DTO-001-request-data
+# DTO-001-structure
 
 ## Pattern
 
 Data Transfer Objects are simple, lightweight, **immutable** structures for passing data and/or instructions between layers.
-
-## DTO vs Data Object
-
-| Type | Class Style | Mutability | Use Case | FormRequest Method |
-|------|-------------|------------|----------|-------------------|
-| **DTO** | `readonly class` | Immutable | Request data, commands, events | `toDto()` |
-| **Data Object** | Regular `class` | Replaced wholesale | Settings, preferences, config | `toData()` |
-
-For mutable Data Objects (settings, preferences), see `DATA-007-structured-settings`.
 
 ## What Are DTOs?
 
@@ -31,21 +22,21 @@ DTOs are `readonly` classes that:
 - Can have methods for behavior (transformation, fluent DSL, computation)
 - Pass data between layers without coupling
 
-## Example: HouseholdData (Data Representation)
+## Example: OrderData (Data Representation)
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Household\Data;
+namespace App\Data;
 
-readonly class HouseholdData
+readonly class OrderData
 {
     public function __construct(
-        public string $name,
-        public int $maxMembers,
-        public string $ownerId,
+        public string $sku,
+        public int $quantity,
+        public string $customerId,
     ) {
     }
 }
@@ -53,12 +44,14 @@ readonly class HouseholdData
 
 ## Example: SendNotificationData (Command)
 
+On PHP 8.4 there is no `clone($obj, [...overrides])` expression. Fluent DSL methods on a `readonly` DTO must build a fresh instance with `new self(...)`, listing every field explicitly.
+
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Notification\Data;
+namespace App\Data;
 
 readonly class SendNotificationData
 {
@@ -106,21 +99,23 @@ $notification = $notification
     ->makeImmediate();
 ```
 
-## Example: SearchHouseholdsData (Query Parameters)
+Every field must be listed in each DSL method. When a new field is added, every method that rebuilds the DTO must be updated to carry it through. (PHP 8.5's `clone($obj, [...])` removes this noise — see the base pattern.)
+
+## Example: SearchOrdersData (Query Parameters)
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Household\Data;
+namespace App\Data;
 
-readonly class SearchHouseholdsData
+readonly class SearchOrdersData
 {
     public function __construct(
-        public ?string $name = null,
-        public ?int $minMembers = null,
-        public ?int $maxMembers = null,
+        public ?string $sku = null,
+        public ?int $minQuantity = null,
+        public ?int $maxQuantity = null,
         public int $page = 1,
         public int $perPage = 20,
     ) {
@@ -128,9 +123,21 @@ readonly class SearchHouseholdsData
 
     public function hasFilters(): bool
     {
-        return $this->name !== null
-            || $this->minMembers !== null
-            || $this->maxMembers !== null;
+        return $this->sku !== null
+            || $this->minQuantity !== null
+            || $this->maxQuantity !== null;
+    }
+
+    // Common DSL — rebuild with all fields (no clone with on 8.4)
+    public function nextPage(): self
+    {
+        return new self(
+            sku: $this->sku,
+            minQuantity: $this->minQuantity,
+            maxQuantity: $this->maxQuantity,
+            page: $this->page + 1,
+            perPage: $this->perPage,
+        );
     }
 }
 ```
@@ -139,17 +146,18 @@ readonly class SearchHouseholdsData
 
 ```php
 // Simple direct construction
-$household = new HouseholdData(
-    name: 'Smith Family',
-    maxMembers: 5,
-    ownerId: $user->id,
+$order = new OrderData(
+    sku: 'WIDGET-001',
+    quantity: 3,
+    customerId: $user->id,
 );
 
-// With data from an array
-$data = new HouseholdData(
-    name: $input['name'],
-    maxMembers: $input['max_members'],
-    ownerId: auth()->id(),
+// With data from an array (e.g., inside a controller after validation,
+// where $user = $request->user() is already in scope)
+$data = new OrderData(
+    sku: $input['sku'],
+    quantity: $input['quantity'],
+    customerId: $user->id,
 );
 ```
 
@@ -157,11 +165,11 @@ $data = new HouseholdData(
 
 - `readonly` class (immutable)
 - Can represent data, commands/instructions, or query parameters
-- Construct directly with `new` - simple and explicit
-- Can add fluent DSL methods that return new instances
+- Construct directly with `new` — simple and explicit
+- **PHP 8.4: rebuild with `new self(...)` for fluent DSL methods** (list every field; no `clone with`)
 - Can add computed methods for derived values
-- Lives in `Modules/{Module}/Data` namespace
-- Keep DTOs simple - no complex business logic
+- Lives in `app/Data/`
+- Keep DTOs simple — no complex business logic
 - FormRequests return DTOs via `toDto()` method
 
 ## When to Use
@@ -172,9 +180,3 @@ $data = new HouseholdData(
 - Job payloads with type safety
 - Event payloads
 - Query parameters for filtering/search
-
-**Don't use DTOs for:**
-- Domain models (use Eloquent models)
-- Database persistence (DTOs are ephemeral)
-- Complex business logic (use Actions)
-- Mutable settings/preferences (see `DATA-007-structured-settings`)

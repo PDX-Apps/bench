@@ -4,7 +4,7 @@
 
 Session-based authentication via Laravel's default `web` guard. This is the standard Laravel setup — `routes/web.php` carries the application's routes (including blade views AND JSON endpoints when `Route::resource` is used), and authenticated requests carry a session cookie + CSRF token.
 
-This is the default for most Laravel projects. Two common variants exist (set via the bench-onboard routing-strategy concern):
+This is the default for most Laravel projects. Two common variants exist (captured for a project via the `auth` concern — `/bench-configure auth`):
 - **SPA / API-only**: `routes/api.php` only; no web routes. Use Sanctum (AUTH-002) for auth.
 - **Web for everything (including API)**: web.php carries both view-returning controllers AND JSON endpoints, all session-authed.
 

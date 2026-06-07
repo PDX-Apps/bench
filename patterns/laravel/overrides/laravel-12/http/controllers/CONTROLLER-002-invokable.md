@@ -1,8 +1,8 @@
 ---
 overrides: base/http/controllers/CONTROLLER-002-invokable.md
 target: laravel-12
-reason: Laravel 12 doesn't have controller attributes — wire middleware at route level, no #[Authorize] on __invoke.
-base-hash: 245d09
+reason: Laravel 12 doesn't have controller attributes — wire middleware at route level, authorize inside __invoke (no #[Authorize] attribute).
+base-hash: 35a1e6
 ---
 
 > ⚠️ **Laravel 12 — no controller attributes.** This override exists for projects still on this older version. New projects should use the base (latest version) patterns.
@@ -18,23 +18,19 @@ Single-action controllers for standalone endpoints that don't fit into resource 
 - Action doesn't belong to a resource's CRUD
 - One-off operations (verify email, export report, health check)
 
-## Dependencies
+## Structure (Laravel 12 — middleware at route level)
 
-- `http/HTTP-001-resource-controllers.md` - Resource controllers (for CRUD)
-- `http/HTTP-006-grouped-controllers.md` - Grouped controllers (for related non-CRUD)
-- `http/HTTP-002-form-requests.md` - FormRequests with validation
-- `services/SERVICE-001-actions.md` - Actions for business logic
-
-## Structure
+Laravel 12 has no `#[Middleware]` attribute. Attach middleware on the route (or route group) instead. The controller is just the `__invoke()` method.
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Http\Controllers;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 
 class VerifyEmailController extends Controller
 {
@@ -54,6 +50,31 @@ class VerifyEmailController extends Controller
 }
 ```
 
+## Authorization on Invokables
+
+For invokables that need policy authorization, attach `->can()` on the route (see the routing pattern) or call `$this->authorize()` inside `__invoke`:
+
+```php
+use App\Models\Order;
+
+class MarkOrderShippedController extends Controller
+{
+    public function __invoke(Order $order, ShipOrderAction $action): JsonResponse
+    {
+        $this->authorize('ship', $order);
+
+        $order = $action->execute($order);
+
+        return response()->json([
+            'message' => 'Order marked shipped',
+            'data' => new OrderResource($order),
+        ]);
+    }
+}
+```
+
+For invokables that DON'T need authorization (health checks, public webhooks), skip the authorization check entirely.
+
 ## Examples
 
 ### Standalone Action
@@ -65,12 +86,14 @@ class ExportReportController extends Controller
         ExportReportRequest $request,
         ExportReportAction $action
     ): StreamedResponse {
-        return $action->execute($request->toData());
+        $this->authorize('export', Report::class);
+
+        return $action->execute($request->toDto());
     }
 }
 ```
 
-### Health Check
+### Health Check (no middleware, no auth)
 
 ```php
 class HealthCheckController extends Controller
@@ -85,7 +108,7 @@ class HealthCheckController extends Controller
 }
 ```
 
-### Token-Based Action
+### Token-Based Action (rate-limited, no policy)
 
 ```php
 class ResetPasswordController extends Controller
@@ -108,13 +131,20 @@ class ResetPasswordController extends Controller
 
 ## Route Registration
 
+Middleware and authorization attach at route level (no controller attributes on L12):
+
 ```php
-// Single invokable controller
-Route::post('/verify-email', VerifyEmailController::class);
-Route::post('/reset-password', ResetPasswordController::class);
+// Single invokable controller — middleware/auth wired on the route
+Route::post('/verify-email', VerifyEmailController::class)->middleware('throttle:6,1');
+Route::post('/reset-password', ResetPasswordController::class)->middleware('throttle:5,1');
 Route::get('/health', HealthCheckController::class);
-Route::post('/export/report', ExportReportController::class);
+Route::post('/export/report', ExportReportController::class)->middleware('auth:sanctum');
+Route::post('/orders/{order}/mark-shipped', MarkOrderShippedController::class)
+    ->middleware('auth:sanctum')
+    ->can('ship', 'order');
 ```
+
+Keep route files focused on URL → controller mapping plus the middleware/authorization the endpoint needs.
 
 ## Naming Convention
 
@@ -124,6 +154,7 @@ Route::post('/export/report', ExportReportController::class);
 - `ResetPasswordController` - Handles password reset
 - `ExportReportController` - Handles report export
 - `HealthCheckController` - Handles health check
+- `MarkOrderShippedController` - Handles a single state-transition action
 
 ## When to Use
 
@@ -136,8 +167,8 @@ Route::post('/export/report', ExportReportController::class);
 - Token-based actions (verify, reset, confirm)
 
 ❌ **Don't use for:**
-- CRUD operations → Use `HTTP-001-resource-controllers`
-- Related actions (accept/deny/cancel) → Use `HTTP-006-grouped-controllers`
+- CRUD operations → use a resource controller
+- Related actions (accept/deny/cancel) → use a grouped controller
 - Actions that belong to a resource
 
 ## Key Points
@@ -147,9 +178,5 @@ Route::post('/export/report', ExportReportController::class);
 - Delegate to Action for business logic
 - Keep controller thin - HTTP concerns only
 - Route points directly to controller class (no method specified)
-
-## Related
-
-- `HTTP-001-resource-controllers` - CRUD operations
-- `HTTP-006-grouped-controllers` - Related non-CRUD operations
-- `SERVICE-001-actions` - Business logic
+- **L12: attach middleware on the route via `->middleware('...')`**
+- **L12: authorize via `->can('ability', 'param')` on the route, or `$this->authorize()` inside `__invoke`**

@@ -2,7 +2,7 @@
 overrides: base/policies/POLICY-001-resource-policies.md
 target: laravel-12
 reason: Laravel 12 wires policies to controllers via authorizeResource() in the constructor — no per-method #[Authorize] attribute.
-base-hash: 315035
+base-hash: e0965f
 ---
 
 > ⚠️ **Laravel 12 — constructor-based policy wiring.** This override exists for projects still on this older version. New projects should use the base (latest version) patterns.
@@ -20,21 +20,21 @@ Authorization policies for controlling access to resources.
 
 declare(strict_types=1);
 
-namespace Modules\Household\Policies;
+namespace App\Policies;
 
+use App\Models\Order;
 use App\Models\User;
-use Modules\Household\Models\Household;
 
-class HouseholdPolicy
+class OrderPolicy
 {
     public function viewAny(User $user): bool
     {
         return true; // All authenticated users can list
     }
 
-    public function view(User $user, Household $household): bool
+    public function view(User $user, Order $order): bool
     {
-        return $household->isOwner($user);
+        return $order->isOwnedBy($user);
     }
 
     public function create(User $user): bool
@@ -42,53 +42,57 @@ class HouseholdPolicy
         return true;
     }
 
-    public function update(User $user, Household $household): bool
+    public function update(User $user, Order $order): bool
     {
-        return $household->isOwner($user);
+        return $order->isOwnedBy($user);
     }
 
-    public function delete(User $user, Household $household): bool
+    public function delete(User $user, Order $order): bool
     {
-        return $household->isOwner($user);
+        return $order->isOwnedBy($user);
     }
 }
 ```
 
-## Usage in Controllers
+The policy class itself is identical across versions — the change is in how controllers invoke it.
 
-Use `authorizeResource()` in the constructor. It automatically maps controller methods to policy methods (only for methods that exist in both):
+## Usage in Controllers (Laravel 12 — `authorizeResource()`)
+
+Use `authorizeResource()` in the controller constructor. It automatically maps controller methods to policy methods (only for methods that exist in both):
 
 ```php
-class HouseholdController
+use App\Models\Order;
+
+class OrderController
 {
     public function __construct()
     {
-        $this->authorizeResource(Household::class, 'household');
+        $this->authorizeResource(Order::class, 'order');
     }
 
     // Automatic mapping:
-    // index  -> viewAny
-    // show   -> view
-    // store  -> create
-    // update -> update
+    // index   -> viewAny
+    // show    -> view
+    // store   -> create
+    // update  -> update
     // destroy -> delete
 }
 ```
 
-No need to specify `->only()` - it only registers authorization for methods that exist in the policy.
+No need to specify `->only()` — it only registers authorization for methods that exist in the policy. `authorizeResource()` *is* the `can` middleware — never also add `->can()` on the route for the same action.
 
 ## Auto-Discovery Requirements
 
 Policies are auto-discovered when ALL of these are true:
 
-1. **File location:** `Modules/{Module}/Policies/` or `app/Policies/`
+1. **File location:** `app/Policies/`
 2. **Naming convention:** Class name is `{Model}Policy` (exact match to model name + "Policy")
 3. **Namespace:** Matches directory structure
 
 **Examples:**
-- Model: `Modules\Household\Models\Household`
-- Policy: `Modules\Household\Policies\HouseholdPolicy` ✅
-- Policy: `Modules\Household\Policies\HouseholdAuthPolicy` ❌ (won't auto-discover)
+- Model: `App\Models\Order`
+- Policy: `App\Policies\OrderPolicy` ✅
+- Policy: `App\Policies\OrderAuthPolicy` ❌ (won't auto-discover)
 
 No manual registration needed in service providers.
 
@@ -98,29 +102,28 @@ Policies should delegate to domain methods on the model. If you're writing manua
 
 ```php
 // ❌ BAD - manual logic in policy
-public function accept(User $user, HouseholdInvitation $invitation): bool
+public function accept(User $user, Invitation $invitation): bool
 {
     return $invitation->invitee_id === $user->id
         || $invitation->invitee_email === $user->email;
 }
 
 // ✅ GOOD - delegate to model
-public function accept(User $user, HouseholdInvitation $invitation): bool
+public function accept(User $user, Invitation $invitation): bool
 {
     return $invitation->isInvitee($user);
 }
 ```
 
-If a policy method needs complex logic, add a domain method to the model first. See `MODEL-003-domain-methods`.
+If a policy method needs complex logic, add a domain method to the model first.
 
 ## Key Points
 
-- Lives in `Modules/{Module}/Policies/`
+- Lives in `app/Policies/`
 - Name pattern: `{Model}Policy` (exact match required for auto-discovery)
 - Standard methods: `viewAny`, `view`, `create`, `update`, `delete`
 - Return `bool` for authorization result
-- Delegate to model domain methods (e.g., `$model->isOwner($user)`)
+- Delegate to model domain methods (e.g., `$model->isOwnedBy($user)`)
 - Manual logic in policies = missing domain method on model
 - Auto-discovered by Laravel when naming convention is followed
-- Use `authorizeResource()` in controller constructor
-- For non-resource policies, see `POLICY-002-action-policies`
+- **L12: wire via `authorizeResource(Model::class, 'param')` in the controller constructor**; never also `->can()` on the route

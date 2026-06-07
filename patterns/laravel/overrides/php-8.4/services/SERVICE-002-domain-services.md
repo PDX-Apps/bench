@@ -90,6 +90,68 @@ class PricingCalculator
 }
 ```
 
+## Transformation Pipelines (no pipe operator on 8.4)
+
+Domain services often run a value through a sequence of transformations: parse → normalize → validate → format. PHP 8.5's pipe operator (`|>`) chains these left-to-right, but it isn't available on 8.4. Chain via nested function calls, or — when each step stays on the same type — a fluent method chain.
+
+### Nested calls
+
+```php
+class ImportRowNormalizer
+{
+    public function normalizeRow(string $rawRow): NormalizedRow
+    {
+        return $this->buildNormalized(
+            $this->parseAmount(
+                $this->stripCurrencySymbols(
+                    trim(
+                        strtolower($rawRow)
+                    )
+                )
+            )
+        );
+    }
+}
+```
+
+Reading order is inside-out. Each new step adds another wrapping layer.
+
+### Intermediate variables (clearer for longer chains)
+
+When the nesting gets deep, name each step with an intermediate variable so the flow reads top-to-bottom:
+
+```php
+class ImportRowNormalizer
+{
+    public function normalizeRow(string $rawRow): NormalizedRow
+    {
+        $lowered = strtolower($rawRow);
+        $trimmed = trim($lowered);
+        $stripped = $this->stripCurrencySymbols($trimmed);
+        $amount = $this->parseAmount($stripped);
+
+        return $this->buildNormalized($amount);
+    }
+}
+```
+
+### Fluent chains for same-type pipelines
+
+For Laravel collections specifically, the existing fluent chain reads cleanly because each step returns the same type:
+
+```php
+public function summarize(Collection $lineItems): array
+{
+    return $lineItems
+        ->where('amount_cents', '>', 0)
+        ->groupBy('category')
+        ->map(fn ($items) => $items->sum('amount_cents'))
+        ->toArray();
+}
+```
+
+Fluent chains shine for same-type pipelines (Eloquent / Collection). For **mixed-type pipelines** where each step swaps the underlying type, prefer named intermediate variables over deep nesting.
+
 ## Good vs. Bad Service Names
 
 ### ✅ Good - Focused and Descriptive
@@ -210,6 +272,7 @@ class CreateOrderAction
 - Stateless when possible
 - Stay within domain boundaries — never cross domains (a `PricingCalculator` doesn't build queries)
 - Avoid generic names (`OrderService`, `DataProcessor`, `Helper`)
+- **PHP 8.4: no pipe operator — chain via nested calls, named intermediate variables, or fluent chains**
 
 ## When to Use Services
 
