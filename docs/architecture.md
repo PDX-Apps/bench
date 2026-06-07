@@ -73,7 +73,7 @@ User: /bench implement the member-invitation feature (covers API + UI)
   ↓ /laravel → Task → implement agent (backend; pattern lookups embedded)
     ↓ controller + request + resource + route + action + migration + tests
   ↓ /frontend → Task → vue-implement agent (frontend; pattern lookups embedded)
-    ↓ dialog + form + validator + i18n + service method
+    ↓ components + form + validator + query + i18n + tests
   ↓ Synthesizes: "Feature complete. API live, UI wired, both sides green."
 ```
 
@@ -123,11 +123,11 @@ This keeps each project's install lean and prevents source-only machinery (build
 
 ## Build pipeline
 
-A `bench init` (or `bench rebuild`) run goes through these steps in order:
+A `bench build` (or `bench rebuild`) run goes through these steps in order:
 
 1. **Detect versions** — `--laravel=N --php=N --frontend=X --vue=N`, falling back to auto-detect from `composer.json` + `package.json`, falling back to persisted versions from a prior install.
 2. **Mirror runtime essentials** from source → install:
-   - `.claude-plugin/`, `bin/`, `hooks/` — straight rsync.
+   - `.claude-plugin/`, `bin/`, `hooks/`, `concerns/` — straight rsync (core concerns; each addon's `concerns/` are copied in step 4).
    - `skills/` and `agents/` — walk source groups (`laravel/`, `vue/`, `react/`, `meta/`) and flatten to the install's depth-1 layout.
 3. **Reverse the previous addon install** (if any) — restore overwritten core files, remove addon-contributed files.
 4. **Copy addon skills/agents** — each registered addon's `skills/` and `agents/` get copied flat into the install. Later addons win on collision.
@@ -148,8 +148,6 @@ A Vue project doesn't need `/react-*` slash commands cluttering Claude Code; a R
 - **Build** resolves only the active frontend's patterns into `patterns-built/frontend/{vue,react}/`.
 - **Prune** walks the inactive frontend group at source and removes matching names from the install's flat `skills/` + `agents/`.
 
-The `/vue-ui` and `/react-ui` coordinator skills work the same way: source ships both, pruning leaves the active one installed.
-
 For backend-only projects (`--frontend=none`), both vue and react are pruned. Only Laravel + meta groups survive.
 
 ---
@@ -160,7 +158,7 @@ For backend-only projects (`--frontend=none`), both vue and react are pruned. On
 bench/                                # the source repo
 ├── bin/bench                         # CLI dispatcher
 ├── scripts/
-│   ├── init-project.sh               # bench init
+│   ├── init-project.sh               # bench build
 │   ├── install.sh                    # mirror source → install + path substitution + build + prune
 │   ├── build-patterns.sh             # resolve base + version overrides + addon patterns → patterns-built/
 │   ├── install-cli.sh                # optional global symlink helper
@@ -168,29 +166,32 @@ bench/                                # the source repo
 │
 ├── patterns/                         # raw pattern matrix (source-only — never shipped to install)
 │   ├── laravel/
-│   │   ├── base/                     # 50 files (L13 + PHP 8.5)
+│   │   ├── base/                     # 42 files (L13 + PHP 8.5)
 │   │   └── overrides/
 │   │       ├── laravel-12/           # 7 rollback files
 │   │       └── php-8.4/              # 2 rollback files
 │   └── frontend/
-│       ├── vue/base/                 # 20 files (Vue 3.5 + Pinia + vue-i18n + Zod)
-│       └── react/base/               # 20 files (React 18 + TS + React Router + Zustand + TanStack Query + Zod)
+│       ├── vue/base/                 # 14 files (Vue 3 + Pinia + TanStack Query + vue-i18n + Zod + Vitest)
+│       └── react/base/               # 14 files (React 19 + TS + React Router + Zustand + TanStack Query + Zod + Vitest)
 │
-├── skills/                           # 60 source skills, grouped by stack
-│   ├── laravel/                      # 32
-│   ├── vue/                          # 12 (incl. vue-ui coordinator)
-│   ├── react/                        # 12 (incl. react-ui coordinator)
-│   └── meta/                         # routers + help (bench, laravel, frontend, help)
+├── skills/                           # 51 source skills, grouped by stack
+│   ├── laravel/                      # 27
+│   ├── vue/                          # 10
+│   ├── react/                        # 10
+│   └── meta/                         # 4 — routers + help (bench, laravel, frontend, help)
 │
-├── agents/                           # 71 source agents, grouped by stack
-│   ├── laravel/                      # 37
-│   ├── vue/                          # 17
-│   ├── react/                        # 17
+├── agents/                           # 50 source agents, grouped by stack
+│   ├── laravel/                      # 28
+│   ├── vue/                          # 11
+│   ├── react/                        # 11
 │   └── meta/                         # (empty — meta skills delegate to other agents)
 │
-├── addons/                           # bundled addons (opt-in unless noted)
-│   ├── bench-manager/                # /bench-* project-tailoring toolkit — auto-loaded by bench init
-│   └── laravel-boost/                # laravel/boost MCP awareness + /boost-install
+├── concerns/                         # declared project-setup concerns (auth, test-framework, …)
+│
+├── addons/                           # 40 bundled addons (opt-in unless noted)
+│   ├── bench-manager/                # /bench-* project-tailoring toolkit — auto-loaded by bench build
+│   ├── laravel-boost/                # laravel/boost MCP awareness + /boost-install
+│   └── …                             # 38 more — see docs/addons.md
 │
 ├── .claude-plugin/
 │   └── plugin.json                   # Claude Code plugin manifest
@@ -210,7 +211,7 @@ bench/                                # the source repo
 
 ## Install directory layout
 
-After `bench init`, the project gets:
+After `bench build`, the project gets:
 
 ```
 {project}/
@@ -263,18 +264,15 @@ Free-form markdown at the project root. Claude Code injects it into every agent'
 
 The home for everything project-specific — pattern overrides, custom skills, custom workers. Lives at `{project}/.bench/`; **auto-discovered whenever it contains `patterns/`, `skills/`, or `agents/`** (a `.bench-addon.yaml` manifest is optional). Travels with the project repo — commit it.
 
-Contributions layer onto the bundled base **by `mode:` frontmatter** (see [contribution-system.md](./contribution-system.md)):
-
-- **`append`** (default) — add a section/convention; the base stays. Upgrade-safe.
-- **`anchor`** — splice into a named marker in the base.
-- **`replace`** (no `mode:` = legacy) — a full fork at the mirrored path (e.g. `.bench/patterns/laravel/http/controllers/CONTROLLER-001-resource.md` replaces the bundled one). Drifts on upgrade; use only when the project genuinely contradicts the base.
+Contributions layer onto the bundled base **by `mode:` frontmatter** — `append`, `anchor`, `merge`, `replace`, `patch`. A file with **no `mode:` is a full `replace`** at the mirrored path (e.g. `.bench/patterns/laravel/http/controllers/CONTROLLER-001-resource.md` replaces the bundled one); `append`/`anchor`/`merge` modify the base in place and survive upgrades. See [layering.md](./layering.md) for the full mechanics.
 
 The bundled [`bench-manager`](../addons/bench-manager/README.md) addon produces these without manual file editing:
 
 - `/bench-list [patterns|skills|agents]` · `/bench-show <type> <name>` — discover + inspect
 - `/bench-override <change>` — change a bundled default (routes to `pattern-author` / `skill-author` / `agent-author`, which pick the lightest contribution mode)
 - `/bench-slice <domain>` — generate a skill→agent→pattern triple for one of your own domains
-- `/bench-init` — scan the project for deviations and offer to capture each
+- `/bench-init` — guided setup: runs the project-setup **concerns** (auth, test framework, permissions, …) first, then offers to scan for other deviations
+- `/bench-configure <concern>` — (re)configure a single concern
 
 So the user can say "I prefer global helpers over DI" or "teach Bench my `app/Reports/` domain" without remembering paths or precedence rules.
 
