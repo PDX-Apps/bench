@@ -1,80 +1,56 @@
 ---
 description: |
-  First-run setup that tailors Bench to THIS project. Scans for where the project
-  deviates from Bench's defaults (custom base classes, auth/permissions, layout,
-  test framework, response shape) and for proprietary domains worth a slice, then
-  offers to capture each as a ./.bench/ override or a skill→agent→pattern slice.
-  Use on "/bench-init", "set up Bench for this project", "tailor Bench to my
-  codebase", "initialize Bench". Does NOT write your CLAUDE.md — that stays yours.
+  First-run setup that tailors Bench to THIS project. Walks the essential concerns
+  (auth, test framework, permissions, response shape, layout, + any addon concerns)
+  via a guided interview, then offers to scan for any other deviations and to build
+  slices for your domains. Use on "/bench-init", "set up Bench for this project",
+  "tailor Bench to my codebase", "initialize Bench". Does NOT write your CLAUDE.md.
 argument-hint: "[--depth=shallow|standard|deep]"
 ---
 
-You're the **/bench-init** skill. Tailor Bench to this project by detecting what's non-standard and offering to capture each, routing to the authoring agents. You orchestrate; you don't author files yourself, and you **never write the project's CLAUDE.md**.
+You're the **/bench-init** skill. Tailor Bench to this project in two passes — declared **concerns** first (reliable: every essential gets asked + every affected pattern updated), then optional **discovery** for the long tail. You own the interview; authoring is delegated. You **never write the project's CLAUDE.md**.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Scan (project-scanner)
+## Pass 1 — Concerns (the essentials; reliable, always asked)
 
-Stack + frontend are already known from install — don't re-detect. Delegate the deviation scan:
+Run the declared concerns at `<PLUGIN_ROOT>/concerns/*.md` (core + installed addons), sorted by `order`. For each:
 
-```
-Task(subagent_type: "project-scanner", description: "Scan project for Bench deviations", prompt: """
-  Scan this project and report deviations from Bench defaults + slice candidates.
-  depth: {parsed --depth or standard}
-  project_root: {cwd}   bench_install_root: {install}
-  Read-only — return the menu, write nothing.
-""")
-```
+1. Read it; if `when:` is a shell test, run it and skip on failure.
+2. Run `detect:` (if present) for a suggested default.
+3. **Ask its `questions`** with `AskUserQuestion` (bundle a concern's questions; pre-fill the detect/default). The user accepts or changes; skipping a concern is allowed.
+4. Delegate to `concern-runner` (Task) with `{ concern_file, answers, project_root: cwd, defer_rebuild: true }`.
 
-## Step 2: Present the menu (opt-in)
+This is the part that must NOT be left to guessing — auth/permissions/test-framework etc. always get asked, and each concern updates **all** the patterns in its `affects:` list (not whichever a scan happened to notice). See `<PLUGIN_ROOT>/patterns-built/authoring/CONCERNS.md`.
 
-Relay the scanner's findings as a short checklist the user picks from — each item is opt-in, "skip all" is always valid:
+## Pass 2 — Discovery (optional; the long tail)
 
-```
-Bench scanned your project. Here's what's non-standard — capture any of these?
+Then ask the user how far to go:
 
-Overrides (teach Bench your conventions):
-  [ ] 1. Controllers extend a custom BaseController        → pattern override
-  [ ] 2. Permissions via spatie/laravel-permission         → policy override
-  [ ] 3. Pest, tests co-located                            → test override
+> "Concerns set up. Want me to also (a) **scan** the codebase for any other non-standard conventions, (b) look for **specific things you name**, or (c) **stop here**?"
 
-Slices (Bench-grade scaffolding for your own domains):
-  [ ] A. app/Reports/ (11 classes + registry)              → /report skill→agent→pattern
+- **(a) scan** → delegate to `project-scanner` (read-only) for deviations + slice candidates; present an opt-in checklist.
+- **(b) user-directed** → take the things the user names ("we wrap responses in X", "we have an app/Reports domain") and route them directly.
+- **(c) stop** → done.
 
-Skip any — you can always run /bench-override or /bench-slice later.
-```
+For each accepted item: override → the matching author (`pattern-author`/`skill-author`/`agent-author`, `intent: fork`, `defer_rebuild: true`); slice candidate → the slice sequence (`pattern-author` capture → `skill-author` new). Show drafts for approval.
 
-Use `AskUserQuestion` to collect the selections. Nothing is captured without the user opting in.
-
-## Step 3: Capture each accepted item (defer_rebuild: true)
-
-- **Override items** → delegate to the matching author in `intent: fork`, `defer_rebuild: true`:
-  - convention/code shape → `pattern-author`; command behavior → `skill-author`; worker mechanics → `agent-author`.
-- **Slice items** → run the slice sequence (same as /bench-slice): `pattern-author` (intent capture) → `skill-author` (intent new, which cascades to `agent-author`), all `defer_rebuild: true`.
-
-Each author shows its draft for approval before writing under `./.bench/`.
-
-## Step 4: One rebuild + summary
-
-After all accepted items are written:
+## Finish — one rebuild + summary
 
 ```bash
 {install}/bin/bench rebuild
 ```
-
 ```
 Bench tailored to {project}.
-Overrides written: {list}
-Slices written:    {list}
-Skipped:           {list}
+Concerns configured: {list}
+Overrides/slices:    {list}
+Skipped:             {list}
 
-Your CLAUDE.md was untouched. Add more anytime:
-  /bench-override <change>   ·   /bench-slice <domain>   ·   /bench-list
+Your CLAUDE.md was untouched. Adjust anytime:
+  /bench-configure <concern>   ·   /bench-override <change>   ·   /bench-slice <domain>
 ```
 
 ## Notes
-
-- **Never writes CLAUDE.md.** Project context bench needs rides inside the `.bench/` overrides (each pattern carries its own `## Location`); the user's CLAUDE.md is theirs.
-- **Everything is opt-in.** A first run that captures nothing is a valid outcome — the user just learned what's non-standard.
-- **One rebuild** at the end (`defer_rebuild: true` on every author call).
-- Surface the scanner's low-confidence/unverified items as questions, not silent assumptions.
+- **Never writes CLAUDE.md** — project context rides inside the `.bench/` overrides each concern/author writes.
+- **Everything is opt-in.** A run that captures nothing is valid.
+- **One rebuild** at the end (`defer_rebuild: true` everywhere).

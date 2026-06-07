@@ -46,6 +46,9 @@ SOURCE_ONLY=(scripts/ patterns/ docs/ README.md)
 # (skills/<name>/SKILL.md, agents/<name>.md) which is what Claude Code expects.
 RUNTIME_ESSENTIAL_FLAT=(.claude-plugin/ bin/)
 [[ -d "$PLUGIN_SRC/hooks" ]] && RUNTIME_ESSENTIAL_FLAT+=(hooks/)
+# Concern declarations (auth, test-framework, …) drive guided project setup
+# (bench-init / /bench-configure). Mirror core's; addon concerns are copied below.
+[[ -d "$PLUGIN_SRC/concerns" ]] && RUNTIME_ESSENTIAL_FLAT+=(concerns/)
 # Groups inside skills/ and agents/ at source. Order doesn't matter; mirror walks all.
 SKILL_AGENT_GROUPS=(laravel vue react meta)
 
@@ -465,6 +468,17 @@ if (( ${#ADDONS[@]} > 0 )); then
         echo "$dest" >> "$ADDON_RECORD"
         copied=$((copied + 1))
       done < <(find "$addon/agents" -maxdepth 1 -type f -name "*.md" -print0)
+    fi
+
+    # Copy concerns/*.md (flat) — declarations that drive guided setup
+    if [[ -d "$addon/concerns" ]]; then
+      mkdir -p "$PLUGIN_ROOT/concerns"
+      while IFS= read -r -d '' f; do
+        dest="$PLUGIN_ROOT/concerns/$(basename "$f")"
+        cp "$f" "$dest"
+        echo "$dest" >> "$ADDON_RECORD"
+        copied=$((copied + 1))
+      done < <(find "$addon/concerns" -maxdepth 1 -type f -name "*.md" -print0)
     fi
 
     echo "  $addon_name: copied $copied file(s) from $addon"
