@@ -1,71 +1,23 @@
 ---
-description: Generate Vitest component tests or Playwright E2E tests for a React frontend. Use whenever the user mentions React tests, Vitest, Playwright, component testing, E2E testing, or test coverage in the React project.
-argument-hint: [what the user needs]
+description: Generate Vitest + Testing Library tests (render, getByRole, userEvent, callback assertions). Use when the user wants to test a component, hook, or store, or add unit tests. (End-to-end → bench-playwright addon.)
+argument-hint: [what to test]
 ---
 
-You're the **/react-test** skill. Translate the user's React test request into an enriched delegation to the `react-test` agent.
+You're the **/react-test** skill. Enrich and delegate to the `react-test` agent.
 
 The user's request: **$ARGUMENTS**
 
 ## Step 1: Parse
-
-Extract:
-- **Test type**: `component` (Vitest + @testing-library/react) OR `e2e` (Playwright)
-- **Subject**: which component/page/flow
-- **Module**: where the subject lives
-- **Cases**: rendering, user interaction, async/loading, error states, navigation
-
-## Step 2: Inspect
-
-```bash
-ls tests/unit/ 2>/dev/null || ls src/**/__tests__/ 2>/dev/null
-ls tests/e2e/ 2>/dev/null
-ls src/modules/{Module}/components/ 2>/dev/null
-cat vitest.config.ts 2>/dev/null | head -30
-ls tests/setup* 2>/dev/null
-ls tests/e2e/page-objects/ 2>/dev/null
+- The unit under test (component/hook/store) + path; behaviors to cover
+## Step 2: Resolve
+- Detect test location (co-located `*.test.tsx` vs `tests/`); note QueryClient wrap if it uses queries.
+## Step 3: Build context blob
 ```
-
-## Step 3: Resolve Ambiguity
-
-- Type unclear → ask: "Component test (Vitest) or E2E (Playwright)?"
-- E2E auth → assume `beforeEach` login flow
-- Subject missing → flag: "Component doesn't exist. Generate via `/react-component` first?"
-
-## Step 4: Build Context Blob
-
+- Under test: {path}
+- Behaviors: {list}
+- Mocks: {HTTP boundary / query client}
 ```
-Context for react-test agent:
-- Type: component | e2e
-- Subject: {ComponentName} | {flow-name}
-- Test file path:
-    component: tests/unit/{Component}.spec.tsx
-    e2e:       tests/e2e/{flow}.spec.ts
-- Component import path: src/modules/{Module}/components/{Folder}/{Name}.tsx
-- Required setup (component):
-    - QueryClientProvider with fresh QueryClient (retry: false)
-    - MemoryRouter if component uses router hooks
-    - Reset Zustand stores in beforeEach if relevant
-    - Mock services
-- Mocks needed: [BillService.list mocked]
-- Cases:
-    component: [renders props, calls callback on click, loading/error states]
-    e2e: [happy path, validation failure, unauthorized]
-- Page Object: tests/e2e/page-objects/{Name}.ts (if E2E and new flow)
-- Existing siblings: [BillCard.spec.tsx]
-```
-
-## Step 5: Delegate
-
+## Step 4: Delegate
 Task tool, `subagent_type: "react-test"`, pass the blob.
-
-## Step 6: Synthesize
-
-> "Created `tests/unit/BillCard.spec.tsx` with 4 component tests. Services mocked, QueryClient provider wrapped. Tests pass."
-
-## When to Ask vs Assume
-
-- Vitest + @testing-library/react + user-event → always for component
-- Playwright + Page Objects → always for E2E
-- `getByRole` first, `getByTestId` as fallback → always
-- `userEvent` not `fireEvent` → always
+## Step 5: Synthesize
+Report the test file + cases; runs with `vitest`.

@@ -1,39 +1,25 @@
 ---
 name: react-layout
-description: Generate React layout components (*Layout.tsx) for a React frontend. Reads only the pattern files relevant.
+description: Generate a React layout component (persistent shell with <Outlet/>). Matches UI-library primitives if present.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate React layout components. Read ONLY the pattern files needed.
+You generate ONE layout. Read ONLY what you need.
 
 ## Pattern Lookup
-
 | Need | Read |
 |------|------|
-| Layout conventions, Outlet, breadcrumbs | `<PLUGIN_ROOT>/patterns-built/frontend/react/routes/LAYOUT-001-layouts.md` |
-| Route definitions (parent route = layout) | `<PLUGIN_ROOT>/patterns-built/frontend/react/routes/ROUTE-001-route-definitions.md` |
-| Zustand session store access | `<PLUGIN_ROOT>/patterns-built/frontend/react/stores/STORE-001-zustand-stores.md` |
+| Layouts (how to build one) | `<PLUGIN_ROOT>/patterns-built/frontend/react/routing/LAYOUT-001-layouts.md` |
+| Styling | `<PLUGIN_ROOT>/patterns-built/frontend/react/styling/STYLE-001-conventions.md` |
 
 ## Process
-
-1. Read LAYOUT-001 (always)
-2. Determine where the layout belongs (`src/layouts/` or per-module `layouts/`)
-3. Check sibling layouts for conventions (UI library, breadcrumb hook, session selector)
-4. Create at the chosen path
-5. Implement: root container appropriate to the project's UI library (plain `<div>`, MUI Box, Radix layout, etc.), single `<Outlet />` wrapped in `<Suspense>`, session/breadcrumbs hooks if the project has them
+1. Read LAYOUT-001.
+2. If the project uses a UI library with layout primitives (AppBar/Drawer), use those; else hand-roll the shell with the matched styling.
+3. Write `layouts/{Name}Layout.tsx`: chrome + `<Outlet/>` + `<NavLink>` nav. Structure only.
+4. Run typecheck/lint if available.
 
 ## Return
+- Layout + where `<Outlet/>` renders + how to wire as a route.
 
-- Layout file path
-- What it wraps (header/sidebar/content)
-- Used by which routes (if known)
+## Rules
+- Chrome only — no data/business logic. Match the project's styling/UI system.

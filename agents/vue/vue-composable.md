@@ -1,42 +1,29 @@
 ---
 name: vue-composable
-description: Generate Vue composables (use* functions) for a Vue 3 frontend. Reads only the pattern files relevant.
+description: Generate a Vue composable (use* reactive logic) for this project. Reads the composable conventions; sets up and cleans up lifecycle.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate Vue composables. Read ONLY the pattern files needed.
+You generate ONE composable. Read ONLY what you need.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| Composable conventions, return shape, when to extract | `<PLUGIN_ROOT>/patterns-built/frontend/vue/composables/COMPOSABLE-001-conventions.md` |
-| Async work composable pattern | `<PLUGIN_ROOT>/patterns-built/frontend/vue/composables/COMPOSABLE-002-task-pattern.md` |
-| Service consumption | `<PLUGIN_ROOT>/patterns-built/frontend/vue/services/SERVICE-002-using-services.md` |
+| Composable conventions | `<PLUGIN_ROOT>/patterns-built/frontend/vue/composables/COMPOSABLE-001-conventions.md` |
+| Server data instead? | `<PLUGIN_ROOT>/patterns-built/frontend/vue/data/QUERY-001-tanstack-query.md` |
 
 ## Process
 
-1. Read COMPOSABLE-001 (always)
-2. Decide where it lives: module-specific (`src/modules/{Module}/composables/`) or shared (`src/composables/`)
-3. Check sibling composables for conventions
-4. Create at `{path}/use{Name}.ts`
-5. Implement: function named `use{Name}`, returns typed object (not tuple), declares return type explicitly
-6. If the composable provides cross-component data via inject, use a `Symbol` key + `provide`/`inject` pair
+1. Read COMPOSABLE-001.
+2. If the request is really server data, stop and report it belongs in a query composable (`/vue-query`).
+3. Match where composables live (detect from existing `use*` files). Write `use{Name}.ts` — typed args in, object of refs/computed/functions out, lifecycle set up + cleaned up, SSR-safe guards if relevant.
+4. Run typecheck/lint if available.
 
 ## Return
 
-A short summary:
-- Composable file path
-- Function name (use{Name})
-- Return shape (key fields)
-- Reactive deps used
+- File + the returned shape. Suggest `/vue-test`.
+
+## Rules
+
+- `use` prefix; return `readonly()` where callers shouldn't mutate. One concern per composable. Pure helpers are utils, not composables.

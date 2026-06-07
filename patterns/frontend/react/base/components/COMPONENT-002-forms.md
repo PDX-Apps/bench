@@ -1,121 +1,64 @@
-# COMPONENT-002-forms
+# React Component — forms
 
-## Pattern
+Forms with **react-hook-form** + **Zod** (via `@hookform/resolvers/zod`) — the standard modern React combo. The Zod schema ([VALIDATOR-001](../validation/VALIDATOR-001-zod.md)) is the single source of truth for validation + the form type.
 
-Form components live in `components/Forms/`. Use **react-hook-form** + **Zod resolver** for validation (the de-facto standard). Form components emit data via callbacks; the parent handles submission via the project's async-task helper.
-
-## Structure
+## Shape
 
 ```tsx
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslation } from 'react-i18next';
-import { z } from 'zod';
-import { nameSchema, emailSchema } from '../../validators/userValidators';
-
-export interface UserFormData {
-  name: string;
-  email: string;
-  notes: string;
-}
-
-const userFormSchema = z.object({
-  name: nameSchema(),
-  email: emailSchema(),
-  notes: z.string().optional(),
-});
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { userFormSchema, type UserFormValues } from '@/validation/user'
 
 interface UserFormProps {
-  defaultValues?: Partial<UserFormData>;
-  onValidSubmit: (data: UserFormData) => void;
+  defaultValues?: Partial<UserFormValues>
+  submitting?: boolean
+  onSubmit: (values: UserFormValues) => void
 }
 
-export function UserForm({ defaultValues, onValidSubmit }: UserFormProps) {
-  const { t } = useTranslation();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<UserFormData>({
+export function UserForm({ defaultValues, submitting, onSubmit }: UserFormProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues,
-  });
+  })
 
   return (
-    <form onSubmit={handleSubmit(onValidSubmit)} data-testid="user-form">
+    <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <label>
-        {t('user.form.name')}
-        <input {...register('name')} data-testid="user-form-name" />
-        {errors.name && <span className="error">{errors.name.message}</span>}
+        First name
+        <input {...register('firstName')} aria-invalid={!!errors.firstName} />
+        {errors.firstName && <span role="alert">{errors.firstName.message}</span>}
       </label>
 
       <label>
-        {t('user.form.email')}
-        <input type="email" {...register('email')} data-testid="user-form-email" />
-        {errors.email && <span className="error">{errors.email.message}</span>}
+        Email
+        <input type="email" {...register('email')} aria-invalid={!!errors.email} />
+        {errors.email && <span role="alert">{errors.email.message}</span>}
       </label>
 
-      <label>
-        {t('user.form.notes')}
-        <textarea {...register('notes')} />
-      </label>
-
-      <button type="submit" disabled={isSubmitting}>
-        {t('user.actions.save')}
-      </button>
+      <button type="submit" disabled={submitting}>Save</button>
     </form>
-  );
+  )
 }
 ```
-
-If the project uses a different form library (Formik, native React state, TanStack Form), follow that convention.
-
-## Per-field validation
-
-Compose primitive Zod schemas (see VALIDATOR-001) into the form-level schema:
-
-```typescript
-import { z } from 'zod';
-import { emailSchema, passwordSchema } from '../../validators/authValidators';
-
-const loginFormSchema = z.object({
-  email: emailSchema(),
-  password: passwordSchema(),
-});
-```
-
-`zodResolver` runs the schema on submit (and on change/blur per `mode` config). `formState.errors` exposes per-field messages.
-
-## Submission via the project's async-task helper
-
-Forms typically delegate submission to the parent (Dialog or Page). The parent wraps the call:
-
-```tsx
-const submitMutation = useMutation({
-  mutationFn: (data: BillFormData) => BillService.create(data),
-  onSuccess: () => toast.success(t('bill.notifications.success.created')),
-  onError: () => toast.error(t('bill.notifications.errors.createFailed')),
-});
-
-return <BillForm onValidSubmit={(data) => submitMutation.mutate(data)} />;
-```
-
-This shape uses TanStack Query's `useMutation` — the de-facto async pattern for React. If the project uses a different helper, follow it.
-
-## Form Errors
-
-- Per-field errors: render `errors.{field}.message` inline (RHF handles this)
-- Form-level errors (server-side validation failures): set them via `setError('root', { message })` or display from the mutation's `error` state
 
 ## Conventions
 
-- **react-hook-form + zodResolver** for validation (or whatever the project uses — discover)
-- **Named exports** for both the component and the `*FormData` interface
-- **`onValidSubmit` callback** — form is "dumb"; parent handles the side effect
-- **`data-testid`** on every interactive element
-- **`disabled={isSubmitting}`** on the submit button
+- **`useForm<T>` + `zodResolver(schema)`** — validation rules come from the Zod schema, never restated in the component.
+- **`{...register('field')}`** for inputs; `handleSubmit(onSubmit)` runs validation then calls your handler with typed values. Use `Controller` only for controlled/3rd-party inputs.
+- **The form doesn't persist** — `onSubmit` emits the validated payload; the parent (page or mutation hook) calls the API. Keeps it reusable for create *and* edit.
+- **`submitting` prop** disables the button during the parent's async submit.
+- **Accessibility**: `<label>`, `aria-invalid`, `role="alert"` on messages, `noValidate`.
 
-## Key Points
+## Don't
 
-- Forms collect data and emit; they don't call services
-- Validation: Zod schemas + zodResolver (or project equivalent)
-- Submission: parent's mutation/task helper
-- Export the `*FormData` interface for parent type-safety
-- See VALIDATOR-001 for Zod schema patterns
-- See HOOK-002 for async-work pattern
+- Don't duplicate validation in the component — derive from the Zod schema.
+- Don't fetch or mutate inside the form.
+- Don't reach for another form lib if the project already uses react-hook-form (or match the project's if different).
+
+## See also
+
+- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md) · [COMPONENT-001](./COMPONENT-001-conventions.md)

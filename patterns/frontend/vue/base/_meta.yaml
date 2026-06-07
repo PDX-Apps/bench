@@ -1,15 +1,16 @@
 # Base layer metadata for Vue patterns.
 #
-# This is the canonical pattern set targeting generic Vue 3 + Pinia + Vue I18n
-# + Zod + Vitest + Playwright. Quasar UI library lives in a separate addon
-# ();(private framework) lives in .
+# Generic Vue 3 base: <script setup> + TS, Pinia, Vue Router, Vite, Vitest,
+# TanStack Query (Vue Query), Zod. Styling/UI-library/data-library/meta-framework
+# choices are project-specific (detect-and-match) and ship as addons
+# (bench-tailwind, bench-unocss, bench-primevue, bench-vuetify, bench-shadcn-vue,
+# bench-quasar, bench-pinia-colada, bench-playwright, bench-nuxt).
 
 target:
   vue: "3.5.x"
   pinia: "3.x"
-  vue-i18n: "11.x"
-  typescript: "5.9.x"
+  vue-router: "4.x"
+  typescript: "5.x"
   vitest: "4.x"
-  playwright: "1.57.x"
 
-generated: 2026-05-31
+generated: 2026-06-07

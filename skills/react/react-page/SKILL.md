@@ -1,69 +1,24 @@
 ---
-description: Generate React route page components (*Page.tsx) for a React frontend. Use whenever the user mentions a page, route view, screen, or top-level UI for a route in the React project.
-argument-hint: [what the user needs]
+description: Generate a route-level React page component (owns the route's data, loading/error/empty states, composes components). Use when the user wants a new page, screen, view, or route component.
+argument-hint: [the page — what it shows]
 ---
 
-You're the **/react-page** skill. Translate the user's page request into an enriched delegation to the `react-page` agent.
+You're the **/react-page** skill. Enrich and delegate to the `react-page` agent.
 
 The user's request: **$ARGUMENTS**
 
 ## Step 1: Parse
-
-Extract:
-- **Module**
-- **Page name** — `*Page.tsx` suffix
-- **Page type**: list | detail | create | settings | dashboard
-- **Data needs**: which service, which model
-- **Route**: exists or needs creating?
-
-## Step 2: Inspect
-
-```bash
-ls src/modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls src/modules/{Module}/pages/ 2>/dev/null
-ls src/modules/{Module}/services/ 2>/dev/null
-ls src/modules/{Module}/router/ 2>/dev/null
-ls src/modules/{Module}/i18n/ 2>/dev/null
+- Page `{Name}Page`; what it shows; route params; the data it loads
+## Step 2: Resolve
+- Detect where pages live + the query hook to call (exists or suggest `/react-query`).
+## Step 3: Build context blob
 ```
-
-## Step 3: Resolve Ambiguity
-
-- Module missing → flag that the `{Module}` module needs to exist first
-- Service missing → flag: "Generate `/react-service` first?"
-- Route exists → confirm: update or new?
-- Layout choice → discover from project convention
-
-## Step 4: Build Context Blob
-
+- Page: {Name}Page.tsx
+- Params: {useParams ids}
+- Data: {useResource() query}
+- Renders: {components}
 ```
-Context for react-page agent:
-- Module: {Module}
-- Page name: {Name}Page.tsx
-- Path: src/modules/{Module}/pages/{Name}Page.tsx
-- Page type: list | detail | create | settings
-- Layout: (discover from project — AppLayout, GuestLayout, etc.)
-- Service: {Name}Service
-- Service methods: [list, get, create]
-- Models rendered: [Bill]
-- Components used: [BillCard, BillFormDialog]
-- States: loading + empty + error + data (mandatory)
-- i18n namespace: {module}; new keys under {module}.pages.{section}.*
-- Route binding: {Module}Routes.{LIST|DETAIL|CREATE}
-- Async pattern: TanStack Query (or project equivalent)
-- Existing siblings: [BillsPage.tsx]
-```
-
-## Step 5: Delegate
-
+## Step 4: Delegate
 Task tool, `subagent_type: "react-page"`, pass the blob.
-
-## Step 6: Synthesize
-
-> "Created `src/modules/Bill/pages/BillsPage.tsx`. Uses `useQuery` for `BillService.list()`. Renders `BillCard` grid. Loading/empty/error states handled. Default export for lazy loading."
-
-## When to Ask vs Assume
-
-- **Default export** (for lazy loading) → always
-- Loading/empty/error states → always all four
-- i18n in all configured locales → always (discover)
-- Layout/auth meta → follow project convention
+## Step 5: Synthesize
+Report the page + four states; suggest registering via `/react-route`.

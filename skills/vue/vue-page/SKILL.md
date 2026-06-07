@@ -1,67 +1,29 @@
 ---
-description: Generate Vue route page components (*Page.vue) for a Vue 3 frontend. Use whenever the user mentions a page, route view, screen, or top-level UI for a route in the frontend project.
-argument-hint: [what the user needs]
+description: Generate a route-level Vue page component (owns the route's data, loading/error/empty states, composes presentational components). Use when the user wants a new page, screen, view, or route component.
+argument-hint: [the page — what it shows]
 ---
 
-You're the **/vue-page** skill. Translate the user's page request into an enriched delegation to the `vue-page` agent.
+You're the **/vue-page** skill. Enrich and delegate to the `vue-page` agent.
 
 The user's request: **$ARGUMENTS**
 
 ## Step 1: Parse
+- Page name `{Name}Page`; what it shows; route params it takes; the data it loads
 
-Extract:
-- **Module** (Bill, Household, Auth, etc.)
-- **Page name** — `*Page.vue` suffix
-- **Page type**: list | detail | create | settings | dashboard
-- **Data needs**: which service, which model
-- **Route**: does it exist or needs creating?
+## Step 2: Resolve
+- Detect where pages live + how data is fetched (query composable) — match.
+- Note the query/composable to call (exists or suggest `/vue-query`).
 
-## Step 2: Inspect
-
-```bash
-ls src/modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls src/modules/{Module}/pages/ 2>/dev/null
-ls src/modules/{Module}/services/ 2>/dev/null
-ls src/modules/{Module}/router/ 2>/dev/null
-ls src/modules/{Module}/i18n/ 2>/dev/null
+## Step 3: Build context blob
+```
+- Page: {Name}Page.vue
+- Route params (props): {ids}
+- Data: {useResource() query}
+- Renders: {components}
 ```
 
-## Step 3: Resolve Ambiguity
-
-- Module missing → flag that the `{Module}` module needs to exist first
-- Service missing → flag: "Page calls `BillService.list()` — service doesn't exist. Generate `/vue-service` first?"
-- Route already exists → confirm: update or create new?
-- Layout choice → discover from project convention
-
-## Step 4: Build Context Blob
-
-```
-Context for vue-page agent:
-- Module: {Module}
-- Page name: {Name}Page.vue
-- Path: src/modules/{Module}/pages/{Name}Page.vue
-- Page type: list | detail | create | settings
-- Layout: (discover from project)
-- Service: {Name}Service
-- Service methods: [list, get, create]
-- Models rendered: [Bill]
-- Components used: [BillCard, BillFormDialog]
-- States to handle: loading + empty + error + data (mandatory)
-- i18n namespace: {module}; new keys under {module}.pages.{section}.*
-- Route binding: {Module}Routes.{LIST|DETAIL|CREATE}
-- Existing siblings: [BillsPage.vue, BillPage.vue]
-```
-
-## Step 5: Delegate
-
+## Step 4: Delegate
 Task tool, `subagent_type: "vue-page"`, pass the blob.
 
-## Step 6: Synthesize
-
-> "Created `src/modules/Bill/pages/BillsPage.vue`. Calls `BillService.list()` with reactive loading state. Renders `BillCard` grid. Loading/empty/error states handled. New i18n keys under `bill.pages.list.*`. Bound to `BillRoutes.LIST`."
-
-## When to Ask vs Assume
-
-- Loading/empty/error states → always all four
-- i18n in all configured locales → always (discover from project)
-- Layout / auth meta → follow project convention
+## Step 5: Synthesize
+Report the page + the four states handled; suggest registering it via `/vue-route`.

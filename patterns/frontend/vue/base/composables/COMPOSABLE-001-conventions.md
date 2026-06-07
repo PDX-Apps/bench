@@ -1,138 +1,57 @@
-# COMPOSABLE-001-conventions
+# Composables — conventions
 
-## Pattern
+Reusable reactive logic extracted from components. The primary way to share stateful behaviour in Vue 3.
 
-Composables are reusable Vue functions starting with `use*` that encapsulate logic, state, or lifecycle hooks. Use composables when the same logic appears in 3+ components.
+## When
 
-## Structure
+- Logic used by 2+ components (or one complex component you want to test in isolation).
+- Anything stateful + reactive: a toggle, a debounced value, a resize observer, a form helper.
+- **Server state is NOT a plain composable** — use a query composable ([QUERY-001](../data/QUERY-001-tanstack-query.md)).
+- **Pure, non-reactive helpers** (`formatDate`, `slugify`) are `utils/`, not composables.
 
-```typescript
-import { computed, type ComputedRef, ref, type Ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { BillService } from 'src/modules/Bill/services/BillService';
-import type { Bill, BillSummary } from 'src/modules/Bill/models';
+## Shape — `use*` prefix, return a typed object
 
-/**
- * Bill summary composable
- *
- * Provides a reactive summary of the current user's bills.
- * Handles loading state and error reporting.
- */
-export function useBillSummary(): {
-  summary: ComputedRef<BillSummary>;
-  refresh: () => Promise<void>;
-  isLoading: Ref<boolean>;
-} {
-  const bills = ref<Bill[]>([]);
-  const isLoading = ref(false);
+```ts
+// composables/useDisclosure.ts
+import { ref, readonly } from 'vue'
 
-  async function refresh(): Promise<void> {
-    isLoading.value = true;
-    try {
-      bills.value = await BillService.list();
-    } finally {
-      isLoading.value = false;
-    }
-  }
+export function useDisclosure(initial = false) {
+  const isOpen = ref(initial)
 
-  const summary = computed<BillSummary>(() => ({
-    total: bills.value.length,
-    overdue: bills.value.filter((b) => b.isOverdue).length,
-    paid: bills.value.filter((b) => b.isPaid).length,
-  }));
+  function open() { isOpen.value = true }
+  function close() { isOpen.value = false }
+  function toggle() { isOpen.value = !isOpen.value }
 
-  return { summary, refresh, isLoading };
-}
-```
-
-## Naming
-
-- File: `use{Name}.ts` (camelCase)
-- Function: `use{Name}` matching the file
-- One composable per file (named export, not default)
-
-## Location
-
-| Scope | Location |
-|-------|----------|
-| Module-specific composable | `src/modules/{Module}/composables/use{Name}.ts` |
-| Cross-module / shared | `src/composables/use{Name}.ts` or `src/modules/Core/composables/use{Name}.ts` — match project convention |
-
-## Return Pattern
-
-Return a typed object — not a tuple, not destructured primitives:
-
-```typescript
-// ✅ Right — object with named properties
-return { summary, refresh, isLoading };
-
-// ❌ Wrong — array destructure (consumers can't tell what's what)
-return [summary, refresh, isLoading];
-```
-
-Always declare the return type explicitly. Helps IDE inference and serves as inline documentation.
-
-## What Belongs in a Composable
-
-- ✅ Reactive state with computed derivations
-- ✅ Logic that interacts with services + UI state together
-- ✅ Lifecycle hooks (`onMounted`, `onUnmounted`)
-- ✅ Watchers across reactive deps
-- ✅ Provide/inject for cross-component data passing
-
-## What Does NOT Belong
-
-- ❌ Pure utility functions (no reactivity) — put in `utils/` instead
-- ❌ One-off logic used in only 1-2 components — keep inline
-- ❌ Side effects without cleanup — composables that allocate must release in `onUnmounted`
-
-## Provide/Inject Pattern
-
-Composables can use `provide`/`inject` to pass data through the component tree:
-
-```typescript
-const KEY = Symbol('my-context');
-
-export function provideMyContext(value: Ref<MyType>) {
-  provide(KEY, value);
-}
-
-export function useMyContext(): Ref<MyType | undefined> {
-  return inject(KEY, ref(undefined));
-}
-```
-
-## Composables That Use Other Composables
-
-Compose freely — composables are just functions:
-
-```typescript
-export function useBillsForCurrentHousehold() {
-  const { householdId } = useCurrentHousehold();   // another composable
-  // ... build on top
-}
-```
-
-## Module Augmentation Pattern
-
-Composables that interact with router meta can augment the route types:
-
-```typescript
-declare module 'vue-router' {
-  interface RouteMeta {
-    breadcrumb?: BreadcrumbMeta;
+  return {
+    isOpen: readonly(isOpen),
+    open,
+    close,
+    toggle,
   }
 }
 ```
 
-This makes the meta property type-safe project-wide.
+Usage:
 
-## Key Points
+```ts
+const { isOpen, open, close } = useDisclosure()
+```
 
-- Composables are functions named `use{Name}` returning a typed object
-- Live in `src/modules/{Module}/composables/` (or `src/composables/` if shared)
-- Return an object with named properties — never a tuple
-- Always declare the return type
-- Use `provide`/`inject` for cross-component data sharing
-- Pure utilities without reactivity belong in `utils/`, not `composables/`
-- See COMPOSABLE-002 for the async-work composable pattern
+## Conventions
+
+- **`use` prefix**, camelCase file = export name (`useDisclosure.ts` → `useDisclosure`).
+- **Accept arguments, return an object** of refs/computed/functions. Return `readonly()` refs the caller shouldn't mutate directly.
+- **Set up and clean up** lifecycle inside the composable (`onMounted`/`onUnmounted`, `watch` with its stop handle) so callers don't have to.
+- **Stay framework-pure** — no direct DOM assumptions beyond what you guard; accept element refs as args rather than querying the document.
+- **One concern per composable.** Compose small ones rather than building a god-composable.
+- **SSR-safe** if the project might use Nuxt — guard `window`/`document` access.
+
+## Don't
+
+- Don't put server-state caching here — that's [QUERY-001](../data/QUERY-001-tanstack-query.md).
+- Don't return a giant mutable object; expose intent (functions) over raw state where it matters.
+- Don't create a composable for a pure function — that's a util.
+
+## See also
+
+- [QUERY-001](../data/QUERY-001-tanstack-query.md) · [STORE-001](../state/STORE-001-pinia-stores.md) · [COMPONENT-001](../components/COMPONENT-001-conventions.md)

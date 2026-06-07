@@ -1,57 +1,26 @@
 ---
-description: Generate Pinia stores (typed defineStore) for a Vue 3 frontend. Use whenever the user mentions a store, Pinia, global state, session state, or shared reactive state in the frontend project.
-argument-hint: [what the user needs]
+description: Generate a Pinia store (setup-store syntax) for shared client state. Use when the user wants a Pinia store, global/shared state, or a session/cart/ui store. (Server/API data → use /vue-query instead.)
+argument-hint: [what state the store holds]
 ---
 
-You're the **/vue-store** skill. Translate the user's store request into an enriched delegation to the `vue-store` agent.
+You're the **/vue-store** skill. Enrich and delegate to the `vue-store` agent.
 
 The user's request: **$ARGUMENTS**
 
 ## Step 1: Parse
+- Store id `{name}` (`use{Name}Store`); the client state it holds, getters, actions
+- If it's really server data (lists/entities from an API) → redirect to `/vue-query`.
 
-Extract:
-- **Store name** (`session`, `notifications`, `userPrefs`)
-- **State shape**: which fields, what types
-- **Actions**: what methods are needed (`setX`, `clearX`, `fetchX`)
-- **Getters**: derived values
-
-## Step 2: Inspect
-
-```bash
-ls src/stores/ 2>/dev/null || ls frontend/src/stores/ 2>/dev/null || echo "STORES_DIR_UNKNOWN"
+## Step 2: Build context blob
+```
+- Store: use{Name}Store  (id: "{name}")
+- State: {fields}
+- Getters: {derived}
+- Actions: {functions}
 ```
 
-## Step 3: Resolve Ambiguity
-
-- Module-local vs global → stores are typically global. Confirm if module-local is needed (usually a composable suffices).
-- "Make a store for X local data" → suggest composable + `ref`s instead.
-- Service interaction → confirm which services the actions call.
-
-## Step 4: Build Context Blob
-
-```
-Context for vue-store agent:
-- Store name: {name}  (lowercase camelCase)
-- File path: src/stores/{name}Store.ts
-- Composable name: use{Name}Store
-- State shape: { user: User|null, initialized: boolean }
-- Getters: { isAuthenticated, getUser, isInitialized }
-- Actions: { setSession(IUser), clearSession(), fetchSession() }
-- Services consumed: [AuthService, ApiService]  (project's service-access convention)
-- HMR block: yes (Vite projects)
-- Existing siblings: [sessionStore.ts]
-```
-
-## Step 5: Delegate
-
+## Step 3: Delegate
 Task tool, `subagent_type: "vue-store"`, pass the blob.
 
-## Step 6: Synthesize
-
-> "Created `src/stores/notificationsStore.ts`. Typed `defineStore<'notifications', State, Getters, Actions>`. Actions call `NotificationService.fetchAll()`. HMR block included. Composable: `useNotificationsStore()`."
-
-## When to Ask vs Assume
-
-- Typed generic form → always
-- HMR block (Vite) → always
-- Module-local store → recommend composable instead unless cross-component sharing required
+## Step 4: Synthesize
+Report the store + its public surface; suggest `/vue-test`.

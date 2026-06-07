@@ -7,40 +7,35 @@ You're the **/frontend** skill — the frontend router. Detect the framework, de
 
 The request: **$ARGUMENTS**
 
-## Step 1: Detect the framework
+## Step 1: The framework (set at install)
 
-```bash
-grep -qE '"vue"' package.json frontend/package.json 2>/dev/null && echo vue
-grep -qE '"react"' package.json frontend/package.json 2>/dev/null && echo react
-```
+This project's frontend is **`<BENCH_FRONTEND>`** — chosen at `bench init` (`--frontend=…`) and baked in here, so there's nothing to detect. Use the matching agent set: `<BENCH_FRONTEND>-component`, `<BENCH_FRONTEND>-page`, etc. (i.e. `vue-*` or `react-*`).
 
-Use the detected framework's agent set (`vue-*` or `react-*`). If both or neither resolve (monorepo / unusual layout), ask. The project's `CLAUDE.md` may state where the frontend lives.
+(If this reads `none`, no frontend is configured — tell the user to re-run `bench init --frontend=vue|react`. If it reads `<BENCH_FRONTEND>` literally, the install didn't substitute — run `bench rebuild`.)
 
 ## Step 2: Classify
 
 - **single artifact** → one agent (see table)
-- **full UI feature** (page + components + form + dialog + validators + i18n) → the `{fw}-ui` agent
-- **spec / PRD / ticket, or a broad feature** → the `{fw}-implement` workflow agent
+- **multi-artifact UI feature** (page + components + form + query + validators + i18n) → spawn the relevant agents in dependency order (Step 3)
+- **spec / PRD / ticket, or a broad feature** → the `<BENCH_FRONTEND>-implement` workflow agent
 
-## Step 3: Delegate (Task tool; `{fw}` = `vue` or `react`)
+## Step 3: Delegate (Task tool)
 
 | Artifact | `subagent_type` |
 |----------|-----------------|
-| Component | `{fw}-component` |
-| Page | `{fw}-page` |
-| Layout | `{fw}-layout` |
-| Store | `{fw}-store` |
-| Service | `{fw}-service` |
-| Model | `{fw}-model` |
-| Route | `{fw}-route` |
-| i18n | `{fw}-i18n` |
-| Validator | `{fw}-validator` |
+| Component / form | `<BENCH_FRONTEND>-component` |
+| Page | `<BENCH_FRONTEND>-page` |
+| Layout | `<BENCH_FRONTEND>-layout` |
+| Client-state store | `<BENCH_FRONTEND>-store` |
+| Data fetching (queries/mutations) | `<BENCH_FRONTEND>-query` |
+| Route | `<BENCH_FRONTEND>-route` |
+| Validator (Zod) | `<BENCH_FRONTEND>-validator` |
 | Composable (Vue) / Hook (React) | `vue-composable` / `react-hook` |
-| Test | `{fw}-test` |
-| Full UI feature | `{fw}-ui` |
-| Spec / broad feature | `{fw}-implement` |
+| i18n | `<BENCH_FRONTEND>-i18n` |
+| Test | `<BENCH_FRONTEND>-test` |
+| Spec / broad feature | `<BENCH_FRONTEND>-implement` |
 
-For a multi-artifact feature, spawn agents in dependency order (model/types → service → store → components → page → route → i18n → tests) and wait for each. Brief each agent with the artifact, the feature context, and any non-default location from `CLAUDE.md`.
+For a multi-artifact feature, spawn agents in dependency order (**validators/types → data (query) → store → components → page → route → i18n → tests**) and wait for each. Brief each agent with the artifact + the feature context; tell it to detect and match the project's layout, styling, and data library.
 
 ## Step 4: Report
 

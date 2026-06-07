@@ -1,87 +1,65 @@
-# COMPONENT-001-conventions
+# React Component — conventions
 
-## Pattern
+How to write a component in this project: function components + hooks + TypeScript. Styling is project-specific — see [STYLE-001](../styling/STYLE-001-conventions.md); the example uses CSS Modules as the zero-config default.
 
-React functional components written in TypeScript. Components live under `src/modules/{Name}/components/` (or whatever feature-folder convention the project uses) organized by semantic folders.
+## When
 
-## Folder Conventions
+Any reusable piece of UI. Route-level components are [PAGE-001](../routing/PAGE-001-pages.md); same anatomy.
 
-| Folder | Purpose | Example |
-|--------|---------|---------|
-| `Cards/` | Display a single resource summary | `BillCard.tsx` |
-| `Dialogs/` | Modal dialogs (create/edit, confirm) | `BillFormDialog.tsx` |
-| `Forms/` | Form components (often used inside Dialogs) | `BillForm.tsx` |
-| `Inputs/` | Reusable input wrappers | `EmailInput.tsx` |
-| `Sections/` | Page sections | `HeroSection.tsx` |
-| `Common/` | Cross-cutting utilities | `TaskErrors.tsx` |
+## Naming + location
 
-## Structure
+- **PascalCase** component + file: `UserCard.tsx`, `<UserCard />`.
+- Match the project's layout — feature folders (`src/features/users/components/UserCard.tsx`) for non-trivial apps, flat (`src/components/UserCard.tsx`) for small. Detect from where siblings live.
+
+## Anatomy — typed function component
 
 ```tsx
-import { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { Bill } from '../../types/bill.types';
+import { useState } from 'react'
+import type { User } from '@/types/user'
+import styles from './UserCard.module.css'
 
-interface BillCardProps {
-  bill: Bill;
-  expandable?: boolean;
-  onClick?: (bill: Bill) => void;
-  onEdit?: (bill: Bill) => void;
+interface UserCardProps {
+  user: User
+  dense?: boolean
+  onEdit?: (user: User) => void
 }
 
-export function BillCard({ bill, expandable = false, onClick, onEdit }: BillCardProps) {
-  const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
-
-  const formattedAmount = useMemo(
-    () => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(bill.amount),
-    [bill.amount],
-  );
+export function UserCard({ user, dense = false, onEdit }: UserCardProps) {
+  const [selected, setSelected] = useState(false)
+  const fullName = `${user.firstName} ${user.lastName}`
 
   return (
-    <article className="bill-card" onClick={() => onClick?.(bill)} data-testid="bill-card">
-      <h3 className="text-lg font-semibold">{bill.name}</h3>
-      <p className="text-sm">{formattedAmount}</p>
-      {expandable && (
-        <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
-          {expanded ? t('common.collapse') : t('common.expand')}
-        </button>
-      )}
+    <article className={`${styles.card} ${dense ? styles.dense : ''}`}>
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={(e) => setSelected(e.target.checked)}
+        aria-label={`Select ${fullName}`}
+      />
+      <h3>{fullName}</h3>
+      <button type="button" onClick={() => onEdit?.(user)}>Edit</button>
     </article>
-  );
+  )
 }
 ```
 
-If the project uses a UI library (Radix, MUI, Chakra, headless UI, shadcn/ui), substitute its primitives. Follow what sibling components do.
-
 ## Conventions
 
-- **Functional components only** — no class components
-- **TypeScript** — always; props typed via interface
-- **Named exports** — `export function ComponentName(...)`, never default exports (better for refactoring/discovery)
-- **Hooks order** — useState → useMemo / useCallback → custom hooks → useEffect (consistent ordering aids readability)
-- **Props destructured in signature** with defaults inline
-- **Optional callbacks** — `onClick?: (x: T) => void`, use optional chaining when calling (`onClick?.(x)`)
-- **`data-testid`** on interactive elements for testability
-- **i18n** via `useTranslation()` from react-i18next (or project's helper)
+- **Function components**, named export, **typed props interface** (`{Name}Props`). Destructure props with defaults in the signature.
+- **Callbacks as props** (`onEdit`, `onSubmit`) — past/imperative names; type them. No event bus.
+- **Hooks at the top level**, never conditional. Extract reusable logic into custom hooks ([HOOK-001](../hooks/HOOK-001-conventions.md)).
+- **Composition via `children`** + render props/slots-as-props where a parent needs context.
+- **Keys** on lists are stable ids, never the array index.
+- **Accessibility**: real `<button>`/`<a>`, `aria-*` on icon-only controls, labels on inputs.
+- **Presentational** — data fetching lives in query hooks ([QUERY-001](../data/QUERY-001-tanstack-query.md)), not inside the component body with `useEffect`.
 
-## Sizing Guidance
+## Don't
 
-- Components > 250 lines → split into sub-components
-- Repeated logic in 3+ components → extract to custom hook (see HOOK-001)
-- Pure presentation: no service calls, just props in, callbacks out
-- "Smart" components (data-fetching, mutations): use the project's async-task pattern (HOOK-002) and services
+- Don't use class components or default exports for components (named exports aid refactors/imports — match the project if it differs).
+- Don't call hooks conditionally or in loops.
+- Don't hard-code a styling system — match the project's (Tailwind, CSS Modules, a UI lib). See [STYLE-001](../styling/STYLE-001-conventions.md).
+- Don't use array index as `key`; don't fetch with raw `useEffect` when a query lib is present.
 
-## Naming
+## See also
 
-- PascalCase filenames matching the exported component: `BillCard.tsx`, `MemberSplitInput.tsx`
-- File name matches primary export
-- Variants suffix with the variant: `BillForm.tsx`, `HouseholdBillForm.tsx`
-
-## Key Points
-
-- One component per file, named export matching filename
-- Props typed via interface
-- Hooks in consistent order (state → derived → custom → effects)
-- Use project's UI library conventions; don't introduce a new one
-- See COMPONENT-002 for forms, COMPONENT-003 for dialogs/modals
+- [COMPONENT-002-forms.md](./COMPONENT-002-forms.md) · [HOOK-001](../hooks/HOOK-001-conventions.md) · [STYLE-001](../styling/STYLE-001-conventions.md)

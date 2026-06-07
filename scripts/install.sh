@@ -483,6 +483,20 @@ if [[ -d "$PLUGIN_ROOT/patterns-built/frontend/react" ]] && \
   HAS_REACT_PATTERNS=true
 fi
 
+# Bake the chosen frontend into the skill/agent files (the <BENCH_FRONTEND>
+# placeholder), so the /frontend router knows the framework constant-time instead
+# of re-detecting it from package.json on every invocation. Set at bench init.
+BENCH_FRONTEND="none"
+$HAS_VUE_PATTERNS   && BENCH_FRONTEND="vue"
+$HAS_REACT_PATTERNS && BENCH_FRONTEND="react"
+for dir in "${SUBSTITUTE_TARGETS[@]}"; do
+  if [[ -d "$dir" ]]; then
+    while IFS= read -r -d '' f; do
+      grep -q "<BENCH_FRONTEND>" "$f" && sed -i '' "s|<BENCH_FRONTEND>|$BENCH_FRONTEND|g" "$f"
+    done < <(find "$dir" -name "*.md" -print0)
+  fi
+done
+
 prune_count=0
 # Pruning derives names from the SOURCE group dir, not a hardcoded list — so adding
 # a new vue-*/react-* skill in source doesn't require also touching this file.

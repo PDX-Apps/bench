@@ -1,19 +1,17 @@
 # Base layer metadata for React patterns.
 #
-# This is the canonical pattern set targeting generic React 18+ with TypeScript,
-# React Router, Zustand or Redux Toolkit (project-dependent), TanStack Query,
-# Zod, Vitest, and Playwright.
-#
-# STATUS: SKELETON — pattern bodies have not been written yet. The directory
-# layout mirrors what frontend/vue/base provides, but most files are stubs.
-# See definition.md for the planned pattern set.
+# Generic React + TS base: function components + hooks, Zustand, React Router,
+# Vite, Vitest + Testing Library, TanStack Query (React Query), react-hook-form
+# + Zod. Styling/UI-library/router/meta-framework choices are project-specific
+# (detect-and-match) and ship as addons (bench-tailwind, bench-shadcn, bench-mui,
+# bench-chakra, bench-radix, bench-tanstack-router, bench-playwright,
+# bench-nextjs, bench-remix).
 
 target:
   react: "18.x"
-  react-router: "6.x"
   typescript: "5.x"
-  vitest: "1.x"
-  playwright: "1.x"
+  react-router: "6.x"
+  zustand: "5.x"
+  vitest: "4.x"
 
-generated: 2026-05-31
-status: skeleton
+generated: 2026-06-07

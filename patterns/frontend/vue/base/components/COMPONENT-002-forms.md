@@ -1,142 +1,72 @@
-# COMPONENT-002-forms
+# Vue Component — forms
 
-## Pattern
+Form components: bind fields, validate with [Zod](../validation/VALIDATOR-001-zod.md), emit a typed payload on valid submit. The base stays library-light (plain refs + Zod); if the project uses **vee-validate** or a UI library's form system, match that instead.
 
-Form components live in `components/Forms/`. They emit form data to a parent (often a Dialog — see COMPONENT-003). Per-field validation uses Zod schemas; form-level submission uses the project's async-task helper (see COMPOSABLE-002).
+## When
 
-## Structure
+Any create/edit form. Pair with a Zod schema ([VALIDATOR-001](../validation/VALIDATOR-001-zod.md)) and, for persistence, a mutation ([QUERY-001](../data/QUERY-001-tanstack-query.md)).
+
+## Shape — refs + Zod, emit on valid submit
 
 ```vue
-<script lang="ts" setup>
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { nameSchema, emailSchema } from '../../validators/userValidators';
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { userFormSchema, type UserFormValues } from '@/validation/user'
 
-/**
- * Form data shape (exported for parent consumption)
- */
-export interface UserFormData {
-  name: string;
-  email: string;
-  notes: string;
+const props = defineProps<{ initial?: Partial<UserFormValues>; submitting?: boolean }>()
+const emit = defineEmits<{ submit: [values: UserFormValues] }>()
+
+const form = reactive<UserFormValues>({
+  firstName: props.initial?.firstName ?? '',
+  email: props.initial?.email ?? '',
+})
+const errors = ref<Partial<Record<keyof UserFormValues, string>>>({})
+
+function onSubmit() {
+  const result = userFormSchema.safeParse(form)
+  if (!result.success) {
+    errors.value = Object.fromEntries(
+      result.error.issues.map((i) => [i.path[0], i.message]),
+    )
+    return
+  }
+  errors.value = {}
+  emit('submit', result.data)
 }
-
-/**
- * Props
- */
-interface Props {
-  initial?: Partial<UserFormData>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  initial: () => ({}),
-});
-
-/**
- * Model — bidirectional binding with parent
- */
-const formData = defineModel<UserFormData>({ required: true });
-
-/**
- * Emits
- */
-const emit = defineEmits<{
-  validSubmit: [data: UserFormData];
-}>();
-
-/**
- * Composables
- */
-const { t } = useI18n();
-
-/**
- * State (only if needed beyond model)
- */
-const submitted = ref(false);
 </script>
 
 <template>
-  <form @submit.prevent="emit('validSubmit', formData)">
-    <BaseInput
-      v-model="formData.name"
-      :label="t('user.form.name')"
-      :schema="nameSchema()"
-      required
-    />
-    <BaseInput
-      v-model="formData.email"
-      :label="t('user.form.email')"
-      :schema="emailSchema()"
-      type="email"
-      required
-    />
+  <form novalidate @submit.prevent="onSubmit">
     <label>
-      {{ t('user.form.notes') }}
-      <textarea v-model="formData.notes" />
+      First name
+      <input v-model="form.firstName" name="firstName" :aria-invalid="!!errors.firstName" />
+      <span v-if="errors.firstName" role="alert">{{ errors.firstName }}</span>
     </label>
-    <button type="submit">{{ t('user.actions.save') }}</button>
+
+    <label>
+      Email
+      <input v-model="form.email" name="email" type="email" :aria-invalid="!!errors.email" />
+      <span v-if="errors.email" role="alert">{{ errors.email }}</span>
+    </label>
+
+    <button type="submit" :disabled="submitting">Save</button>
   </form>
 </template>
 ```
 
-If the project uses a UI library (Quasar, Vuetify, etc.), substitute its form components — follow what sibling forms do.
-
-## Input wrapper + Zod
-
-`BaseInput` (or whatever the project calls its input wrapper) is typically a thin wrapper around the UI library's input that integrates with Zod schemas:
-
-```vue
-<BaseInput v-model="email" :schema="emailSchema()" />
-```
-
-`emailSchema()` returns a fresh Zod schema (factory function — see VALIDATOR-001). The wrapper runs the schema on input/blur and shows validation errors inline. If the project doesn't have such a wrapper, validate manually inside the form's submit handler.
-
-## Submission via the project's task helper
-
-Forms typically delegate submission to their parent (Dialog or Page). The submitting component wraps the call in the project's async-task helper (see COMPOSABLE-002):
-
-```typescript
-const submitTask = task({
-  task: async () => BillService.create(formData.value),
-  showNotification: {
-    success: () => t('bill.notifications.success.created'),
-    error: () => t('bill.notifications.errors.createFailed'),
-  },
-});
-
-async function handleValidSubmit(data: BillFormData) {
-  const bill = await submitTask.run();
-  if (bill) emit('success', bill);
-}
-```
-
-Use `submitTask.isActive.value` to disable the submit button and show loading state.
-
-## Form Errors
-
-Display task-level errors with the project's error-display component (e.g., `TaskErrors`):
-
-```vue
-<TaskErrors :task-errors="submitTask.errors.value" />
-```
-
-Per-field errors come automatically from the input wrapper + Zod (if the wrapper supports it). Otherwise show inline.
-
 ## Conventions
 
-- Forms emit `validSubmit` (or similar) with form data — they don't call services directly
-- Parent wraps the call in the project's task helper for loading/error/notification handling
-- Export the `*FormData` interface for parent type-safety
-- Use `defineModel` for bidirectional binding (parent passes initial data + receives changes)
-- Use the project's input wrapper for fields that need Zod validation
-- Use plain UI library inputs for fields without complex validation
+- **Validate with the Zod schema** (`safeParse`) — one schema is the source of truth for both the form and the API payload type (`z.infer`). See [VALIDATOR-001](../validation/VALIDATOR-001-zod.md).
+- **The form component doesn't persist** — it emits the validated payload; the parent (a page or a mutation composable) calls the API. Keeps the form reusable for create *and* edit.
+- **`submitting` prop** disables the button during the parent's async submit; don't manage server state inside the form.
+- **Accessibility**: `<label>` wrapping each input (or `for`/`id`), `aria-invalid`, `role="alert"` on messages, `novalidate` + `@submit.prevent`.
 
-## Key Points
+## Don't
 
-- Forms are "dumb" — they collect data and emit; they don't call services
-- Validation = Zod schemas via the project's input wrapper (per-field) + task errors (form-level)
-- Submission = parent's task helper wrapping the service call
-- Use `defineModel` for two-way data binding
-- Export `*FormData` interface from the form component for parent typing
-- See VALIDATOR-001 for Zod schema patterns
-- See COMPOSABLE-002 for the async-task pattern
+- Don't duplicate validation rules in the template — derive everything from the Zod schema.
+- Don't fetch or mutate inside the form component.
+- Don't reach for a form library unless the project already uses one (then match it).
+
+## See also
+
+- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md) · [COMPONENT-001](./COMPONENT-001-conventions.md)
