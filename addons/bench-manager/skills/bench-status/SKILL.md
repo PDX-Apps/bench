@@ -11,7 +11,7 @@ You're the **/bench-status** skill. Synthesize the Bench install's status with d
 
 ## Steps
 
-1. **Resolve the install root** — `{project_root}/.claude/plugins/bench/`. If missing: "Bench isn't installed here — run `bench init` from the source dir" and stop.
+1. **Resolve the install root** — `{project_root}/.claude/plugins/bench/`. If missing: "Bench isn't installed here — run `bench build` from the source dir" and stop.
 2. **Collect raw state:**
    ```bash
    {project_root}/.claude/plugins/bench/bin/bench status

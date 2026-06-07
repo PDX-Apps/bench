@@ -5,9 +5,9 @@
 #   ln -s /path/to/Bench/bin/bench /usr/local/bin/bench
 #
 # Then from any project directory:
-#   bench init                  install into current project (.claude/plugins/)
-#   bench init --symlink        install via symlink (live updates from source)
-#   bench init --addon=PATH     install with an addon (repeatable)
+#   bench build                 build + register into current project (.claude/plugins/)
+#   bench build --symlink       build via symlink (live updates from source)
+#   bench build --addon=PATH     build with an addon (repeatable)
 #   bench rebuild               re-run install.sh inside current project's plugin
 #   bench addon list            show registered addons for this project
 #   bench addon add PATH        add an addon and rebuild
@@ -39,10 +39,10 @@ print_help() {
 bench — Bench plugin CLI
 
 Usage:
-  bench init [--symlink|--copy] [--project=DIR] [--addon=PATH ...] [--no-addon]
+  bench build [--symlink|--copy] [--project=DIR] [--addon=PATH ...] [--no-addon]
             [--laravel=N --php=N --frontend=vue|react|none --vue=N]
             [--profile=compact|standard]
-    Install plugin into current (or --project) directory's .claude/plugins/.
+    Build + register the plugin into current (or --project) directory's .claude/plugins/.
     Auto-detects Laravel/PHP/Vue versions from composer.json + package.json.
     Default mode is --copy (each project gets its own snapshot).
     Use --symlink for live updates from the source workspace.
@@ -91,7 +91,7 @@ EOF
 require_installed() {
   if [[ ! -d "$TARGET" ]]; then
     echo "ERROR: no plugin install found at $TARGET" >&2
-    echo "Run 'bench init' first." >&2
+    echo "Run 'bench build' first." >&2
     exit 1
   fi
 }
@@ -110,7 +110,7 @@ write_addons() {
 }
 
 case "$CMD" in
-  init)
+  build|init)   # `build` is the primary name; `init` kept as a back-compat alias
     exec "$PLUGIN_SRC/scripts/init-project.sh" "$@"
     ;;
 
@@ -308,7 +308,7 @@ case "$CMD" in
       fi
     else
       echo "Status:           NOT INSTALLED in this project"
-      echo "Run 'bench init' to install."
+      echo "Run 'bench build' to install."
     fi
 
     # Show the versions actually configured at last install (persisted).

@@ -2,10 +2,10 @@
 # install-cli.sh — OPTIONAL: install a global `bench` symlink.
 #
 # This is a power-user convenience. The recommended way to use Bench is:
-#   /path/to/bench/bin/bench init    # once per project (full path)
+#   /path/to/bench/bin/bench build    # once per project (full path)
 #   ./bench rebuild | status | addon ...   # from inside the project (shim created by init)
 #
-# Only run this script if you want `bench init` available from anywhere without
+# Only run this script if you want `bench build` available from anywhere without
 # typing the full path to the bench source repo. No sudo required — symlinks
 # into ~/.local/bin (XDG convention).
 #

@@ -16,7 +16,7 @@
 # Monorepos / non-standard layouts:
 #   Auto-detect looks for composer.json + package.json at the project root. If
 #   your code lives in apps/cloud/ etc., pass versions explicitly:
-#     bench init --laravel=13 --php=8.5 --frontend=vue --vue=3
+#     bench build --laravel=13 --php=8.5 --frontend=vue --vue=3
 #   Then describe the layout in your project's CLAUDE.md so the agents know
 #   where things live.
 #
@@ -123,9 +123,9 @@ ERROR: no composer.json or package.json found at $PROJECT_ROOT or in apps/, pack
 Cannot detect Laravel/PHP/Vue/React versions.
 
 If your code lives somewhere unusual, pass versions explicitly:
-  bench init --laravel=13 --php=8.5 --frontend=vue --vue=3
+  bench build --laravel=13 --php=8.5 --frontend=vue --vue=3
 Or for backend-only:
-  bench init --laravel=13 --php=8.5 --frontend=none
+  bench build --laravel=13 --php=8.5 --frontend=none
 
 Then document the layout in your project's CLAUDE.md so the agents know where things live.
 EOF
@@ -277,7 +277,7 @@ Custom skills/agents/patterns specific to this project live in \`./.bench/\` and
 
 ---
 
-> This file was scaffolded by \`bench init\`. Fill in the TODOs and expand sections as the project takes shape.
+> This file was scaffolded by \`bench build\`. Fill in the TODOs and expand sections as the project takes shape.
 CMD_EOF
       echo ""
       echo "✓ Scaffolded $PROJECT_ROOT/CLAUDE.md — fill in the TODOs."

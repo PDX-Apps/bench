@@ -9,9 +9,9 @@ The request: **$ARGUMENTS**
 
 ## Step 1: The framework (set at install)
 
-This project's frontend is **`<BENCH_FRONTEND>`** — chosen at `bench init` (`--frontend=…`) and baked in here, so there's nothing to detect. Use the matching agent set: `<BENCH_FRONTEND>-component`, `<BENCH_FRONTEND>-page`, etc. (i.e. `vue-*` or `react-*`).
+This project's frontend is **`<BENCH_FRONTEND>`** — chosen at `bench build` (`--frontend=…`) and baked in here, so there's nothing to detect. Use the matching agent set: `<BENCH_FRONTEND>-component`, `<BENCH_FRONTEND>-page`, etc. (i.e. `vue-*` or `react-*`).
 
-(If this reads `none`, no frontend is configured — tell the user to re-run `bench init --frontend=vue|react`. If it reads `<BENCH_FRONTEND>` literally, the install didn't substitute — run `bench rebuild`.)
+(If this reads `none`, no frontend is configured — tell the user to re-run `bench build --frontend=vue|react`. If it reads `<BENCH_FRONTEND>` literally, the install didn't substitute — run `bench rebuild`.)
 
 ## Step 2: Classify
 

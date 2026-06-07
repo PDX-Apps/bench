@@ -34,7 +34,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_SRC="$(dirname "$SCRIPT_DIR")"   # where the bench source lives — patterns/, scripts/, bin/, etc.
 
 # Contribution composer — lets addon skill/agent files use mode: append|anchor
-# (no `mode:` key → replace, the legacy behavior). See docs/contribution-system.md.
+# (no `mode:` key → replace, the legacy behavior). See docs/layering.md.
 # shellcheck source=lib/contribution.sh
 source "$SCRIPT_DIR/lib/contribution.sh"
 
@@ -101,7 +101,7 @@ TARGET. Installing "in place" at the bench source would pollute the repo
 with your machine's absolute paths.
 
 Typical use:
-  - User project install (via 'bench init'):  --target=PROJECT/.claude/plugins/bench
+  - User project install (via 'bench build'):  --target=PROJECT/.claude/plugins/bench
   - Plugin dev / testing:                     --target=/tmp/bench-test
 EOF
   exit 1
@@ -279,7 +279,7 @@ if [[ "$PLUGIN_SRC" != "$PLUGIN_ROOT" ]]; then
   done
 
   # Generate the directory-marketplace manifest INTO the built copy so Claude Code
-  # can load it as a project-local marketplace (bench init registers this dir as a
+  # can load it as a project-local marketplace (bench build registers this dir as a
   # marketplace; CC reads this file to find the plugin). It is deliberately NOT
   # shipped in the source repo: a source marketplace.json lets someone
   # `/plugin marketplace add <repo>` and install the UNBUILT, version-agnostic repo
@@ -295,7 +295,7 @@ if [[ "$PLUGIN_SRC" != "$PLUGIN_ROOT" ]]; then
     {
       "name": "bench",
       "version": "${PLUGIN_VERSION:-0.0.0}",
-      "description": "Bench, built for THIS project (resolved patterns + overrides + addons). Installed via 'bench init' — do not install the source repo directly.",
+      "description": "Bench, built for THIS project (resolved patterns + overrides + addons). Installed via 'bench build' — do not install the source repo directly.",
       "source": "./"
     }
   ]
@@ -552,7 +552,7 @@ fi
 
 # Bake the chosen frontend into the skill/agent files (the <BENCH_FRONTEND>
 # placeholder), so the /frontend router knows the framework constant-time instead
-# of re-detecting it from package.json on every invocation. Set at bench init.
+# of re-detecting it from package.json on every invocation. Set at bench build.
 BENCH_FRONTEND="none"
 $HAS_VUE_PATTERNS   && BENCH_FRONTEND="vue"
 $HAS_REACT_PATTERNS && BENCH_FRONTEND="react"
