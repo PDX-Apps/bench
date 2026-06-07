@@ -2,7 +2,7 @@
 overrides: base/services/SERVICE-002-domain-services.md
 target: php-8.4
 reason: PHP 8.4 doesn't have the pipe operator |> — chain via nested function calls or fluent method chains instead.
-base-hash: 08a273
+base-hash: 940098
 ---
 
 > ⚠️ **PHP 8.4 — no pipe operator.** This override exists for projects still on this older version. New projects should use the base (latest version) patterns.
@@ -24,56 +24,58 @@ Services should have descriptive names that clearly indicate their specific purp
 
 declare(strict_types=1);
 
-namespace Modules\Budget\Services;
+namespace App\Services;
 
-use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class BudgetCalculator
+class PricingCalculator
 {
     /**
-     * Calculate monthly budget allocation from income.
+     * Break a subtotal into tax and total (all amounts in cents).
      */
-    public function calculateAllocation(int $monthlyIncome): array
+    public function breakdown(int $subtotalCents, float $taxRate): array
     {
+        $tax = (int) round($subtotalCents * $taxRate);
+
         return [
-            'needs' => (int) ($monthlyIncome * 0.50),      // 50% needs
-            'wants' => (int) ($monthlyIncome * 0.30),      // 30% wants
-            'savings' => (int) ($monthlyIncome * 0.20),    // 20% savings
+            'subtotal' => $subtotalCents,
+            'tax' => $tax,
+            'total' => $subtotalCents + $tax,
         ];
     }
 
     /**
-     * Calculate projected savings based on monthly contribution.
+     * Project recurring revenue over a number of billing periods, with optional growth.
      */
-    public function projectSavings(int $monthlyAmount, int $months, float $annualRate = 0.0): int
+    public function projectRecurringRevenue(int $amountCents, int $periods, float $growthRate = 0.0): int
     {
-        if ($annualRate === 0.0) {
-            return $monthlyAmount * $months;
+        if ($growthRate === 0.0) {
+            return $amountCents * $periods;
         }
 
-        $monthlyRate = $annualRate / 12;
-        $futureValue = 0;
+        $total = 0;
+        $current = $amountCents;
 
-        for ($i = 0; $i < $months; $i++) {
-            $futureValue = ($futureValue + $monthlyAmount) * (1 + $monthlyRate);
+        for ($i = 0; $i < $periods; $i++) {
+            $total += $current;
+            $current = (int) round($current * (1 + $growthRate));
         }
 
-        return (int) $futureValue;
+        return $total;
     }
 
     /**
-     * Calculate spending variance from budget categories.
+     * Compare actual spend per category against planned limits.
      */
-    public function calculateVariance(Collection $transactions, array $budgetLimits): array
+    public function calculateVariance(Collection $lineItems, array $limits): array
     {
-        $actualByCategory = $transactions->groupBy('category')
-            ->map(fn($items) => $items->sum('amount'))
+        $actualByCategory = $lineItems->groupBy('category')
+            ->map(fn ($items) => $items->sum('amount_cents'))
             ->toArray();
 
         $variances = [];
 
-        foreach ($budgetLimits as $category => $limit) {
+        foreach ($limits as $category => $limit) {
             $actual = $actualByCategory[$category] ?? 0;
             $variances[$category] = [
                 'limit' => $limit,
@@ -119,7 +121,7 @@ class StripeClient
 
 ```php
 // What does this do? Everything?
-class UserService
+class OrderService
 {
     public function create()
     public function sendEmail()
@@ -145,78 +147,76 @@ class Helper
 Services must stay within their domain boundaries:
 
 ```php
-// ✅ Good - BudgetCalculator only handles calculations
-class BudgetCalculator
+// ✅ Good - PricingCalculator only handles calculations
+class PricingCalculator
 {
-    public function calculateAllocation(int $income): array
-    public function projectSavings(int $amount, int $months): int
+    public function breakdown(int $subtotalCents, float $taxRate): array
+    public function projectRecurringRevenue(int $amountCents, int $periods): int
 }
 
-// ❌ Bad - BudgetCalculator sending emails?
-class BudgetCalculator
+// ❌ Bad - PricingCalculator sending emails?
+class PricingCalculator
 {
-    public function calculateAllocation(int $income): array
-    public function emailBudgetReport(User $user): void  // Wrong domain!
+    public function breakdown(int $subtotalCents, float $taxRate): array
+    public function emailInvoice(User $user): void  // Wrong domain!
 }
 
 // ✅ Good - Separate concerns
-class BudgetCalculator
+class PricingCalculator
 {
-    public function calculateAllocation(int $income): array
+    public function breakdown(int $subtotalCents, float $taxRate): array
 }
 
-class BudgetReportDispatcher
+class InvoiceDispatcher
 {
-    public function emailReport(User $user, array $budget): void
+    public function emailInvoice(User $user, array $invoice): void
 }
 ```
 
 ## Usage
 
 ```php
-// In Action
-class CreateBudgetAction
+// In an Action — the calculator computes, the Action persists
+class CreateOrderAction
 {
     public function __construct(
-        private BudgetCalculator $calculator,
+        private PricingCalculator $pricing,
     ) {
     }
 
-    public function execute(BudgetData $data): Budget
+    public function execute(User $user, CreateOrderData $data): Order
     {
-        $allocation = $this->calculator->calculateAllocation($data->monthlyIncome);
+        $breakdown = $this->pricing->breakdown($data->subtotalCents, $data->taxRate);
 
-        $budget = Budget::create([
-            'user_id' => $data->userId,
-            'monthly_income' => $data->monthlyIncome,
-            'needs_allocation' => $allocation['needs'],
-            'wants_allocation' => $allocation['wants'],
-            'savings_allocation' => $allocation['savings'],
-        ]);
+        $order = new Order();
+        $order->user_id = $user->id;           // explicit — never mass-assigned
+        $order->subtotal_cents = $breakdown['subtotal'];
+        $order->tax_cents = $breakdown['tax'];
+        $order->total_cents = $breakdown['total'];
+        $order->save();
 
-        event(new BudgetCreated($budget));
+        event(new OrderCreated($order->id));
 
-        return $budget;
+        return $order;
     }
 }
 ```
 
 ## Key Points
 
-- Lives in `Modules/{Module}/Services/`
+- Lives in `app/Services/`
 - Name pattern: Descriptive of a specific purpose (Engine, Parser, Dispatcher, Client, Builder)
 - Multiple focused methods are allowed (as long as all are related to the service's purpose)
 - Stateless when possible
-- Stay within domain boundaries
-- Never cross domains (PdfEngine doesn't build queries)
-- Avoid generic names (UserService, DataProcessor, Helper)
+- Stay within domain boundaries — never cross domains (a `PricingCalculator` doesn't build queries)
+- Avoid generic names (`OrderService`, `DataProcessor`, `Helper`)
 
 ## When to Use Services
 
 **Use Services for:**
 - Domain utilities (calculations, parsing, formatting, transformation)
 - External API facades (StripeClient, S3Client)
-- Specialized tools (BudgetCalculator, CurrencyConverter, TokenGenerator)
+- Specialized tools (PricingCalculator, CurrencyConverter, TokenGenerator)
 - Focused responsibilities that don't fit as Actions
 
 **Don't Use Services for:**

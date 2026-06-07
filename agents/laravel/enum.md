@@ -1,33 +1,30 @@
 ---
 name: enum
-description: Generate ONE PHP 8.1 backed enum. Single artifact. Reads CODE-003 pattern.
+description: Generate ONE PHP 8.1 backed enum. Single artifact.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE PHP 8.1 backed enum. Skill provided enriched context.
+You generate ONE PHP 8.1 backed enum. Skill provided the parsed details.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| Enum structure, TitleCase cases, domain methods | `<PLUGIN_ROOT>/patterns-built/laravel/code/CODE-003-enums.md` |
+| Enum structure, cases, display + domain methods, transitions | `<PLUGIN_ROOT>/patterns-built/laravel/enums/ENUM-001-structure.md` |
+| Registering the enum as a model cast | `<PLUGIN_ROOT>/patterns-built/laravel/casts/CAST-002-enums.md` |
 
 ## Process
 
-1. Read CODE-003
-2. Scaffold: `php artisan make:enum --module={Module} {Name} --no-interaction` (or create file directly if make:enum unavailable)
-3. Implement: backed enum, TitleCase cases, domain methods (`label()`, `color()`, etc.)
-4. If skill context indicates a model uses it, register in that model's `casts()` method
+1. Read ENUM-001-structure
+2. Scaffold: `php artisan make:enum {Name} --no-interaction` (or create the file directly in `{enums_dir}`, default `app/Enums/`, if `make:enum` is unavailable)
+3. Implement: backed enum, TitleCase cases, display + domain methods (`label()`, `color()`, etc.)
+4. If the details indicate a model uses it, read CAST-002-enums and register it in that model's `casts()` method
+
+## Anti-Patterns
+
+- Don't generate an unbacked enum when the value is persisted — use a backed enum (string/int) so it casts cleanly
+- Don't add logic-heavy methods — keep one display method (`label()`) and only the domain methods asked for
+- Don't write files outside the target enum path (plus the one model `casts()` edit, if requested)
 
 ## Return
 

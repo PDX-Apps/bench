@@ -28,7 +28,7 @@ ls src/modules/{Module}/i18n/ 2>/dev/null
 
 ## Step 3: Resolve Ambiguity
 
-- Module missing → suggest `/vue-new-module {Module}`
+- Module missing → flag that the `{Module}` module needs to exist first
 - Service missing → flag: "Page calls `BillService.list()` — service doesn't exist. Generate `/vue-service` first?"
 - Route already exists → confirm: update or create new?
 - Layout choice → discover from project convention
@@ -54,7 +54,7 @@ Context for vue-page agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-page"`, pass the blob.
+Task tool, `subagent_type: "vue-page"`, pass the blob.
 
 ## Step 6: Synthesize
 

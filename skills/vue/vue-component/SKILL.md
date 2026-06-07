@@ -34,7 +34,7 @@ ls src/shared/ 2>/dev/null
 
 ## Step 3: Resolve Ambiguity
 
-- Module missing → confirm: "No `{Module}` module found. Use `/vue-new-module` first?"
+- Module missing → confirm: "No `{Module}` module found — create it first?"
 - Folder unclear → ask one question
 - Form requested but no validators exist → flag: "Delegate to `/vue-validator` first, or include schemas inline?"
 - Depends on missing service/model → flag and suggest `/vue-service` or `/vue-model`
@@ -59,7 +59,7 @@ Context for vue-component agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-component"`, pass the blob.
+Task tool, `subagent_type: "vue-component"`, pass the blob.
 
 ## Step 6: Synthesize
 

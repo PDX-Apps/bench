@@ -47,7 +47,7 @@ Context for react-layout agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-layout"`, pass the blob.
+Task tool, `subagent_type: "react-layout"`, pass the blob.
 
 ## Step 6: Synthesize
 

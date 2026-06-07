@@ -3,61 +3,36 @@ description: Generate a PHP 8.1 backed enum for status/type/mode fields. Use whe
 argument-hint: [what the user needs]
 ---
 
-You're the **/enum** skill. Translate the user's enum request into an enriched delegation to the `enum` agent.
+You're the **/enum** skill. Parse the user's enum request and delegate to the `enum` agent.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Household, etc.)
-- **Enum class name** — TitleCase + descriptive (`BillStatus`, `InvitationType`, `RecurrenceFrequency`)
-- **Backing type**: string (default) or int
-- **Cases**: list of TitleCase case names with values
-- **Domain methods** suggested by request (`label()`, `color()`, `canTransitionTo()`)
-- **Used in which model** (registered in `casts()`)
+From the request, extract what's stated:
+- **Enum class name** — TitleCase + descriptive (`OrderStatus`, `SubscriptionInterval`, `NotificationChannel`)
+- **Backing type** — string (default) or int
+- **Cases** — TitleCase case names with values
+- **Domain methods** suggested by the request (`label()`, `color()`, `canTransitionTo()`)
+- **Model that uses it** — so the agent can register it in `casts()`
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Enums/ 2>/dev/null
-ls Modules/{Module}/app/Models/ 2>/dev/null  # model that uses it
-```
+Ask only when a needed detail is missing:
+- Cases not given → ask once, with examples
+- Domain methods unclear → suggest `label()` (UI display) / `color()` (status badges); confirm if needed
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Cases not specified → ask once with examples
-- Domain methods → suggest `label()` for UI display, `color()` for status badges; ask if needed
-- Used in migration enum column? → flag DB-001 enum vs string column tradeoffs
+Use the Task tool with `subagent_type: "enum"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for enum agent:
-- Module: {Module}
-- Class: {Name}
-- Path: Modules/{Module}/app/Enums/{Name}.php
-- Backing type: string | int
-- Cases:
-    Pending = 'pending'
-    Active = 'active'
-    Completed = 'completed'
-- Domain methods: [label(): string, color(): string, canTransitionTo(self $to): bool]
-- Cast in model: Modules/{Module}/app/Models/{Model}.php → casts() method ['status' => {Name}::class]
-- Existing siblings: [BillStatus.php, PaymentStatus.php]
-```
+Report at the feature level: enum path, backing type, cases, and whether a model `casts()` was wired. Example:
 
-## Step 5: Delegate
+> Created `app/Enums/OrderStatus.php` (string-backed: Pending, Paid, Shipped, Cancelled) with `label()` + `color()`. Registered in the `Order` model `casts()` as `'status' => OrderStatus::class`.
 
-Task tool, `subagent_type: "bench:enum"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/app/Enums/BillStatus.php` (string-backed: Unpaid, Partial, Paid, Skipped). Methods `label()`, `color()`. Registered in `Bill` model `casts()` method as `'status' => BillStatus::class`."
-
-## When to Ask vs Assume
-
-- Cases TitleCase → always
-- Backing type → default string; int only when explicitly numeric
-- Cast registration → assume yes if model exists
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job

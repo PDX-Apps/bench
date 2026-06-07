@@ -3,56 +3,38 @@ description: Generate ONE Laravel event listener (sync or queued). Use when addi
 argument-hint: [what the user needs]
 ---
 
-You're the **/listener** skill. Translate the user's listener request into an enriched delegation to the `listener` agent.
+You're the **/listener** skill. Parse the user's request and delegate to the `listener` agent. This generates the reacting listener; for the event itself, use `/event`.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Notification, etc.) — listener lives in the SUBSCRIBING module
-- **Listener class** — `{Verb}{Object}Listener` (e.g., `SendBillCreatedNotificationListener`)
+From the request, extract what's stated:
+- **Listener class** — `{Verb}{Object}Listener` (e.g. `SendOrderPlacedNotificationListener`)
 - **Event** it reacts to (FQCN) — must already exist
-- **Type**: sync (< 100ms, critical side effect) OR queued (slow, external API; default)
+- **Type** — sync (fast, critical side effect) or queued (slow / external API — the default)
+- **Reaction** — what it does (typically delegates to an Action)
 
-## Step 2: Inspect
+The listener lives in the **subscribing** context, not necessarily where the event is published.
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Listeners/ 2>/dev/null
-grep -rln "class {EventClassName}" Modules/ --include="*.php" 2>/dev/null  # confirm event exists
-```
+## Resolve Ambiguity
 
-## Step 3: Resolve Ambiguity
+Ask only when a needed detail is missing:
+- The event doesn't exist yet → offer to run `/event` first
+- Sync vs queued unclear → default queued; sync only for fast critical work (cache invalidation, counter update)
 
-- Event missing → flag: "Listener for `BillCreated` — event doesn't exist. Generate `/event` first?"
-- Sync vs queued → assume queued; only sync for fast critical (cache invalidation, audit log)
-- Cross-module placement → confirm: "Listener subscribes to `Bill\Events\BillCreated` but lives in `Notification` module. Correct placement?"
+## Delegate
 
-## Step 4: Build Context Blob
+Use the Task tool with `subagent_type: "listener"`, passing the parsed details.
 
-```
-Context for listener agent:
-- Module: {Module}  (subscribing module)
-- Class: {Name}Listener
-- Path: Modules/{Module}/app/Listeners/{Name}Listener.php
-- Event: \Modules\Bill\app\Events\BillCreated (path)
-- Type: sync | queued (default queued)
-- Re-fetch model in handle(): use $event->billId → Bill::findOrFail()
-- Idempotency check: yes (queued may retry)
-- Existing siblings: [...]
-```
+## Synthesize
 
-## Step 5: Delegate
+Report at the feature level: listener path, the event it reacts to, sync/queued, and idempotency. Example:
 
-Task tool, `subagent_type: "bench:listener"`, pass the blob.
+> Created `app/Listeners/SendOrderPlacedNotificationListener.php` (queued), reacting to `OrderPlaced`. Re-fetches the order from `$event->orderId`; idempotent. Auto-discovered.
 
-## Step 6: Synthesize
+## Anti-Patterns
 
-> "Created `Modules/Notification/app/Listeners/SendBillCreatedNotificationListener.php` (queued). Re-fetches Bill from `$event->billId`. Idempotency check via `notification.already_sent`. Auto-discovered."
-
-## When to Ask vs Assume
-
-- Pass IDs not models in events → expect this from event side; never re-introduce model serialization
-- Default queued → only sync for fast critical
-- Idempotency for queued → always include
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job
+- Don't generate the event here — that's `/event`'s job

@@ -28,7 +28,7 @@ ls src/modules/{Module}/i18n/ 2>/dev/null
 
 ## Step 3: Resolve Ambiguity
 
-- Module missing → suggest `/react-new-module {Module}`
+- Module missing → flag that the `{Module}` module needs to exist first
 - Service missing → flag: "Generate `/react-service` first?"
 - Route exists → confirm: update or new?
 - Layout choice → discover from project convention
@@ -55,7 +55,7 @@ Context for react-page agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-page"`, pass the blob.
+Task tool, `subagent_type: "react-page"`, pass the blob.
 
 ## Step 6: Synthesize
 

@@ -57,7 +57,7 @@ Context for react-test agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-test"`, pass the blob.
+Task tool, `subagent_type: "react-test"`, pass the blob.
 
 ## Step 6: Synthesize
 

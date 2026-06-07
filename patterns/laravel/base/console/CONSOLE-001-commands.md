@@ -11,29 +11,29 @@ Artisan console commands for CLI operations: scheduled tasks, one-off maintenanc
 
 declare(strict_types=1);
 
-namespace Modules\Audit\Console;
+namespace App\Console\Commands;
 
+use App\Actions\PurgeAbandonedOrders;
 use Illuminate\Console\Command;
-use Modules\Audit\Services\JourneyCleanupService;
 
-class CleanStaleJourneysCommand extends Command
+class PurgeAbandonedOrdersCommand extends Command
 {
-    protected $signature = 'audit:clean-stale-journeys
-                            {--days=30 : Journeys older than this many days are removed}
+    protected $signature = 'orders:purge-abandoned
+                            {--days=30 : Orders abandoned longer than this many days are removed}
                             {--dry-run : Show what would be removed without deleting}';
 
-    protected $description = 'Remove audit journeys older than the specified number of days';
+    protected $description = 'Remove abandoned orders older than the specified number of days';
 
-    public function handle(JourneyCleanupService $cleanup): int
+    public function handle(PurgeAbandonedOrders $purge): int
     {
         $days = (int) $this->option('days');
         $dryRun = (bool) $this->option('dry-run');
 
-        $count = $cleanup->run(days: $days, dryRun: $dryRun);
+        $count = $purge->handle(days: $days, dryRun: $dryRun);
 
         $this->info($dryRun
-            ? "Would remove {$count} stale journeys (dry run)."
-            : "Removed {$count} stale journeys."
+            ? "Would remove {$count} abandoned orders (dry run)."
+            : "Removed {$count} abandoned orders."
         );
 
         return self::SUCCESS;
@@ -41,13 +41,13 @@ class CleanStaleJourneysCommand extends Command
 }
 ```
 
-## Auto-Registration (Laravel 12)
+## Auto-Registration (Laravel 13)
 
-Commands auto-register from `Modules/{Module}/app/Console/`. No manual registration needed — `module:make-command` places them correctly.
+Commands in `app/Console/Commands/` auto-register — no manual registration needed. `make:command` places them correctly.
 
 To verify:
 ```bash
-php artisan list --no-interaction | grep audit:
+php artisan list --no-interaction | grep orders:
 ```
 
 ## Signature Syntax
@@ -66,12 +66,12 @@ protected $signature = 'namespace:command-name
 
 ## Scheduling
 
-Schedule in `routes/console.php` (Laravel 12):
+Schedule in `routes/console.php` (Laravel 13):
 
 ```php
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('audit:clean-stale-journeys --days=30')
+Schedule::command('orders:purge-abandoned --days=30')
     ->daily()
     ->onOneServer()
     ->withoutOverlapping();
@@ -114,23 +114,13 @@ if (!$this->confirm('Really delete?', default: false)) {
 
 `confirm()` returns the default in non-interactive mode.
 
-## Rules
-
-- Live in `Modules/{Module}/app/Console/`
-- Naming: `{Verb}{Noun}Command` (e.g., `CleanStaleJourneysCommand`, `SeedTestDataCommand`)
-- Signature uses `module-namespace:command-name` (e.g., `audit:clean-stale-journeys`)
-- Inject Actions/Services via `handle()` signature — Laravel resolves them
-- Return explicit exit codes (`Command::SUCCESS` / `FAILURE`)
-- Provide a `--dry-run` option for destructive commands
-- Use `withoutOverlapping()` and `onOneServer()` for scheduled commands
-- Strict types via `declare(strict_types=1)` recommended
-
 ## Key Points
 
-- Auto-registered in Laravel 12 — no manual registration
-- Schedule in `routes/console.php` or via `schedule()` method on the command
-- Use `--dry-run` for destructive operations
-- Inject dependencies in `handle()` (Laravel's container resolves them)
-- Always return explicit exit codes
-- Use `withoutOverlapping()` for scheduled commands to prevent concurrent runs
-- Use `--no-interaction`-safe defaults for AI-invoked commands
+- Live in `app/Console/Commands/`; naming `{Verb}{Noun}Command` (e.g., `PurgeAbandonedOrdersCommand`, `SeedTestDataCommand`)
+- Auto-registered in Laravel 13 — no manual registration
+- Signature uses `namespace:command-name` (e.g., `orders:purge-abandoned`)
+- Inject Actions/Services via the `handle()` signature — the container resolves them
+- Return explicit exit codes (`Command::SUCCESS` / `FAILURE` / `INVALID`)
+- Provide a `--dry-run` option for destructive commands, and keep `--no-interaction`-safe defaults for AI/CI invocation
+- Schedule in `routes/console.php` or via a `schedule()` method on the command; add `withoutOverlapping()` + `onOneServer()` for scheduled commands
+- `declare(strict_types=1)` recommended

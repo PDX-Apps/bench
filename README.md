@@ -37,9 +37,9 @@ Open Claude Code in the project. Try `/help` to see what's available. Suggested 
 
 ```
 /bench-onboard                            # AI scans your project + tailors Bench to it
-/api create endpoint to list user sessions
+/bench create endpoint to list user sessions
 /vue-component create SessionCard
-/orchestrate implement <feature-description>
+/bench implement <feature-description>
 ```
 
 That's it. Day two onward you mostly use slash commands inside Claude Code. The CLI comes back only for occasional rebuilds or addon management.
@@ -53,7 +53,7 @@ Three concepts:
 | Concept | What it is | Where it lives |
 |---|---|---|
 | **Patterns** | Markdown docs describing how to write a given artifact (a Laravel controller, a Vue component, a Pinia store). The shared knowledge base. | `patterns/` at source → resolved into `patterns-built/` per project |
-| **Skills** | Slash commands like `/api`, `/vue-component`. Each parses your request, inspects your project, resolves any ambiguity, then delegates to a worker agent with structured context. | `skills/` |
+| **Skills** | Slash commands like `/bench`, `/laravel`, `/vue-component`. Each parses your request, inspects your project, resolves any ambiguity, then delegates to a worker agent with structured context. | `skills/` |
 | **Agents** | Subagents that do the actual code generation. Read only the relevant patterns, scaffold the artifact, return a summary. Isolated context. | `agents/` |
 
 The main Claude Code conversation stays at the **feature level** — you describe what you want, agents handle implementation details, pattern files stay out of your context window.
@@ -68,22 +68,22 @@ For the full internal design (skill anatomy, pattern resolution, build pipeline,
 
 **Patterns** (90 base + 9 version overrides)
 
-- 50 Laravel patterns: controllers, models, actions, services, migrations, modules, DTOs, jobs, listeners, policies, AI SDK (`laravel/ai`), tests
+- 50 Laravel patterns: controllers, models, actions, services, migrations, DTOs, jobs, listeners, policies, tests
 - 20 Vue patterns: components, pages, layouts, routes, Pinia stores, services, models, Zod validators, vue-i18n, composables, Vitest
 - 20 React patterns: React 18 + TS + React Router v6 + Zustand + TanStack Query + react-hook-form + react-i18next + @testing-library/react
 - 9 version overrides for Laravel 12 / PHP 8.4 fallbacks (base targets Laravel 13 / PHP 8.5)
 
 **Skills** (60 source, filtered at install)
 
-- 32 Laravel skills (`/api`, `/controller`, `/model`, `/migration`, `/event`, `/job`, `/policy`, `/ai-agent`, `/feature-test`, …)
+- Laravel skills (`/controller`, `/model`, `/migration`, `/event`, `/job`, `/policy`, `/feature-test`, …)
 - 12 Vue skills (`/vue-component`, `/vue-page`, `/vue-store`, `/vue-ui` coordinator, …)
 - 12 React skills (`/react-component`, `/react-page`, `/react-store`, `/react-ui` coordinator, …)
-- 4 meta skills (`/orchestrate`, `/help`, `/ci`, `/mcp-tools`)
+- Router + tooling skills (`/bench`, `/laravel`, `/frontend`, `/help`)
 
 **Agents** (71 source, filtered at install)
 
 - 37 Laravel workers + 17 Vue workers + 17 React workers
-- Workflow agents (`exec-spec`, `bug-fix`, `refactor`, `new-module`) for full-stack work via `/orchestrate`
+- Workflow agent (`implement`) per stack, reached via `/bench`
 
 The install prunes the inactive frontend automatically — a Vue project doesn't see `/react-*` and vice versa.
 
@@ -120,9 +120,9 @@ Claude: → /bench-show pattern controller → displays the full bundled pattern
 You: What skills come bundled?
 Claude: → /bench-list skills → tables of bundled core + bundled addon + project-local.
 
-You: Make /api stop generating tests by default.
-Claude: → /bench-add-skill api (FORK mode) → reads skills/api/SKILL.md, removes the test step,
-        writes the modified version to .bench/skills/api/, rebuilds.
+You: Make /laravel stop generating tests by default.
+Claude: → /bench-add-skill laravel (FORK mode) → reads the laravel skill, removes the test step,
+        writes the modified version to .bench/skills/laravel/, rebuilds.
 ```
 
 The skill descriptions (in each `SKILL.md` frontmatter) carry trigger phrases for all of this, so you don't need to remember the command name — Claude routes naturally based on what you said.

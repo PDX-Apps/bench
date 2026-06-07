@@ -1,64 +1,39 @@
 ---
-description: Generate Laravel domain events and listeners (sync or queued). Use whenever the user describes something happening that other parts of the system should react to — "when X happens, Y should occur" — or mentions events, listeners, observers, broadcasting, or pub/sub patterns in a Laravel project.
+description: Generate a Laravel domain event class. Use whenever the user describes something important happening in the domain that should be announced for other parts of the system to react to — "when X happens" / "emit an event when…" — or mentions events, broadcasting, or pub/sub in a Laravel project. For the code that reacts to an event, use /listener.
 argument-hint: [what the user needs]
 ---
 
-You're the **/event** skill. Translate the user's event-driven request into an enriched delegation to the `event` agent.
+You're the **/event** skill. Parse the user's request and delegate to the `event` agent. This generates ONE event class; for the code that reacts to it, use `/listener`.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Household, etc.)
-- **Event name** in past tense (`BillCreated`, `MemberInvited`) OR detected/future tense
-- **Listener(s)** (often paired): `SendBillCreatedNotificationListener`, `LogBillCreationListener`
-- **Listener type**: sync (< 100ms, critical side effect) OR queued (slow, external API, default)
-- **Payload**: which IDs to pass (NEVER models — IDs only)
+From the request, extract what's stated:
+- **Event name** — past tense for completed actions (`OrderPlaced`, `SubscriptionCancelled`), "Will" for scheduled, "Detected" for observed state
+- **Payload** — which IDs to carry (default), or a model/snapshot when point-in-time data is wanted
+- **Dispatch site** — where the event fires from (typically an Action)
 
-⚠️ If the user says "send X in the background" with no event involved, this is a JOB not an event/listener. Suggest `/job` instead.
+⚠️ If the user says "send X in the background" with no event involved, that's a JOB — suggest `/job`. If they describe the *reaction* to an event (notify, log, sync), that's a listener — suggest `/listener`.
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Events/ 2>/dev/null
-ls Modules/{Module}/app/Listeners/ 2>/dev/null
-ls Modules/{Module}/app/Actions/ 2>/dev/null  # actions are where events get dispatched FROM
-```
+Ask only when a needed detail is missing:
+- Event vs job unclear → "trigger X automatically when Y happens" is an event; "send Y in the background" is a job
+- Payload unclear → default to IDs; confirm if a point-in-time snapshot is wanted
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Event vs Job confusion → see warning above; if user's request is "trigger X automatically when Y happens", that's event+listener
-- Sync vs queued listener → assume queued unless the listener does only fast critical work (audit log update, cache invalidation)
-- Cross-module listener (BillCreated → NotificationModule listener) → confirm placement (the listener lives in the SUBSCRIBING module, not the publishing one)
+Use the Task tool with `subagent_type: "event"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for event agent:
-- Module: {Module}
-- Event class: {Name}
-- Path: Modules/{Module}/app/Events/{Name}.php
-- Trigger: dispatched from {Module}\Actions\{ActionName}::execute()
-- Payload: [int $billId, int $userId]   # IDs only
-- Listener(s) needed: [
-    {Module}\Listeners\{ListenerName} (queued, sends notification)
-  ]
-- Existing events in module: [BillCreated.php, BillPaid.php]
-- Existing listeners: []
-```
+Report at the feature level: event path, payload, and where it dispatches from. Point to `/listener` for the reaction. Example:
 
-## Step 5: Delegate
+> Created `app/Events/OrderShipped.php` (payload `int $orderId`), dispatched from `ShipOrderAction::execute()`. Use `/listener` to add the code that reacts to it.
 
-Task tool, `subagent_type: "bench:event"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/app/Events/BillPaid.php` (`final readonly`, `SerializesModels`, payload: `int $billId, int $paidByUserId`). Created `Modules/Bill/app/Listeners/SendBillPaidNotificationListener.php` (queued, re-fetches Bill from `$event->billId`). Dispatch from `MarkBillPaidAction::execute()`."
-
-## When to Ask vs Assume
-
-- Sync vs queued → default queued, only sync for fast critical side effects
-- Pass IDs not models → never ask, always IDs (project rule)
-- Event name tense → past for completed actions, "Will" for scheduled, "Detected" for observed
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job
+- Don't generate the reacting listener here — that's `/listener`'s job

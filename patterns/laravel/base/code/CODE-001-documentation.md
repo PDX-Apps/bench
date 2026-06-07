@@ -10,14 +10,14 @@ Code documentation standards using doc blocks and comments.
 
 ```php
 /**
- * Ensure max_members does not surpass a tier maximum.
+ * Ensure the seat count does not surpass the plan maximum.
  *
- * @throws MaxMembersExceededException
+ * @throws SeatLimitExceededException
  */
-public function ensureIsNotOverRoommateLimit(): void
+public function ensureWithinSeatLimit(): void
 {
-    if ($this->max_members > $this->user->tier->max_members) {
-        throw new MaxMembersExceededException();
+    if ($this->seats > $this->plan->max_seats) {
+        throw new SeatLimitExceededException();
     }
 }
 ```
@@ -126,8 +126,8 @@ public array $requiredData;
 
 ```php
 /**
- * Generate unique slug from name for the given user.
- * Appends number if the slug already exists (e.g., "budget-name" or "budget-name-2").
+ * Generate a unique slug from the name for the given user.
+ * Appends a number if the slug already exists (e.g., "my-title" or "my-title-2").
  */
 protected function generateUniqueSlug(string $name, int $userId): string
 {
@@ -144,9 +144,9 @@ protected function generateUniqueSlug(string $name, int $userId): string
 }
 
 /**
- * Execute the action to create a household.
+ * Execute the action to create an order.
  */
-public function execute(HouseholdData $data): Household
+public function execute(User $user, CreateOrderData $data): Order
 {
     // Implementation
 }
@@ -179,7 +179,7 @@ protected function generateUniqueSlug(string $name, int $userId): string  // ❌
 
 ```php
 // Good - explains non-obvious behavior
-if ($household->user_id === null) {
+if ($order->user_id === null) {
     // User was deleted (GDPR) - display as "Deleted User"
     return 'Deleted User';
 }

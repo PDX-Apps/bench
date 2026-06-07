@@ -1,5 +1,5 @@
 ---
-description: Generate a complete React UI feature — page + components + forms + dialogs + validators + i18n keys, all wired together. Use whenever the user asks for a UI feature, screen, dialog, form flow, or any multi-artifact frontend work where they describe the user-facing behavior rather than a single file. Symmetric to /api on the backend.
+description: Generate a complete React UI feature — page + components + forms + dialogs + validators + i18n keys, all wired together. Use whenever the user asks for a UI feature, screen, dialog, form flow, or any multi-artifact frontend work where they describe the user-facing behavior rather than a single file. Symmetric to /laravel on the backend.
 argument-hint: [what the user needs]
 ---
 
@@ -33,7 +33,7 @@ ls src/shared/ 2>/dev/null
 
 ## Step 3: Resolve Ambiguity
 
-- Module missing → suggest `/react-new-module {Module}` first
+- Module missing → flag that the `{Module}` module needs to exist first
 - Service missing → flag: "Feature needs `BillService.invite()` — service doesn't exist. Generate `/react-service` first or proceed assuming you'll add it?"
 - Model missing → same, flag for `/react-model`
 - Page exists vs new → confirm: "Update existing `BillsPage` or create new `BillCreatePage`?"

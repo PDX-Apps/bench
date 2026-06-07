@@ -16,29 +16,27 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 ## Catalog (full)
 
 ### 🎯 Entry Points + Tooling
-- **/orchestrate** `[task description]` — top-level router for multi-step work (specs, bugs, refactors, new modules). Routes to backend OR frontend OR full-stack workflow.
+- **/bench** `[what you want built or fixed]` — top-level entry. Routes any build request (single artifact, feature, spec/PRD/ticket, or bug) to the right stack (`/laravel` or `/frontend`) and delegates. (`/bench-*` commands configure Bench itself.)
 - **/help** `[filter]` — this skill. Lists skills by category.
-- **/ci** `[module]` — run the Laravel CI pipeline scoped to a module (lint, format, types, tests).
-- **/mcp-tools** — reference for using Laravel Boost MCP tools.
 
-### 🔧 Backend Coordinators (multi-artifact features)
-- **/api** `[feature]` — generates the full HTTP stack for a feature: controller + FormRequest + API Resource + route. Ideal when the user describes an endpoint by behavior.
+### 🔧 Backend Router (multi-artifact features)
+- **/laravel** `[feature / artifact / spec]` — backend router. Decomposes a request into the right artifact(s) and delegates: a single class, a multi-file feature (endpoint = controller + request + resource + route), or a spec via the `implement` workflow.
 
 ### 🔧 Backend Granular (single-artifact)
 **HTTP layer:** `/controller`, `/request`, `/resource`, `/route`, `/middleware`
-**Models:** `/model`, `/query-builder`, `/model-trait`, `/enum`
+**Models:** `/model`, `/trait`, `/enum`
 **Business logic:** `/action`, `/service`
 **Database:** `/migration`, `/factory`, `/seeder`, `/cast`
 **Events + jobs:** `/event`, `/listener`, `/job`
-**Auth:** `/policy`, `/auth-config`
-**AI (laravel/ai SDK):** `/ai-agent`, `/ai-tool`
+**Auth:** `/policy`, `/auth`
 **Other:** `/console`, `/exception`, `/rule`, `/provider`
-**Docs:** `/phpdoc`, `/swagger`, `/compliance-log`
-**Tests:** `/feature-test`, `/unit-test`
+**Docs:** `/phpdoc`
+**Tests:** `/feature-test`, `/unit-test`, `/test-runner`
 
-### 🎨 Frontend Coordinators
-- **/vue-ui** `[feature]` — Vue: generates the full UI stack (page + components + form + dialog + validators + i18n). Symmetric to `/api` on the backend.
-- **/react-ui** `[feature]` — React: same as `/vue-ui` but for React projects (with hooks for data fetching).
+### 🎨 Frontend Router
+- **/frontend** `[feature / artifact / spec]` — detects Vue or React, then routes the request to the right artifact agent(s), the `{fw}-ui` full-feature agent, or `{fw}-implement` (spec).
+- **/vue-ui** `[feature]` — Vue: generates the full UI stack (page + components + form + dialog + validators + i18n) directly.
+- **/react-ui** `[feature]` — React: same as `/vue-ui` for React projects.
 
 ### 🎨 Frontend — Vue (single-artifact)
 **UI structure:** `/vue-component`, `/vue-page`, `/vue-layout`
@@ -52,7 +50,7 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 **Routing + i18n + validation:** `/react-route`, `/react-i18n`, `/react-validator`
 **Hooks + tests:** `/react-hook`, `/react-test`
 
-> The Vue and React skills are parallel — same job, different framework idioms. Use whichever matches your project. `/orchestrate` detects automatically from `package.json`.
+> The Vue and React skills are parallel — same job, different framework idioms. Use whichever matches your project. `/bench` (and `/frontend`) detect automatically from `package.json`.
 
 ## How They Work
 
@@ -65,8 +63,8 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 ## Examples
 
 ```
-/orchestrate implement SPEC-014-invite-member
-/api create endpoint to mark a bill paid
+/bench implement the member-invitation feature
+/laravel create endpoint to mark an order paid
 /controller add MarkBillPaidController (invokable)
 /vue-component create HouseholdMemberCard
 /vue-ui build the household member invitation flow
@@ -76,7 +74,7 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 
 ## When in doubt
 
-- Describing a **feature** (multiple artifacts) → `/orchestrate` (workflows) or `/api` / `/vue-ui` / `/react-ui` (single-stack feature)
+- Describing anything to build or fix → `/bench` (it routes), or go straight to `/laravel` / `/frontend`
 - Wanting **one specific file** → use the matching granular skill (`/controller`, `/vue-store`, etc.)
 - Looking up **what's available** → that's me, you're already here
 

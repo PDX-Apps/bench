@@ -50,7 +50,7 @@ Context for vue-service agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-service"`, pass the blob.
+Task tool, `subagent_type: "vue-service"`, pass the blob.
 
 ## Step 6: Synthesize
 

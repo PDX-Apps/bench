@@ -1,65 +1,42 @@
 ---
-description: Generate a single Laravel controller — resource (CRUD), invokable (single action), or grouped (related non-CRUD actions). Use whenever the user wants ONLY a controller (not the full HTTP stack). For full HTTP layer (controller+request+resource+route), use /api instead.
+description: Generate a single Laravel controller — resource (CRUD), invokable (single action), or grouped (related non-CRUD actions). Use whenever the user wants ONLY a controller (not the full HTTP stack). For full HTTP layer (controller+request+resource+route), use /laravel instead.
 argument-hint: [what the user needs]
 ---
 
-You're the **/controller** skill. Translate the user's controller request into an enriched delegation to the `controller` agent. Generates ONE controller; for full HTTP stacks use `/api`.
+You're the **/controller** skill. Parse the user's controller request and delegate to the `controller` agent. Generates ONE controller; for full HTTP stacks use `/laravel`.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Household, etc.)
-- **Controller class name** (e.g., `BillController`, `MarkBillPaidController`, `InvitationResponseController`)
+From the request, extract what's stated:
+- **Controller class name** (e.g. `OrderController`, `MarkOrderShippedController`)
 - **Type** — one of:
-  - `crud` — standard 5-method resource controller (HTTP-001)
-  - `invokable` — single `__invoke()` action (HTTP-005)
-  - `grouped` — 2-5 related non-CRUD actions on a resource (HTTP-006)
-- **Resource** — the model the controller acts on (Bill, Invitation)
+  - `crud` — standard resource controller (API: 5 methods / web: 7 with `create`+`edit`)
+  - `invokable` — single `__invoke()` action
+  - `grouped` — 2–5 related non-CRUD actions on a resource
+- **Mode** (for `crud`) — API (JSON Resources) or web (Blade views + redirects)
+- **Resource** — the model the controller acts on
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Http/Controllers/ 2>/dev/null
-ls Modules/{Module}/app/Models/ 2>/dev/null   # confirm resource exists
-ls Modules/{Module}/app/Policies/ 2>/dev/null # for authorizeResource()
-```
+Ask only when a needed detail is missing:
+- Type unclear → "Resource CRUD, invokable (1 action), or grouped (2–5 related actions)?"
+- CRUD with mode unclear → "API (JSON) or web (Blade views)?"
+- The resource model doesn't exist yet → offer to run `/model` first
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Type unclear → ask: "Resource CRUD (5 methods), invokable (1 action), or grouped (2-5 related actions)?"
-- Resource missing → flag: "Controller for `Bill` — model doesn't exist. Generate `/model` first?"
-- Standard CRUD → `authorizeResource(Bill::class)` in constructor (assume yes)
-- Invokable/grouped → authorization via `->can()` on routes (not in controller)
+Use the Task tool with `subagent_type: "controller"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for controller agent:
-- Module: {Module}
-- Class: {Name}Controller
-- Type: crud | invokable | grouped
-- Path: Modules/{Module}/app/Http/Controllers/{Name}Controller.php
-- Resource: {Model}
-- Authorization: authorizeResource({Model}::class) | route ->can() | none
-- Policy exists: yes/no (path)
-- Existing siblings: [BillController.php, MarkBillPaidController.php]
-- Naming pattern observed: e.g., invokables prefixed with verb
-```
+Report at the feature level: controller path, type, how authorization is wired, and what was NOT generated (request/resource/route). Example:
 
-## Step 5: Delegate
+> Created `app/Http/Controllers/MarkOrderShippedController.php` (invokable). Authorization via `#[Authorize('ship', 'order')]`. No FormRequest generated — run `/request` if you need one.
 
-Task tool, `subagent_type: "bench:controller"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/app/Http/Controllers/MarkBillPaidController.php` (invokable, single `__invoke()`). Authorization via `->can('markPaid', 'bill')` in route. No FormRequest generated — invoke `/request` if you need one."
-
-## When to Ask vs Assume
-
-- 404/403/422/401 responses → handled by Laravel automatically; controller doesn't return them
-- Resource controller → exactly 5 methods, no extras (per HTTP-001)
-- Invokable naming → `{Verb}{Noun}Controller`
-- `authorizeResource()` for CRUD → assume yes if policy exists
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job
+- Don't generate the full HTTP stack — this skill is controller-only; redirect to `/laravel` for that

@@ -50,7 +50,7 @@ Context for react-service agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-service"`, pass the blob.
+Task tool, `subagent_type: "react-service"`, pass the blob.
 
 ## Step 6: Synthesize
 

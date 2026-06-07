@@ -11,15 +11,15 @@ Custom exception classes for modeling business-rule violations and domain errors
 
 declare(strict_types=1);
 
-namespace Modules\Household\Exceptions;
+namespace App\Exceptions;
 
 use DomainException;
 
-class InvitationAlreadyProcessedException extends DomainException
+class OrderAlreadyShippedException extends DomainException
 {
-    public static function forInvitation(int $invitationId): self
+    public static function forOrder(int $orderId): self
     {
-        return new self("Invitation {$invitationId} has already been processed.");
+        return new self("Order {$orderId} has already been shipped.");
     }
 }
 ```
@@ -41,21 +41,21 @@ For HTTP-aware exceptions, extend Laravel's appropriate base class — Laravel h
 Prefer named constructors over `new Exception("...")` for clarity:
 
 ```php
-class InsufficientFundsException extends DomainException
+class InsufficientStockException extends DomainException
 {
-    public static function forBill(int $billId, int $available, int $required): self
+    public static function forOrder(int $orderId, int $available, int $required): self
     {
-        return new self("Bill {$billId} requires {$required} cents, only {$available} available.");
+        return new self("Order {$orderId} requires {$required} units, only {$available} in stock.");
     }
 
-    public static function forUser(int $userId): self
+    public static function forProduct(int $productId): self
     {
-        return new self("User {$userId} has no payment method on file.");
+        return new self("Product {$productId} is out of stock.");
     }
 }
 
 // Usage:
-throw InsufficientFundsException::forBill($bill->id, $available, $required);
+throw InsufficientStockException::forOrder($order->id, $available, $required);
 ```
 
 ## Custom HTTP Response
@@ -70,7 +70,7 @@ public function render(Request $request): JsonResponse
 {
     return response()->json([
         'message' => $this->getMessage(),
-        'code' => 'invitation_already_processed',
+        'code' => 'order_already_shipped',
     ], 409);
 }
 ```
@@ -83,7 +83,7 @@ Implement `report()` to customize logging:
 public function report(): void
 {
     Log::channel('domain-errors')->warning($this->getMessage(), [
-        'invitation_id' => $this->invitationId,
+        'order_id' => $this->orderId,
     ]);
 }
 ```
@@ -92,7 +92,7 @@ Return `false` from `report()` to suppress default reporting (or `bool` from `co
 
 ## Compliance
 
-**NEVER include raw PII in exception messages.** Exceptions get logged automatically — message strings are searchable forever. See DATA-001-compliance-and-logging.
+**NEVER include raw PII in exception messages.** Exceptions get logged automatically — message strings are searchable forever.
 
 ```php
 // ❌ Wrong — PII in message
@@ -102,22 +102,13 @@ throw new InvalidUserException("Email {$user->email} not found.");
 throw new InvalidUserException("User {$user->id} not found.");
 ```
 
-## Rules
-
-- Live in `Modules/{Module}/app/Exceptions/`
-- Naming: `{Condition}Exception` — `InvitationAlreadyProcessedException`, `InsufficientFundsException`
-- Extend the appropriate base (`DomainException` for business rules)
-- Use static factory methods (`::forX()`) — never `new` directly in callers
-- Implement `render()` for custom HTTP responses (404/403 are auto-handled by Laravel)
-- Implement `report()` to customize logging
-- **Never include PII in messages** (per DATA-001)
-- Strict types via `declare(strict_types=1)` recommended
-
 ## Key Points
 
-- Domain rule violations → `DomainException`, programmer errors → `RuntimeException`
-- Static factory methods > raw constructor calls
-- Implement `render()` for non-standard HTTP status codes (e.g., 409 Conflict)
-- Implement `report()` for custom logging channels
-- NEVER include PII (email, name, phone) in exception messages
-- Laravel's built-in exceptions (404/403/422/401) cover most HTTP cases — don't reinvent
+- Live in `app/Exceptions/`; naming `{Condition}Exception` (`OrderAlreadyShippedException`, `InsufficientStockException`)
+- Domain-rule violations → `DomainException`; programmer errors → `RuntimeException`
+- Use static factory methods (`::forX()`) — never `new` directly in callers
+- Implement `render()` for non-standard HTTP status codes (e.g. 409 Conflict); 404/403/422/401 are auto-handled by Laravel
+- Implement `report()` for custom logging channels; return `false` to suppress default reporting
+- NEVER include PII (email, name, phone) in exception messages — they get logged automatically; use IDs
+- Laravel's built-in exceptions cover most HTTP cases — don't reinvent
+- `declare(strict_types=1)` recommended

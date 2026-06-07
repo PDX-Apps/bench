@@ -1,68 +1,38 @@
 ---
-description: Generate a Laravel PHPUnit FEATURE test (HTTP/end-to-end). Use for testing endpoints, controllers, full request→response flows. For isolated logic tests, use /unit-test.
+description: Generate a Laravel feature test (HTTP/end-to-end). Use for testing endpoints, controllers, full request→response flows. For isolated logic tests, use /unit-test.
 argument-hint: [what the user needs]
 ---
 
-You're the **/feature-test** skill. Translate the user's feature test request into an enriched delegation to the `feature-test` agent.
+You're the **/feature-test** skill. Parse the user's request and delegate to the `feature-test` agent. This generates the test and runs it via the project's configured test command; to customize how the AI runs tests, use `/test-runner`.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Household, etc.)
-- **Test class** — `{ActionDescription}Test` (e.g., `MarkBillPaidTest`, `CreatePersonalBillTest`)
+From the request, extract what's stated:
+- **Test class** — `{ActionDescription}Test` (e.g. `MarkOrderShippedTest`, `CreateOrderTest`)
 - **Endpoint under test** + HTTP method
-- **Cases**: golden path, unauthorized (401), forbidden (403), not found (404), validation failure (422), conflict (409)
-- **Regression for bug** if applicable
+- **Cases** — golden path plus the relevant failures: 401 unauthenticated, 403 forbidden, 404 not found, 422 validation, 409 conflict
+- **Regression** for a specific bug, if applicable
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/tests/Feature/ 2>/dev/null
-ls Modules/{Module}/tests/Support/ 2>/dev/null  # test traits
-ls Modules/{Module}/database/factories/ 2>/dev/null  # factories available
-```
+Ask only when a needed detail is missing:
+- The endpoint doesn't exist yet → offer to run `/controller` first
+- Cases unspecified → suggest the standard set (golden + 401 + 403 + 404 + 422 when a FormRequest exists)
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Endpoint not yet existing → flag: "Test for `POST /bills/{id}/mark-paid` — no controller. Generate `/controller` first?"
-- Cases not specified → suggest standard set (golden + 401 + 403 + 404 + 422 if FormRequest exists)
+Use the Task tool with `subagent_type: "feature-test"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for feature-test agent:
-- Module: {Module}
-- Class: {Name}Test
-- Path: Modules/{Module}/tests/Feature/{Name}Test.php
-- Endpoint: POST /bills/{id}/mark-paid → MarkBillPaidController
-- #[CoversClass]: \Modules\Bill\Http\Controllers\MarkBillPaidController
-- #[Group]: 'bill'
-- Available factories: [BillFactory (paid, overdue, forHousehold), UserFactory, HouseholdFactory (withMember)]
-- Test traits: [InteractsWithBills if exists]
-- Cases: [
-    test_member_can_mark_bill_paid (golden, 200)
-    test_non_member_gets_403
-    test_unauthenticated_gets_401
-    test_already_paid_returns_409
-    test_invalid_bill_id_returns_404
-  ]
-- Existing siblings: [ShowBillTest.php, ...]
-```
+Report at the feature level: test path and the cases covered. Example:
 
-## Step 5: Delegate
+> Created `tests/Feature/MarkOrderShippedTest.php` with 5 cases: golden (200), 403 non-owner, 401 unauthenticated, 409 already-shipped, 404 unknown order. `RefreshDatabase`, `#[CoversClass]`, `#[Group('order')]`.
 
-Task tool, `subagent_type: "bench:feature-test"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/tests/Feature/MarkBillPaidTest.php` with 5 test methods. `RefreshDatabase`, `#[CoversClass]`, `#[Group('bill')]`. CI passing for module Bill (`composer ci -- --module=Bill --only=test --fail-on-error`)."
-
-## When to Ask vs Assume
-
-- PHPUnit (`--phpunit`) → always (NEVER Pest)
-- `RefreshDatabase` → always
-- Use factory states → discover from inspection
-- `data-testid` style for test method names → e.g., `test_member_can_X`
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job
+- Don't dictate the test framework or runner — that's `/test-runner`'s job, not this skill's call

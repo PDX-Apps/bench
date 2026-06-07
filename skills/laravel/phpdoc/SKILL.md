@@ -10,47 +10,35 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Parse
 
 Extract:
-- **Module** (or "all" if cross-cutting)
-- **Scope**: one file | one class | module sweep
-- **Target file path** if specified
-- **What to add**: missing doc blocks | array shape annotations | @throws | all of the above
+- **Scope**: one file | one class | a directory sweep
+- **Target path(s)** if specified
+- **What to add**: missing doc blocks | array-shape annotations | `@throws` | all of the above
 
-## Step 2: Inspect
+## Step 2: Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-# Files lacking PHPDoc on public methods
-grep -rL "^\s*\*" Modules/{Module}/app/ --include="*.php" 2>/dev/null | head -20
-```
+- Scope unclear → confirm: "One file, one class, or a sweep of `app/...`?"
+- Large sweep → confirm the path before running (it can touch many files)
 
-## Step 3: Resolve Ambiguity
-
-- Scope → confirm: "One file, one class, or sweep all of `Modules/{Module}/app/`?"
-- Conventions → discover from sibling files (project may use specific @param style)
-
-## Step 4: Build Context Blob
+## Step 3: Build Context Blob
 
 ```
 Context for phpdoc agent:
-- Module: {Module}
-- Scope: one-file | class | module-sweep
-- Target files: [paths]
+- Scope: one-file | class | directory-sweep
+- Target paths: [paths]
 - What to add: missing-doc-blocks | array-shape-annotations | throws-tags | all
-- Conventions observed: [array shape style, @throws inclusion, etc.]
-- Existing siblings (style reference): [path]
 ```
 
-## Step 5: Delegate
+## Step 4: Delegate
 
-Task tool, `subagent_type: "bench:phpdoc"`, pass the blob.
+Task tool, `subagent_type: "phpdoc"`, pass the blob.
 
-## Step 6: Synthesize
+## Step 5: Synthesize
 
-> "Added PHPDoc blocks to 12 public methods in `Modules/Bill/app/Actions/`. Includes `@param`, `@return`, `@throws` for documented exceptions. Array shape annotations on methods returning structured arrays."
+Report the files updated, doc blocks added (count), and array shapes added.
 
 ## When to Ask vs Assume
 
 - Document WHAT, not WHY → enforce
-- Don't restate type hints → enforce
-- Don't reference current task or PR in comments → enforce
-- @throws → include for documented exceptions in the method body
+- Don't restate type hints in `@param`/`@return` → enforce
+- No spec/rule/task references in comments → enforce
+- `@throws` → include for exceptions thrown in the method body

@@ -1,44 +1,34 @@
 ---
 name: migration
-description: Generate ONE Laravel migration file. Single artifact only. Reads DB-001 + DATA-002 patterns.
+description: Generate ONE Laravel migration file. Single artifact only. Reads the migration structure + soft-deletes patterns.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE Laravel migration. Skill provided enriched context.
+You generate ONE Laravel migration. The skill provided enriched context. Read ONLY the pattern files needed.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| Migration structure (columns, FKs, indexes) | `<PLUGIN_ROOT>/patterns-built/laravel/database/DB-001-migrations.md` |
-| Soft delete + restrict-on-delete (NEVER cascade/null) | `<PLUGIN_ROOT>/patterns-built/laravel/data/DATA-002-deletion-and-retention.md` |
-| Public ID (ULID) columns | `<PLUGIN_ROOT>/patterns-built/laravel/database/DB-004-public-ids.md` |
+| Migration structure (columns, FKs, indexes, enum vs string) | `<PLUGIN_ROOT>/patterns-built/laravel/database/migrations/MIGRATION-001-structure.md` |
+| Soft deletes + FK delete behavior (no cascade/null) | `<PLUGIN_ROOT>/patterns-built/laravel/database/migrations/MIGRATION-002-soft-deletes.md` |
 
 ## Process
 
-1. Read DB-001 + DATA-002
-2. Scaffold: `php artisan module:make-migration {filename} --module={Module} --no-interaction`
-3. Implement following patterns:
-   - `foreignIdFor(Model::class)->constrained()->restrictOnDelete()` (NEVER cascade/null)
-   - `softDeletes()`, `timestamps()`
-   - Public ID column for API-facing tables
-   - Indexes on FKs and frequent WHERE columns
+1. Read MIGRATION-001 (+ MIGRATION-002 when the table is soft-deletable).
+2. Scaffold: `php artisan make:migration {filename} --no-interaction`
+3. Implement following the patterns:
+   - `foreignIdFor({Model}::class)->constrained()` (default RESTRICT — never cascade/null)
+   - `softDeletes()`, `timestamps()` where appropriate
+   - Indexes on FKs and frequently-filtered columns
+   - Enum vs string column choice per MIGRATION-001
+   - A reversible `down()`
 4. Run: `php artisan migrate --no-interaction`
-5. If migration fails, diagnose and report (don't `migrate:fresh` without explicit confirmation)
+5. If the migration fails, diagnose and report. Do **not** run `migrate:fresh` without explicit confirmation.
 
 ## Return
 
 - Migration file path
 - Tables/columns affected
 - Foreign keys added
-- Migration ran: yes/failed (with reason)
+- Migration ran: yes / failed (with reason)

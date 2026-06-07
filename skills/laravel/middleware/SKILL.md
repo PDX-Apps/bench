@@ -3,57 +3,35 @@ description: Generate Laravel HTTP middleware classes. Use whenever the user men
 argument-hint: [what the user needs]
 ---
 
-You're the **/middleware** skill. Translate the user's middleware request into an enriched delegation to the `middleware` agent.
+You're the **/middleware** skill. Parse the user's request and delegate to the `middleware` agent.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Audit, Auth, etc.)
-- **Middleware class name** — descriptive (e.g., `CompleteJourneyMiddleware`, `EnsureFreshTokenMiddleware`)
-- **When it runs**: before-controller (filtering) | after-controller (response wrapping) | terminating (post-response cleanup/logging)
-- **Alias** for short route declarations (e.g., `complete-journey`)
-- **Scope**: applied globally? to a route group? per-route?
+From the request, extract what's stated:
+- **Middleware class name** — descriptive (e.g. `EnsureSubscriptionActiveMiddleware`, `LogRequestDurationMiddleware`)
+- **Stage** — before-controller (filtering), after-controller (response mutation), or terminating (post-response cleanup/logging)
+- **Alias** for short route declarations (e.g. `subscription-active`)
+- **Scope** — global, a route group, or per-route
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Http/Middleware/ 2>/dev/null
-ls bootstrap/app.php 2>/dev/null   # Laravel 12 middleware registration lives here
-```
+Ask only when a needed detail is missing:
+- Stage unclear → "Does it run before the controller (filter), after (modify response), or after the response is sent (logging/cleanup)?"
+- Heavy work implied → suggest deferring it to a Job rather than blocking the request
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Before/after/terminating unclear → ask: "Does it run before the controller (filter), after (modify response), or after response sent (logging/cleanup)?"
-- Alias name unclear → propose one based on class name (e.g., `CompleteJourneyMiddleware` → `complete-journey`)
-- Where to register → assume `bootstrap/app.php` global registration unless module-scoped (then module's RouteServiceProvider)
+Use the Task tool with `subagent_type: "middleware"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for middleware agent:
-- Module: {Module}
-- Class: {Name}Middleware
-- Path: Modules/{Module}/app/Http/Middleware/{Name}Middleware.php
-- Stage: before-controller | after-controller | terminating
-- Dependencies to inject (constructor): [JourneyService, AuthService]
-- Alias: {alias-name}
-- Registration: bootstrap/app.php (global / group: api/web) | module RouteServiceProvider
-- Existing siblings: [CompleteJourneyMiddleware.php]
-```
+Report at the feature level: class path, stage, alias, and where it's registered. Example:
 
-## Step 5: Delegate
+> Created `app/Http/Middleware/EnsureSubscriptionActiveMiddleware.php` (before-controller). Aliased `subscription-active` and appended to the `api` group in `bootstrap/app.php`.
 
-Task tool, `subagent_type: "bench:middleware"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Audit/app/Http/Middleware/CompleteJourneyMiddleware.php` (after-controller stage, injects `JourneyService`). Aliased `complete-journey` and added to API group in `bootstrap/app.php`."
-
-## When to Ask vs Assume
-
-- Laravel 12 registration in `bootstrap/app.php` → never ask, always
-- Alias kebab-case from class name → assume; confirm only if user provided one
-- Heavy work in middleware → reject, suggest deferring to a Job
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job

@@ -47,7 +47,7 @@ Context for react-hook agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-hook"`, pass the blob.
+Task tool, `subagent_type: "react-hook"`, pass the blob.
 
 ## Step 6: Synthesize
 

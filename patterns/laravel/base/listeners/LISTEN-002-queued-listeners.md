@@ -1,4 +1,4 @@
-# LISTEN-002
+# LISTEN-002-queued-listeners
 
 ## Pattern
 
@@ -11,19 +11,19 @@ Queued event listeners execute asynchronously in background jobs.
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Listeners;
+namespace App\Listeners;
 
+use App\Events\{EventName};
+use App\Models\{Model};
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\Attributes\WithoutRelations;
-use Modules\{Module}\Events\{EventName};
-use Modules\{Module}\Models\{Model};
 
 #[WithoutRelations]
 class {ActionDescription} implements ShouldQueue
 {
     public function handle({EventName} $event): void
     {
-        // Re-fetch model from ID (see EVENT-002)
+        // Re-fetch model from the ID carried on the event
         $model = {Model}::find($event->modelId);
 
         if (! $model) {
@@ -41,7 +41,7 @@ class {ActionDescription} implements ShouldQueue
 
 When a queued event is dispatched, Laravel serializes the event object (including any model properties on it) into the queue store. If the model has eager-loaded relations, those relations are serialized too — bloating payloads and capturing a snapshot of data that may be stale by the time the worker picks the job up.
 
-`#[WithoutRelations]` on the listener strips those relations during serialization. The model stub still carries the primary key; you re-fetch fresh state in `handle()` per the existing EVENT-002 rule (pass IDs, not models).
+`#[WithoutRelations]` on the listener strips those relations during serialization. The model stub still carries the primary key; you re-fetch fresh state in `handle()`, following the rule of passing IDs, not models.
 
 Combine with the project rule of passing IDs in events: belt-and-suspenders against payload bloat.
 
@@ -78,8 +78,8 @@ class SendShipmentNotification implements ShouldQueue
 
 - Implements `ShouldQueue`
 - Executes asynchronously in queue worker
-- Listener failure doesn't affect original request
-- See `EVENT-002` for passing IDs instead of models
+- Listener failure doesn't affect the original request
+- Pass IDs in events, not models; re-fetch fresh state in `handle()`
 - Can retry on failure
 - **L13: add `#[WithoutRelations]` to strip eager-loaded relations from queue payload** (smaller payloads, no stale-relation surprises)
 

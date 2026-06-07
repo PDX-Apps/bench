@@ -7,7 +7,7 @@ Custom Query Builders to centralize and reuse complex query logic.
 ## Why
 
 Prevents:
-- Duplicating complex queries across services
+- Duplicating complex queries across the codebase
 - Creating service dependencies just to share queries
 - Query logic scattered throughout the codebase
 
@@ -20,44 +20,43 @@ Prevents:
 
 declare(strict_types=1);
 
-namespace Modules\User\Builders;
+namespace App\Models\Builders;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class UserBuilder extends Builder
+class OrderBuilder extends Builder
 {
     /**
-     * Users that are activated and verified.
+     * Orders that have been paid.
      */
-    public function activated(): self
+    public function paid(): self
     {
-        return $this->where('is_active', true)
-            ->whereNotNull('email_verified_at');
+        return $this->whereNotNull('paid_at');
     }
 
     /**
-     * Users that are in one or more households.
+     * Orders placed within the last N days.
      */
-    public function inHouseholds(): self
+    public function recent(int $days = 30): self
     {
-        return $this->has('households');
+        return $this->where('created_at', '>=', now()->subDays($days));
     }
 
     /**
-     * Activated users currently in one or more households.
+     * Recently-placed paid orders.
      */
-    public function activatedInHouseholds(): self
+    public function recentlyPaid(int $days = 30): self
     {
-        return $this->activated()
-            ->inHouseholds();
+        return $this->paid()
+            ->recent($days);
     }
 
     /**
-     * Users with a specific role.
+     * Orders in a specific status.
      */
-    public function withRole(string $role): self
+    public function withStatus(OrderStatus $status): self
     {
-        return $this->whereHas('roles', fn($q) => $q->where('name', $role));
+        return $this->where('status', $status);
     }
 }
 ```
@@ -71,69 +70,86 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Modules\User\Builders\UserBuilder;
+use App\Models\Builders\OrderBuilder;
+use Illuminate\Database\Eloquent\Model;
 
-class User extends Authenticatable
+/**
+ * @method static OrderBuilder query()
+ * @method OrderBuilder newQuery()
+ */
+class Order extends Model
 {
-    public function newEloquentBuilder($query): UserBuilder
+    public function newEloquentBuilder($query): OrderBuilder
     {
-        return new UserBuilder($query);
+        return new OrderBuilder($query);
     }
 }
 ```
 
+Overriding `newEloquentBuilder()` changes the runtime type but not what IDEs and static
+analysis infer — `Order::query()` and `$order->newQuery()` still resolve to the base
+`Builder` without help. The `@method` annotations above re-type them to `OrderBuilder` so the
+custom methods autocomplete and type-check off `query()`/`newQuery()`.
+
 ## Usage
 
-Now any service can use these queries:
+Any caller can now reuse these queries:
 
 ```php
-// Service A
-$users = User::query()
-    ->activatedInHouseholds()
+$orders = Order::query()
+    ->recentlyPaid()
     ->get();
 
-// Service B - same query, no duplication
-$activeUsers = User::query()
-    ->activatedInHouseholds()
-    ->withRole('admin')
-    ->get();
-
-// Compose queries
-$users = User::query()
-    ->activated()
-    ->inHouseholds()
-    ->where('created_at', '>', now()->subDays(30))
+// Compose with ad-hoc constraints
+$orders = Order::query()
+    ->paid()
+    ->withStatus(OrderStatus::Fulfilled)
+    ->where('total_cents', '>', 10_000)
     ->get();
 ```
 
 ## Key Points
 
-- Lives in `Modules/{Module}/Builders/`
+- Lives in `app/Models/Builders/`
 - Name pattern: `{Model}Builder`
 - Extend `Illuminate\Database\Eloquent\Builder`
 - Return `self` for method chaining
 - Compose small methods into larger queries
-- Override `newEloquentBuilder()` in model
-- Centralize ALL complex query logic here
-- Services use builders, never duplicate queries
+- Override `newEloquentBuilder()` in the model
+- Add `@method static {Model}Builder query()` + `@method {Model}Builder newQuery()` PHPDoc on the model so IDEs/static analysis type `query()`/`newQuery()` as the custom builder
+- Centralize complex query logic here; callers use builders, never duplicate queries
 
 ## When to Use
 
 **Use Custom Query Builders when:**
-- Query is used in multiple places
-- Query represents business logic (e.g., "activated users")
-- Query is complex (3+ where clauses, joins, subqueries)
-- Query will be composed with other queries
+- The query is used in multiple places
+- The query represents business logic (e.g., "paid orders")
+- The query is complex (3+ where clauses, joins, subqueries)
+- The query will be composed with other queries
 - You want IDE autocomplete and type safety
 
-**Use Local Scopes when:**
-- Single, simple where clause
-- Rarely reused
-- Model-specific constraint
+**Use a local scope when** the constraint is a single, simple, rarely-reused, model-specific
+`where`. In Laravel 13, declare a local scope with the `#[Scope]` attribute on a method (the
+legacy `scopeXxx()` magic-method naming is no longer needed):
+
+```php
+use Illuminate\Database\Eloquent\Attributes\Scope;
+
+class Order extends Model
+{
+    #[Scope]
+    protected function draft(Builder $query): void
+    {
+        $query->whereNull('placed_at');
+    }
+}
+
+// Called without the "scope" prefix:
+Order::query()->draft()->get();
+```
 
 **Avoid:**
-- Services/repositories just to share queries (dependency bloat)
+- Services/repositories created just to share queries (dependency bloat)
 - Copy-pasting query logic
 - Global scopes (unless multi-tenancy or soft deletes)
 
@@ -142,7 +158,7 @@ $users = User::query()
 | Approach       | Autocomplete | Composable | Testable  | Complexity |
 |----------------|--------------|------------|-----------|------------|
 | Custom Builder | ✅ Full       | ✅ High     | ✅ Easy    | Low        |
-| Local Scopes   | ⚠️ Magic     | ✅ High     | ✅ Easy    | Low        |
+| Local Scope    | ⚠️ Magic     | ✅ High     | ✅ Easy    | Low        |
 | Repository     | ✅ Good       | ⚠️ Medium  | ⚠️ Medium | High       |
 | Copy-paste     | ❌ None       | ❌ None     | ❌ Hard    | Bloat      |
 

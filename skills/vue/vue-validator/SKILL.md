@@ -47,7 +47,7 @@ Context for vue-validator agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-validator"`, pass the blob.
+Task tool, `subagent_type: "vue-validator"`, pass the blob.
 
 ## Step 6: Synthesize
 

@@ -21,40 +21,22 @@ Laravel uses specific prefixes based on trait purpose:
 Traits live in a `Concerns/` directory within their relevant namespace:
 
 ```
-Modules/{Module}/
+app/
 ├── Models/
 │   └── Concerns/                    # Model traits
-│       ├── HasPublicId.php
-│       ├── HasOwnership.php
-│       └── BelongsToHousehold.php
+│       ├── HasReference.php
+│       └── BelongsToTeam.php
 ├── Http/
 │   └── Controllers/
 │       └── Concerns/                # Controller traits
-│           └── HandlesApiResponses.php
-└── tests/
-    └── Concerns/                    # Test traits
-        ├── InteractsWithInvitations.php
-        └── InteractsWithHouseholds.php
-```
-
-For app-level:
-```
-app/
-├── Models/
-│   └── Concerns/
-│       ├── HasUlid.php
-│       └── HasAuditTrail.php
-├── Http/
-│   └── Controllers/
-│       └── Concerns/
 │           └── HandlesApiResponses.php
 └── Services/
     └── Concerns/
         └── LogsActivity.php
 
 tests/
-└── Concerns/
-    ├── InteractsWithUsers.php
+└── Concerns/                        # Test traits
+    ├── InteractsWithOrders.php
     └── CreatesTestData.php
 ```
 
@@ -65,52 +47,52 @@ tests/
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Models\Concerns;
+namespace App\Models\Concerns;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\{Module}\Models\Household;
 
 /**
- * Provides household relationship and ownership methods.
+ * Provides the team relationship and membership helpers.
  *
- * Use in models that belong to a household.
+ * Use in models that belong to a team.
  *
- * @property int $household_id
- * @property-read Household $household
+ * @property int $team_id
+ * @property-read Team $team
  */
-trait BelongsToHousehold
+trait BelongsToTeam
 {
     /**
-     * Get the household this model belongs to.
+     * Get the team this model belongs to.
      *
-     * @return BelongsTo<Household, $this>
+     * @return BelongsTo<Team, $this>
      */
-    public function household(): BelongsTo
+    public function team(): BelongsTo
     {
-        return $this->belongsTo(Household::class);
+        return $this->belongsTo(Team::class);
     }
 
     /**
-     * Check if this model belongs to the given household.
+     * Check if this model belongs to the given team.
      */
-    public function belongsToHousehold(int|Household $household): bool
+    public function belongsToTeam(int|Team $team): bool
     {
-        $householdId = $household instanceof Household ? $household->id : $household;
+        $teamId = $team instanceof Team ? $team->id : $team;
 
-        return $this->household_id === $householdId;
+        return $this->team_id === $teamId;
     }
 
     /**
-     * Scope to filter by household.
+     * Scope to filter by team.
      *
      * @param \Illuminate\Database\Eloquent\Builder<static> $query
      * @return \Illuminate\Database\Eloquent\Builder<static>
      */
-    public function scopeForHousehold($query, int|Household $household)
+    public function scopeForTeam($query, int|Team $team)
     {
-        $householdId = $household instanceof Household ? $household->id : $household;
+        $teamId = $team instanceof Team ? $team->id : $team;
 
-        return $query->where('household_id', $householdId);
+        return $query->where('team_id', $teamId);
     }
 }
 ```
@@ -142,51 +124,46 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
-use App\Support\PublicId;
+use Illuminate\Support\Str;
 
 /**
- * Provides ULID-based public ID generation.
+ * Generates a unique human-facing reference on creation.
  *
- * @property string $public_id
+ * @property string $reference
  */
-trait HasPublicId
+trait HasReference
 {
-    public static function bootHasPublicId(): void
+    public static function bootHasReference(): void
     {
         static::creating(static function ($model): void {
-            if (empty($model->public_id)) {
-                $model->public_id = PublicId::generate();
+            if (empty($model->reference)) {
+                $model->reference = strtoupper(Str::random(10));
             }
         });
-    }
-
-    public function getRouteKeyName(): string
-    {
-        return 'public_id';
     }
 }
 ```
 
 ### Test Traits
 
-Provide reusable test helpers (see TEST-003-test-traits):
+Provide reusable test helpers (the test-traits pattern covers these in depth):
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Household\Tests\Concerns;
+namespace Tests\Concerns;
 
-use Modules\Household\Models\HouseholdInvitation;
+use App\Models\Invitation;
 use PHPUnit\Framework\MockObject\Stub;
 
 /**
- * Test helpers for HouseholdInvitation mocks and stubs.
+ * Test helpers for Invitation mocks and stubs.
  */
 trait InteractsWithInvitations
 {
-    protected function createInvitationStub(array $attributes = []): HouseholdInvitation&Stub
+    protected function createInvitationStub(array $attributes = []): Invitation&Stub
     {
         // ...
     }
@@ -228,12 +205,12 @@ trait HandlesApiResponses
 For traits that need initialization, use the `boot{TraitName}` convention:
 
 ```php
-trait HasPublicId
+trait HasReference
 {
     /**
      * Boot the trait (called automatically by Eloquent).
      */
-    public static function bootHasPublicId(): void
+    public static function bootHasReference(): void
     {
         static::creating(static function ($model): void {
             // Initialization logic
@@ -267,8 +244,3 @@ trait HasFullAuditTrail
 - **PHPDoc:** Document `@property` for attributes trait provides
 - **Type hints:** Use `$this` in return types for fluent methods
 - **Scope methods:** Prefix with `scope` for query scopes
-
-## Related
-
-- `TRAIT-002-test-traits` - Test-specific trait patterns
-- `MODEL-001-structure` - Model patterns

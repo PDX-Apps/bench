@@ -48,7 +48,7 @@ Context for react-route agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-route"`, pass the blob.
+Task tool, `subagent_type: "react-route"`, pass the blob.
 
 ## Step 6: Synthesize
 

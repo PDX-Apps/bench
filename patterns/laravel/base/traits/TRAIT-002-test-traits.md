@@ -4,10 +4,6 @@
 
 Reusable test helper traits for creating mocks, stubs, and test fixtures. Centralizes test setup to reduce duplication and ensure consistency.
 
-## Dependencies
-
-- `TRAIT-001-structure` - General trait patterns and naming conventions
-
 ## When to Use
 
 Create a test trait when:
@@ -23,15 +19,11 @@ Create a test trait when:
 ## Structure
 
 ```
-Modules/{Module}/tests/
+tests/
 └── Concerns/                           # Test traits
     ├── InteractsWithInvitations.php
-    ├── InteractsWithHouseholds.php
-    └── InteractsWithMembers.php
-
-tests/
-└── Concerns/                           # App-level test traits
-    ├── InteractsWithUsers.php
+    ├── InteractsWithTeams.php
+    ├── InteractsWithOrders.php
     └── CreatesTestFixtures.php
 ```
 
@@ -42,59 +34,59 @@ tests/
 
 declare(strict_types=1);
 
-namespace Modules\Household\Tests\Concerns;
+namespace Tests\Concerns;
 
-use Modules\Household\Enums\InvitationStatus;
-use Modules\Household\Enums\InvitationType;
-use Modules\Household\Models\HouseholdInvitation;
+use App\Enums\InvitationStatus;
+use App\Enums\InvitationType;
+use App\Models\Invitation;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use stdClass;
 
 /**
- * Test helpers for HouseholdInvitation mocks and stubs.
+ * Test helpers for Invitation mocks and stubs.
  */
 trait InteractsWithInvitations
 {
     /**
-     * Create a mock HouseholdInvitation for verifying method calls.
+     * Create a mock Invitation for verifying method calls.
      *
      * Use when you need expects() assertions.
      *
      * @param array{
      *     id?: int,
-     *     household_id?: int,
+     *     team_id?: int,
      *     invitee_id?: int,
      *     inviter_id?: int,
-     *     household_name?: string,
+     *     team_name?: string,
      *     type?: InvitationType,
      *     status?: InvitationStatus,
      * } $attributes
      */
-    protected function createInvitationMock(array $attributes = []): HouseholdInvitation&MockObject
+    protected function createInvitationMock(array $attributes = []): Invitation&MockObject
     {
         $attrs = array_merge([
             'id' => 1,
-            'household_id' => 1,
+            'team_id' => 1,
             'invitee_id' => 2,
             'inviter_id' => 3,
-            'household_name' => 'Test Household',
+            'team_name' => 'Test Team',
             'type' => InvitationType::Invitation,
             'status' => InvitationStatus::Pending,
         ], $attributes);
 
-        $household = new stdClass();
-        $household->name = $attrs['household_name'];
+        $team = new stdClass();
+        $team->name = $attrs['team_name'];
 
-        $invitation = $this->createMock(HouseholdInvitation::class);
+        $invitation = $this->createMock(Invitation::class);
 
         $invitation->method('__get')
             ->willReturnCallback(fn (string $prop) => match ($prop) {
                 'id' => $attrs['id'],
-                'household_id' => $attrs['household_id'],
+                'team_id' => $attrs['team_id'],
                 'invitee_id' => $attrs['invitee_id'],
                 'inviter_id' => $attrs['inviter_id'],
-                'household' => $household,
+                'team' => $team,
                 'type' => $attrs['type'],
                 'status' => $attrs['status'],
                 default => null,
@@ -106,42 +98,42 @@ trait InteractsWithInvitations
     }
 
     /**
-     * Create a stub HouseholdInvitation for return values only.
+     * Create a stub Invitation for return values only.
      *
      * Use when you don't need expects() assertions (faster).
      *
      * @param array{
      *     id?: int,
-     *     household_id?: int,
+     *     team_id?: int,
      *     invitee_id?: int,
      *     inviter_id?: int,
-     *     household_name?: string,
-     *     fresh_result?: HouseholdInvitation|null,
+     *     team_name?: string,
+     *     fresh_result?: Invitation|null,
      * } $attributes
      */
-    protected function createInvitationStub(array $attributes = []): HouseholdInvitation&Stub
+    protected function createInvitationStub(array $attributes = []): Invitation&Stub
     {
         $attrs = array_merge([
             'id' => 1,
-            'household_id' => 1,
+            'team_id' => 1,
             'invitee_id' => 2,
             'inviter_id' => 3,
-            'household_name' => 'Test Household',
+            'team_name' => 'Test Team',
             'fresh_result' => null,
         ], $attributes);
 
-        $household = new stdClass();
-        $household->name = $attrs['household_name'];
+        $team = new stdClass();
+        $team->name = $attrs['team_name'];
 
-        $invitation = $this->createStub(HouseholdInvitation::class);
+        $invitation = $this->createStub(Invitation::class);
 
         $invitation->method('__get')
             ->willReturnCallback(fn (string $prop) => match ($prop) {
                 'id' => $attrs['id'],
-                'household_id' => $attrs['household_id'],
+                'team_id' => $attrs['team_id'],
                 'invitee_id' => $attrs['invitee_id'],
                 'inviter_id' => $attrs['inviter_id'],
-                'household' => $household,
+                'team' => $team,
                 default => null,
             });
 
@@ -154,7 +146,7 @@ trait InteractsWithInvitations
     /**
      * Create a pending invitation stub (convenience).
      */
-    protected function createPendingInvitationStub(): HouseholdInvitation&Stub
+    protected function createPendingInvitationStub(): Invitation&Stub
     {
         $stub = $this->createInvitationStub();
         $stub->method('isPending')->willReturn(true);
@@ -165,7 +157,7 @@ trait InteractsWithInvitations
     /**
      * Create an accepted invitation stub (convenience).
      */
-    protected function createAcceptedInvitationStub(): HouseholdInvitation&Stub
+    protected function createAcceptedInvitationStub(): Invitation&Stub
     {
         $stub = $this->createInvitationStub(['status' => InvitationStatus::Accepted]);
         $stub->method('isPending')->willReturn(false);
@@ -182,10 +174,10 @@ trait InteractsWithInvitations
 
 declare(strict_types=1);
 
-namespace Modules\Household\Tests\Unit\Actions;
+namespace Tests\Unit\Actions;
 
-use Modules\Household\Actions\AcceptInvitationAction;
-use Modules\Household\Tests\Concerns\InteractsWithInvitations;
+use App\Actions\AcceptInvitationAction;
+use Tests\Concerns\InteractsWithInvitations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Tests\TestCase;
 
@@ -209,7 +201,7 @@ class AcceptInvitationActionTest extends TestCase
         // Override specific attributes
         $invitation = $this->createInvitationMock([
             'id' => 99,
-            'household_name' => 'Custom Household',
+            'team_name' => 'Custom Team',
         ]);
 
         // ... test
@@ -279,7 +271,7 @@ Use intersection types and PHPDoc array shapes:
 /**
  * @param array{id?: int, status?: InvitationStatus} $attributes
  */
-protected function createInvitationMock(array $attributes = []): HouseholdInvitation&MockObject
+protected function createInvitationMock(array $attributes = []): Invitation&MockObject
 ```
 
 ## When to Extract
@@ -317,9 +309,3 @@ use InteractsWithInvitations;
 - **Mock vs Stub:** Provide both when tests need verification vs return values
 - **Type safety:** Intersection types (`MockObject&Model`) + PHPDoc shapes
 - **Convenience:** Add shortcuts for common states
-
-## Related
-
-- `TRAIT-001-structure` - General trait patterns
-- `TEST-001-feature-tests` - Feature test patterns
-- `TEST-002-unit-tests` - Unit test patterns

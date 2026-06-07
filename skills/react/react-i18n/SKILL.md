@@ -50,7 +50,7 @@ Context for react-i18n agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-i18n"`, pass the blob.
+Task tool, `subagent_type: "react-i18n"`, pass the blob.
 
 ## Step 6: Synthesize
 

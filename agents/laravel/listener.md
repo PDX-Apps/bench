@@ -4,31 +4,28 @@ description: Generate ONE Laravel event listener (sync or queued). Single artifa
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE event listener. Skill provided enriched context.
+You generate ONE event listener. Read ONLY the pattern relevant to the chosen type.
 
 ## Pattern Lookup
 
 | Type | Read |
 |------|------|
-| Sync (< 100ms, critical) | `<PLUGIN_ROOT>/patterns-built/laravel/listeners/LISTEN-001-sync-listeners.md` |
+| Sync (fast, critical) | `<PLUGIN_ROOT>/patterns-built/laravel/listeners/LISTEN-001-sync-listeners.md` |
 | Queued (slow, external API; default) | `<PLUGIN_ROOT>/patterns-built/laravel/listeners/LISTEN-002-queued-listeners.md` |
 
 ## Process
 
 1. Read the matching pattern only
-2. Scaffold: `php artisan module:make-listener {Name}Listener --module={Module} --event={EventFQCN} --no-interaction`
-3. Implement: `handle()` re-fetches model from `$event->id` (queued listeners). Add idempotency check.
+2. Scaffold: `php artisan make:listener {Name}Listener --event={EventFQCN} --no-interaction`
+3. Implement: `handle()` re-fetches the model from `$event->id` (for queued listeners) and delegates to an Action. Add an idempotency check.
 4. Verify auto-discovery: `php artisan event:list`
+
+## Anti-Patterns
+
+- Don't put business logic in the listener — delegate to an injected Action; the listener wires the reaction
+- Don't make a sync listener do slow work (emails, external APIs) — queue it
+- Don't assume single execution for queued listeners — make `handle()` idempotent
+- Don't write files outside the listeners path
 
 ## Return
 

@@ -3,62 +3,34 @@ description: Generate a Laravel model factory (database/factories/{Model}Factory
 argument-hint: [what the user needs]
 ---
 
-You're the **/factory** skill. Translate the user's factory request into an enriched delegation to the `factory` agent.
+You're the **/factory** skill. Parse the user's request and delegate to the `factory` agent.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Bill, Household, etc.)
+From the request, extract what's stated:
 - **Model** the factory is for (must exist)
-- **State methods** (`paid()`, `forHousehold($h)`, `overdue()`)
-- **Default attributes** — Faker for realistic data; `PublicId::generate()` for public IDs
+- **State methods** — field states (`shipped()`, `cancelled()`) and relationship states (`forCustomer($c)`)
+- **Default attributes** — Faker for realistic data; `PublicId::generate()` for public-id columns
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/database/factories/ 2>/dev/null
-ls Modules/{Module}/app/Models/{Model}.php 2>/dev/null
-ls Modules/{Module}/database/migrations/ 2>/dev/null
-```
+Ask only when a needed detail is missing:
+- Model doesn't exist yet → offer to run `/model` first
+- State methods unclear → ask for the common variations (e.g. "`shipped()`, `cancelled()`, `forCustomer($c)`?")
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- Model missing → flag: "Generate `/model` first?"
-- Migration missing → flag: factory needs to know required columns
-- State methods unclear → ask "Common variations? (`paid()`, `overdue()`, `forHousehold($h)`?)"
+Use the Task tool with `subagent_type: "factory"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for factory agent:
-- Module: {Module}
-- Model: {Model} at Modules/{Module}/app/Models/{Model}.php
-- Factory class: {Model}Factory
-- Path: Modules/{Module}/database/factories/{Model}Factory.php
-- PHPDoc: @extends Factory<{Model}>  (REQUIRED for static analysis)
-- definition() defaults:
-    public_id: PublicId::generate()
-    name: fake()->words(3, true)
-    amount: fake()->numberBetween(100, 100000)
-    status: BillStatus::Unpaid
-- State methods: [paid(), forHousehold(Household $h)]
-- afterCreating() hooks: [if any]
-- Existing siblings: [BillFactory.php]
-```
+Report at the feature level: factory path, the `@extends` PHPDoc, and state methods. Example:
 
-## Step 5: Delegate
+> Created `database/factories/OrderFactory.php` with `@extends Factory<Order>` and state methods `shipped`, `cancelled`, `forCustomer`. Usable: `Order::factory()->shipped()->create()`.
 
-Task tool, `subagent_type: "bench:factory"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/database/factories/BillFactory.php`. PHPDoc `@extends Factory<Bill>`. State methods: paid, overdue, forHousehold. Usable: `Bill::factory()->paid()->create()`."
-
-## When to Ask vs Assume
-
-- `@extends Factory<Model>` PHPDoc → always
-- `PublicId::generate()` → always for public IDs
-- State naming: `withField()` for fields, `forRelation()` for relations
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job

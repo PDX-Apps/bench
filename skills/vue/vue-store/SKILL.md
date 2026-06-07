@@ -44,7 +44,7 @@ Context for vue-store agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-store"`, pass the blob.
+Task tool, `subagent_type: "vue-store"`, pass the blob.
 
 ## Step 6: Synthesize
 

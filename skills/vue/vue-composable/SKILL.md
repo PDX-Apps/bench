@@ -48,7 +48,7 @@ Context for vue-composable agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-composable"`, pass the blob.
+Task tool, `subagent_type: "vue-composable"`, pass the blob.
 
 ## Step 6: Synthesize
 

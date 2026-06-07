@@ -1,5 +1,5 @@
 ---
-description: Generate a Laravel API Resource (JsonResource transformer). Use when the user wants ONLY a Resource (not the full HTTP stack). For full HTTP layer, use /api instead.
+description: Generate a Laravel API Resource (JsonResource transformer). Use when the user wants ONLY a Resource (not the full HTTP stack). For full HTTP layer, use /laravel instead.
 argument-hint: [what the user needs]
 ---
 
@@ -10,58 +10,41 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Parse
 
 Extract:
-- **Module** (Bill, Household, etc.)
 - **Resource class name** — `{Model}Resource`
 - **Model** being transformed
-- **Fields to expose** (subset of model attributes + relations)
+- **Fields to expose** (subset of model attributes)
 - **Nested relations** (using `whenLoaded()` to avoid N+1)
+- **Shape**: plain `JsonResource` (default) or `JsonApiResource` (JSON:API spec)?
 
-## Step 2: Inspect
+## Step 2: Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Http/Resources/ 2>/dev/null
-ls Modules/{Module}/app/Models/ 2>/dev/null  # confirm model exists
-```
+- Fields not specified → ask "Expose all model attributes or a subset?"
+- Nested relations → wrap each with `whenLoaded()` (never load eagerly in a resource)
+- JSON:API vs plain → default to `JsonResource` unless the user asks for JSON:API/sparse fieldsets
 
-Sample sibling:
-```bash
-cat Modules/{Module}/app/Http/Resources/$(ls Modules/{Module}/app/Http/Resources/ 2>/dev/null | head -1) 2>/dev/null
-```
-
-## Step 3: Resolve Ambiguity
-
-- Fields not specified → discover from the model's attributes; ask "Expose all model attributes or a subset?"
-- Nested relations → wrap each with `whenLoaded()` (assume yes, never load eagerly in resource)
-- Public ID exposure as `id` → assume yes (project convention: never expose internal `id`)
-
-## Step 4: Build Context Blob
+## Step 3: Build Context Blob
 
 ```
 Context for resource agent:
-- Module: {Module}
 - Class: {Model}Resource
-- Path: Modules/{Module}/app/Http/Resources/{Model}Resource.php
-- Model: {Model} at Modules/{Module}/app/Models/{Model}.php
-- Fields to expose (id = public_id; never internal id):
-    id, name, amount, currency, status, due_date, created_at
+- Model: {Model}
+- Base: JsonResource | JsonApiResource
+- Fields to expose:
+    id, reference, status, total_cents, created_at
 - Nested relations (use whenLoaded):
-    members → BillMemberResource::collection
-    creator → UserResource
-- Swagger #[OA\Schema] needed: yes (project uses l5-swagger)
-- Existing siblings: [BillResource.php]
+    items → {Model}ItemResource::collection
+    user → UserResource
 ```
 
-## Step 5: Delegate
+## Step 4: Delegate
 
-Task tool, `subagent_type: "bench:resource"`, pass the blob.
+Task tool, `subagent_type: "resource"`, pass the blob.
 
-## Step 6: Synthesize
+## Step 5: Synthesize
 
-> "Created `Modules/Bill/app/Http/Resources/BillResource.php`. Exposes 7 fields + nested `members` (whenLoaded). `id` returns `public_id`. Includes `#[OA\Schema(schema: 'Bill')]` for Swagger."
+Report the resource path, fields exposed, relations included (with `whenLoaded`), and the base class used.
 
 ## When to Ask vs Assume
 
-- `id` from `public_id` → always (NEVER internal id)
 - `whenLoaded()` for relations → always
-- `#[OA\Schema]` for Swagger → assume yes (project uses it)
+- Base class → `JsonResource` unless JSON:API is requested

@@ -46,7 +46,7 @@ Context for react-store agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-store"`, pass the blob.
+Task tool, `subagent_type: "react-store"`, pass the blob.
 
 ## Step 6: Synthesize
 

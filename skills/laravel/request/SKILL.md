@@ -1,5 +1,5 @@
 ---
-description: Generate a Laravel FormRequest class for input validation. Use when the user wants ONLY a FormRequest (not the full HTTP stack). For full HTTP layer (controller+request+resource+route), use /api instead.
+description: Generate a Laravel FormRequest class for input validation. Use when the user wants ONLY a FormRequest (not the full HTTP stack). For full HTTP layer (controller+request+resource+route), use /laravel instead.
 argument-hint: [what the user needs]
 ---
 
@@ -10,60 +10,38 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Parse
 
 Extract:
-- **Module** (Bill, Household, etc.)
-- **FormRequest class name** — `{Action}{Model}Request` (e.g., `CreatePersonalBillRequest`, `UpdateInvitationRequest`)
-- **Fields + rules** mentioned (`amount: required|numeric|gt:0`)
-- **DTO**: should `toDto()` method emit a DTO? (yes for 4+ params or shape reused; no for one-off)
-- **Custom validation rules** referenced (e.g., `ValidMoneyAmount`)
+- **FormRequest class name** — `{Action}{Model}Request` (e.g., `CreateOrderRequest`, `UpdateInvitationRequest`)
+- **Fields + rules** mentioned (`quantity: required|integer|min:1`)
+- **Typed object**: should the request emit one? `toDto()` (immutable DTO — the common case, 4+ params or reused) vs `toData()` (mutable Data Object — persisted settings/preferences); or neither for a 1–3 field one-off
+- **Custom Rule objects** referenced (e.g., `ValidQuantity`)
 
-## Step 2: Inspect
+## Step 2: Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Http/Requests/ 2>/dev/null
-ls Modules/{Module}/app/Data/ 2>/dev/null   # existing DTOs
-ls Modules/{Module}/app/Rules/ 2>/dev/null  # custom rules referenced
-```
+- Typed object needed? → 4+ params or reused outside this request → `toDto()`; mutable persisted state → `toData()`; otherwise skip (use `validated()`)
+- Custom rule referenced that doesn't exist → flag: "Rule `ValidQuantity` doesn't exist. Generate `/rule` first?"
 
-Read one sibling FormRequest to see array vs string rule style:
-```bash
-head -40 Modules/{Module}/app/Http/Requests/$(ls Modules/{Module}/app/Http/Requests/ 2>/dev/null | head -1) 2>/dev/null
-```
-
-## Step 3: Resolve Ambiguity
-
-- DTO needed? → 4+ params or used outside this request → yes; otherwise no
-- Custom rule referenced doesn't exist → flag: "Rule `ValidMoneyAmount` doesn't exist. Generate `/rule` first?"
-- Rule style (array vs string) → match siblings (don't ask)
-
-## Step 4: Build Context Blob
+## Step 3: Build Context Blob
 
 ```
 Context for request agent:
-- Module: {Module}
 - Class: {Action}{Model}Request
-- Path: Modules/{Module}/app/Http/Requests/{Name}Request.php
 - Fields + rules:
     name: required, string, max:100
-    amount: required, numeric, ValidMoneyAmount
-    currency: required, ValidCurrency
-- Rule style observed in siblings: array | string
-- Custom rule classes referenced: [ValidMoneyAmount, ValidCurrency] (existing paths)
-- toDto(): yes (DTO: BillData) | no
+    quantity: required, integer, min:1
+- Custom Rule objects referenced: [ValidQuantity] (existing | to-be-created)
+- Emits: toDto() → {Name}Data | toData() → {Name}Data | none
 - Custom error messages: [...]
-- Existing siblings: [CreatePersonalBillRequest.php, UpdateBillRequest.php]
 ```
 
-## Step 5: Delegate
+## Step 4: Delegate
 
-Task tool, `subagent_type: "bench:request"`, pass the blob.
+Task tool, `subagent_type: "request"`, pass the blob.
 
-## Step 6: Synthesize
+## Step 5: Synthesize
 
-> "Created `Modules/Bill/app/Http/Requests/CreatePersonalBillRequest.php`. 8 rules + 5 custom error messages. `toDto()` returns `BillData`. Matches sibling array-style rule format."
+Report the FormRequest path, field/rule count, any custom messages, and what it emits (`toDto()`/`toData()`/none).
 
 ## When to Ask vs Assume
 
-- Sibling style → match silently
-- Custom error messages → include if user mentioned UX or for non-standard rules; otherwise rely on Laravel defaults
-- `authorize()` method → return `true` (authorization is in controller/route, not request)
+- Custom error messages → include if the user mentioned UX or for non-obvious rules; otherwise rely on Laravel defaults
+- `authorize()` → return `true` (authorization is on the controller via `#[Authorize]`, not the request)

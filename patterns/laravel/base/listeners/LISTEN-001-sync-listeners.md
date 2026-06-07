@@ -1,4 +1,4 @@
-# LISTEN-001
+# LISTEN-001-sync-listeners
 
 ## Pattern
 
@@ -11,9 +11,9 @@ Synchronous event listeners execute immediately in the same request cycle.
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Listeners;
+namespace App\Listeners;
 
-use Modules\{Module}\Events\{EventName};
+use App\Events\{EventName};
 
 class {ActionDescription}
 {

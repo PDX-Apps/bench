@@ -86,12 +86,9 @@ public function calculateTotalCost(): Money
     return $this->items->sum(fn($item) => $item->total);
 }
 
-public function getAvailableSlots(): int
+public function availableSlots(): int
 {
-    $currentMembers = $this->getCurrentMemberCount();
-    $pendingInvitations = $this->getPendingInvitationCount();
-
-    return $this->maximum_members - $currentMembers - $pendingInvitations;
+    return $this->capacity - $this->confirmed_count - $this->pending_count;
 }
 ```
 
@@ -106,7 +103,7 @@ public function isPending(): bool
 public function canBeAccepted(): bool
 {
     return $this->isPending()
-        && $this->household->hasAvailableSlots()
+        && $this->order->hasCapacity()
         && !$this->isExpired();
 }
 
@@ -129,7 +126,7 @@ public function setName(string $name): void
 }
 
 // ✅ DO - use direct assignment
-$household->name = $data->name;
+$order->reference = $data->reference;
 ```
 
 **2. No Business Logic**
@@ -141,7 +138,7 @@ public function setDescription(string $description): void
 }
 
 // ✅ DO - direct assignment is fine
-$household->description = $data->description;
+$order->notes = $data->notes;
 ```
 
 **3. Traditional Getters**
@@ -153,7 +150,7 @@ public function getName(): string
 }
 
 // ✅ DO - use property directly
-echo $household->name;
+echo $order->reference;
 ```
 
 ## Domain Methods Don't Save
@@ -185,7 +182,7 @@ public function accept(): void
 ## Example: Complete State Machine
 
 ```php
-class HouseholdInvitation extends Model
+class Invitation extends Model
 {
     /**
      * Accept the invitation.
@@ -196,7 +193,7 @@ class HouseholdInvitation extends Model
     {
         if (!$this->isPending()) {
             throw new InvitationAlreadyProcessedException(
-                'Invitation has already been ' . $this->getStatus()->value
+                'Invitation has already been ' . $this->status()->value
             );
         }
 
@@ -212,7 +209,7 @@ class HouseholdInvitation extends Model
     {
         if (!$this->isPending()) {
             throw new InvitationAlreadyProcessedException(
-                'Invitation has already been ' . $this->getStatus()->value
+                'Invitation has already been ' . $this->status()->value
             );
         }
 
@@ -251,8 +248,7 @@ class HouseholdInvitation extends Model
     public function canBeAccepted(): bool
     {
         return $this->isPending()
-            && !$this->isExpired()
-            && $this->household->hasAvailableSlots();
+            && !$this->isExpired();
     }
 
     /**
@@ -266,7 +262,7 @@ class HouseholdInvitation extends Model
     /**
      * Get current status as enum.
      */
-    public function getStatus(): InvitationStatus
+    public function status(): InvitationStatus
     {
         return match (true) {
             $this->accepted_at !== null => InvitationStatus::Accepted,
@@ -284,7 +280,7 @@ class HouseholdInvitation extends Model
 ```php
 class AcceptInvitationAction
 {
-    public function execute(HouseholdInvitation $invitation): HouseholdInvitation
+    public function execute(Invitation $invitation): Invitation
     {
         // Validate (can involve multiple entities)
         if (!$invitation->canBeAccepted()) {
@@ -300,11 +296,7 @@ class AcceptInvitationAction
         $invitation->save();
 
         // Action handles side effects
-        event(new InvitationAccepted(
-            invitationId: $invitation->id,
-            householdId: $invitation->household_id,
-            userId: $invitation->invitee_id,
-        ));
+        event(new InvitationAccepted($invitation->id));
 
         return $invitation->fresh();
     }
@@ -317,7 +309,7 @@ Domain methods are easily testable without database:
 
 ```php
 test('cannot accept already accepted invitation', function () {
-    $invitation = new HouseholdInvitation();
+    $invitation = new Invitation();
     $invitation->accepted_at = now();
 
     expect(fn() => $invitation->accept())
@@ -325,7 +317,7 @@ test('cannot accept already accepted invitation', function () {
 });
 
 test('can accept pending invitation', function () {
-    $invitation = new HouseholdInvitation();
+    $invitation = new Invitation();
     $invitation->created_at = now();
 
     $invitation->accept();
@@ -334,7 +326,7 @@ test('can accept pending invitation', function () {
 });
 
 test('invitation expires after 7 days', function () {
-    $invitation = new HouseholdInvitation();
+    $invitation = new Invitation();
     $invitation->created_at = now()->subDays(8);
 
     expect($invitation->isExpired())->toBeTrue();
@@ -518,9 +510,3 @@ public function execute(Invitation $invitation): void
 6. **Refactor-Safety**: Change internals without breaking callers
 7. **Self-Documenting**: `accept()` vs `accepted_at = now()`
 8. **True DDD**: Models are not anemic data bags
-
-## Related
-
-- `MODEL-001-structure` - Model configuration and conventions
-- `SERVICE-001-actions` - Actions call domain methods
-- `ADR-001-modular-architecture` - DDD principles

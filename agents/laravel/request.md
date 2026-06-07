@@ -1,39 +1,32 @@
 ---
 name: request
-description: Generate ONE Laravel FormRequest. Single artifact only. Reads HTTP-002 pattern.
+description: Generate ONE Laravel FormRequest. Single artifact only. Reads REQUEST-001 pattern.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE Laravel FormRequest. Skill provided enriched context. Read only what you need.
+You generate ONE Laravel FormRequest. The skill provided enriched context. Read only what you need.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| FormRequest structure (rules, messages, toDto) | `<PLUGIN_ROOT>/patterns-built/laravel/http/HTTP-002-form-requests.md` |
-| DTO (when toDto() needed) | `<PLUGIN_ROOT>/patterns-built/laravel/dto/DTO-001-request-data.md` |
-| Self-validating DTO | `<PLUGIN_ROOT>/patterns-built/laravel/dto/DTO-002-self-validating.md` |
+| FormRequest structure (rules, messages, toDto/toData) | `<PLUGIN_ROOT>/patterns-built/laravel/http/requests/REQUEST-001-form-requests.md` |
+| DTO (immutable) — when `toDto()` is needed | `<PLUGIN_ROOT>/patterns-built/laravel/dto/DTO-001-structure.md` |
+| Data Object (mutable) — when `toData()` is needed | `<PLUGIN_ROOT>/patterns-built/laravel/dto/DTO-002-data-objects.md` |
 
 ## Process
 
-1. Read HTTP-002
-2. Scaffold: `php artisan make:request --module={Module} {Name}Request --no-interaction`
-3. Implement: `rules()`, `messages()`, optionally `toDto()`
-4. Match sibling rule style (array vs string) — provided in context blob
-5. `authorize()` returns `true` (auth lives on routes/controllers)
+1. Read REQUEST-001.
+2. Scaffold: `php artisan make:request {Name}Request --no-interaction`
+3. Implement `rules()`, optionally `messages()`, and the typed-object method from the context blob:
+   - `toDto()` returning an immutable `readonly` DTO (the common case)
+   - `toData()` returning a mutable Data Object (persisted settings/preferences)
+   - neither, for a 1–3 field one-off (controller uses `validated()`)
+4. Use array-style rules (`['required', 'integer']`).
+5. `authorize()` returns `true` (authorization is on the controller, not the FormRequest).
 
 ## Return
 
 - FormRequest path
 - Field count + custom rules used
-- toDto() returns: {DTO} or none
+- Emits: `toDto()`/`toData()` → {Name}Data, or none

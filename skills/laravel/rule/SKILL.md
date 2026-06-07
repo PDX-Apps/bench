@@ -10,51 +10,38 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Parse
 
 Extract:
-- **Module** (Currency, Bill, etc.)
-- **Rule class name** — descriptive, no `Rule` suffix needed (e.g., `ValidMoneyAmount`, `UniqueAcrossModules`)
+- **Rule class name** — descriptive, no `Rule` suffix needed (e.g., `ValidMoneyAmount`, `ValidCurrency`)
 - **What it validates** — the actual constraint
 - **Cross-field?** Does it depend on other fields in the request? (→ implements `DataAwareRule`)
 - **Configurable?** Does it take constructor arguments? (e.g., `new ValidCurrency('USD')`)
 - **Used in** which FormRequest(s)?
 
-## Step 2: Inspect
+## Step 2: Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Rules/ 2>/dev/null
-ls Modules/{Module}/app/Http/Requests/ 2>/dev/null  # FormRequests that may use it
-```
+- Cross-field unclear → ask: "Does the rule need to read other fields from the request? (e.g., precision depends on a currency field)"
+- Constructor config → infer from the request; if unclear, default to no-config
 
-## Step 3: Resolve Ambiguity
-
-- Cross-field unclear → ask: "Does the rule need to read other fields from the request? (e.g., precision depends on currency field)"
-- Constructor config → infer from request; if unclear, default to no-config
-
-## Step 4: Build Context Blob
+## Step 3: Build Context Blob
 
 ```
 Context for rule agent:
-- Module: {Module}
 - Class: {Name}
-- Path: Modules/{Module}/app/Rules/{Name}.php
 - Cross-field: yes (implements DataAwareRule) | no
-- Constructor params: [string $allowedOnly = null] | none
+- Constructor params: [?string $allowedOnly = null] | none
 - Validation logic: brief description
-- Error messages: [(:attribute) must be ...]
-- Used by FormRequest(s): [Modules/.../Requests/CreateBillRequest.php]
-- Existing siblings: [ValidCurrency.php, ValidMoneyAmount.php]
+- Error message: "The :attribute must be ..."
+- Used by FormRequest(s): [CreateOrderRequest]
 ```
 
-## Step 5: Delegate
+## Step 4: Delegate
 
-Task tool, `subagent_type: "bench:rule"`, pass the blob.
+Task tool, `subagent_type: "rule"`, pass the blob.
 
-## Step 6: Synthesize
+## Step 5: Synthesize
 
-> "Created `Modules/Currency/app/Rules/ValidMoneyAmount.php` (implements `DataAwareRule, ValidationRule`). Reads `currency` field to determine precision. Use in FormRequest as `new ValidMoneyAmount()`."
+Report the rule path, whether it implements `DataAwareRule`, its constructor config, and how to use it in a FormRequest (`new {Name}(...)`).
 
 ## When to Ask vs Assume
 
-- Implements `ValidationRule` (Laravel 12 contract, not deprecated `Rule`) → always
+- Implements the `ValidationRule` contract (not the deprecated `Rule`) → always
 - Constructor config → infer; ask only when truly ambiguous
-- Discovery of consuming FormRequests → check by grep, don't ask the user

@@ -4,11 +4,6 @@
 
 Decision guide for choosing between Actions, Services, or neither.
 
-## Dependencies
-
-- `services/SERVICE-001-actions.md` - Business operations
-- `services/SERVICE-002-domain-services.md` - Domain utilities
-
 ## Decision Tree
 
 ```
@@ -16,7 +11,7 @@ Need to implement business logic?
 
 ├─ Complex business operation (create, update, process)?
 │  ├─ Multi-step process?
-│  │  └─ Use Action (CreateHouseholdAction)
+│  │  └─ Use Action (CreateOrderAction)
 │  ├─ Reused across controllers/jobs/commands?
 │  │  └─ Use Action (ProcessPaymentAction)
 │  └─ Needs isolated testing?
@@ -41,14 +36,19 @@ Need to implement business logic?
 **Complex multistep business operation:**
 ```php
 // ✅ Use Action
-class CreateHouseholdAction
+class CreateOrderAction
 {
-    public function execute(HouseholdData $data): Household
+    public function execute(User $user, CreateOrderData $data): Order
     {
-        $household = Household::create([...]);
-        $this->assignOwner($household, $data->userId);
-        event(new HouseholdCreated($household));
-        return $household;
+        $order = new Order();
+        $order->user_id = $user->id;
+        $order->reference = $data->reference;
+        $order->save();
+
+        $this->addLineItems($order, $data->items);
+        event(new OrderCreated($order->id));
+
+        return $order;
     }
 }
 ```
@@ -65,7 +65,7 @@ class ProcessPaymentAction
 }
 
 // Controller
-$action->execute($request->toData());
+$action->execute($request->toDto());
 
 // Job
 $action->execute(PaymentData::fromInput($this->payload));
@@ -78,12 +78,12 @@ $action->execute(new PaymentData(...));
 
 **Focused domain utility:**
 ```php
-// ✅ Use Service - specific purpose (budget calculations)
-class BudgetCalculator
+// ✅ Use Service - specific purpose (pricing calculations)
+class PricingCalculator
 {
-    public function calculateAllocation(int $income): array
-    public function projectSavings(int $amount, int $months): int
-    public function calculateVariance(Collection $transactions, array $limits): array
+    public function breakdown(int $subtotalCents, float $taxRate): array
+    public function projectRecurringRevenue(int $amountCents, int $periods): int
+    public function calculateVariance(Collection $lineItems, array $limits): array
 }
 ```
 
@@ -129,24 +129,25 @@ class TrackClickAction
 ### Action + Service Together
 
 ```php
-class CreateBudgetAction
+class CreateOrderAction
 {
     public function __construct(
-        private BudgetCalculator $calculator,  // Service
+        private PricingCalculator $pricing,  // Service
     ) {
     }
 
-    public function execute(BudgetData $data): Budget
+    public function execute(User $user, CreateOrderData $data): Order
     {
-        $allocation = $this->calculator->calculateAllocation($data->monthlyIncome);
+        $breakdown = $this->pricing->breakdown($data->subtotalCents, $data->taxRate);
 
-        return Budget::create([
-            'user_id' => $data->userId,
-            'monthly_income' => $data->monthlyIncome,
-            'needs_allocation' => $allocation['needs'],
-            'wants_allocation' => $allocation['wants'],
-            'savings_allocation' => $allocation['savings'],
-        ]);
+        $order = new Order();
+        $order->user_id = $user->id;
+        $order->subtotal_cents = $breakdown['subtotal'];
+        $order->tax_cents = $breakdown['tax'];
+        $order->total_cents = $breakdown['total'];
+        $order->save();
+
+        return $order;
     }
 }
 ```
@@ -196,16 +197,16 @@ class UserReportGenerator  // Focused service
 ### ❌ Services Crossing Domains
 
 ```php
-// Bad - BudgetCalculator persisting data?
-class BudgetCalculator
+// Bad - PricingCalculator persisting data?
+class PricingCalculator
 {
-    public function calculateAllocation(int $income): array
-    public function saveBudgetToDatabase(array $data): Budget  // Wrong!
+    public function breakdown(int $subtotalCents, float $taxRate): array
+    public function saveOrderToDatabase(array $data): Order  // Wrong!
 }
 
 // Better - separate concerns
-class BudgetCalculator  // Only calculations
-class CreateBudgetAction  // Handles persistence
+class PricingCalculator  // Only calculations
+class CreateOrderAction  // Handles persistence
 ```
 
 ### ❌ Actions for Trivial Operations

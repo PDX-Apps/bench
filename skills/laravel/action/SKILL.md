@@ -1,62 +1,30 @@
 ---
-description: Generate Laravel Action classes (single-purpose business operations) and domain Services (calculators, parsers, dispatchers). Use whenever the user describes a business operation like "create X", "send Y", "process Z", "calculate W", or any logic that doesn't belong in controllers or models in a Laravel project.
+description: Generate a Laravel Action class — a single-purpose business operation with one `execute()` method and side effects (persistence, event dispatch, notifications). Use whenever the user describes a business operation like "create X", "send Y", "process Z", "mark W". For utility/calculator/parser classes use /service instead.
 argument-hint: [what the user needs]
 ---
 
-You're the **/action** skill. Translate the user's business-logic request into an enriched delegation to the `action` agent.
+You're the **/action** skill. Parse the user's request, ask one question if anything's ambiguous, delegate to the `action` agent, then synthesize its output.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
 Extract:
-- **Module** (Bill, Household, etc.)
-- **Class name** (`CreateBillAction`, `MarkBillPaidAction`, `BudgetCalculator`)
-- **Type**: `action` (single `execute()`, side effects, dispatches events) OR `service` (utility, calculator, parser, dispatcher)
-- **Inputs**: scalar params or DTO?
-- **Side effects**: dispatches event? sends notification? calls another Action?
+- **Class name** — `{Verb}{Noun}Action` (propose one if the user didn't name it)
+- **Inputs** — scalar params or a DTO?
+- **Side effects** — dispatches an event? sends a notification? calls another Action?
+- **Needs current user?** — yes if the action touches user-owned data
 
-## Step 2: Inspect
+## Resolve ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Actions/ 2>/dev/null
-ls Modules/{Module}/app/Services/ 2>/dev/null
-ls Modules/{Module}/app/Data/ 2>/dev/null   # existing DTOs
-ls Modules/{Module}/app/Events/ 2>/dev/null # existing events to dispatch
-```
+If the request describes a utility/calculator/parser (multiple methods, no orchestration side effects) → redirect to `/service`.
 
-## Step 3: Resolve Ambiguity
+Otherwise: ask the user ONE question if anything's genuinely ambiguous. Don't ask three questions when one disambiguates the rest. For obvious cases, proceed.
 
-- Action vs Service unclear → ask: "Action (single `execute()`, has side effects like persistence/events) or Service (calculator/parser/utility, multiple methods)?"
-- DTO needed? If 4+ params or shape reused, suggest a DTO; otherwise inline params
-- Event referenced doesn't exist → flag: "I'll wire to `BillCreated`. Doesn't exist yet — invoke `/event` first?"
+## Delegate
 
-## Step 4: Build Context Blob
+Use the Task tool with `subagent_type: "action"`. Pass the **parsed args** (class name, inputs, side effects, needs-current-user flag) — NOT the raw `$ARGUMENTS`. The agent reads the pattern, scaffolds, and reports back.
 
-```
-Context for action agent:
-- Module: {Module}
-- Class: {Name}Action | {Name} (Service)
-- Path: Modules/{Module}/app/{Actions|Services}/{Name}.php
-- Type: action | service
-- Existing siblings: [CreateBillAction.php, MarkBillPaidAction.php]
-- Inputs: scalar params [int $billId, string $note] OR DTO {DtoName}
-- Dependencies to inject: [AuthService, NotificationDispatcher]
-- Events to dispatch: [BillCreated] (exists at Modules/Bill/app/Events/BillCreated.php)
-- Calls other actions: [CreatePaymentAction]
-```
+## Synthesize
 
-## Step 5: Delegate
-
-Task tool, `subagent_type: "bench:action"`, pass the blob.
-
-## Step 6: Synthesize
-
-> "Created `Modules/Bill/app/Actions/MarkBillPaidAction.php`. Injects `AuthService` + `NotificationDispatcher`. Single `execute(int $billId)` method. Dispatches `BillPaid` event. Tests: pending — invoke `/unit-test`."
-
-## When to Ask vs Assume
-
-- "create X", "send Y", "process Z", "mark W" → almost always Action
-- "calculate", "parse", "format", "client", "dispatcher" → almost always Service
-- AuthService injection → assume YES for any action that needs current user
+Re-frame the agent's output at the feature level for the user. Mention any follow-ups it flagged (missing event, missing model, suggested next skill).

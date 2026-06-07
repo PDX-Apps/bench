@@ -54,7 +54,7 @@ Context for vue-test agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-test"`, pass the blob.
+Task tool, `subagent_type: "vue-test"`, pass the blob.
 
 ## Step 6: Synthesize
 

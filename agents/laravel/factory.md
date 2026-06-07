@@ -1,37 +1,32 @@
 ---
 name: factory
-description: Generate ONE Laravel model factory. Single artifact. Reads DB-002 pattern.
+description: Generate ONE Laravel model factory. Single artifact. Reads FACTORY-001.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE Laravel model factory. Skill provided enriched context.
+You generate ONE Laravel model factory. Read ONLY the pattern files needed.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| Factory structure, @extends PHPDoc, state methods | `<PLUGIN_ROOT>/patterns-built/laravel/database/DB-002-factories.md` |
-| Public ID generation | `<PLUGIN_ROOT>/patterns-built/laravel/database/DB-004-public-ids.md` |
+| Factory structure, @extends PHPDoc, state methods | `<PLUGIN_ROOT>/patterns-built/laravel/database/factories/FACTORY-001-structure.md` |
 
 ## Process
 
-1. Read DB-002
-2. Scaffold: `php artisan module:make-factory {Model}Factory {Module} --no-interaction`
+1. Read FACTORY-001
+2. Scaffold: `php artisan make:factory {Model}Factory --no-interaction`
 3. Implement:
    - `@extends Factory<Model>` PHPDoc (REQUIRED for static analysis)
-   - `definition()` with Faker defaults + `PublicId::generate()`
-   - State methods naming: `withField()` for fields, `forRelation()` for relations
-   - `configure()` for `afterCreating` hooks (pivots, etc.)
+   - `definition()` with Faker defaults + `PublicId::generate()` for public-id columns
+   - State methods: `withField()` for fields, `forRelation()` for relations (return type `static`)
+   - `configure()` for `afterCreating` hooks (pivots, related records)
+
+## Anti-Patterns
+
+- Don't omit the `@extends Factory<Model>` PHPDoc — static analysis needs it
+- Don't hardcode related model IDs — use nested factories (`User::factory()`) or relationship states
+- Don't write files outside the factories path
 
 ## Return
 

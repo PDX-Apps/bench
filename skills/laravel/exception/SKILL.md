@@ -1,59 +1,39 @@
 ---
-description: Generate Laravel domain exception classes. Use whenever the user mentions a custom exception, error class, throwable, domain error (like "InvitationAlreadyProcessed", "InsufficientFunds"), or needs to model a business-rule violation as a typed exception in a Laravel project.
+description: Generate Laravel domain exception classes. Use whenever the user mentions a custom exception, error class, throwable, domain error (like "OrderAlreadyShipped", "InsufficientStock"), or needs to model a business-rule violation as a typed exception in a Laravel project.
 argument-hint: [what the user needs]
 ---
 
-You're the **/exception** skill. Translate the user's exception request into an enriched delegation to the `exception` agent.
+You're the **/exception** skill. Parse the user's request and delegate to the `exception` agent.
 
 The user's request: **$ARGUMENTS**
 
-## Step 1: Parse
+## Parse
 
-Extract:
-- **Module** (Household, Bill, etc.)
-- **Exception class name** — `{Condition}Exception` (e.g., `InvitationAlreadyProcessedException`, `InsufficientFundsException`)
-- **What it represents**: business-rule violation (DomainException) | runtime error | authorization failure (use Laravel's built-in instead)
-- **Static factory method names** the user hints at (`forBill(...)`, `forUser(...)`)
-- **Custom HTTP response needed?** (e.g., 409 Conflict instead of default 500)
+From the request, extract what's stated:
+- **Exception class name** — `{Condition}Exception` (e.g. `OrderAlreadyShippedException`, `InsufficientStockException`)
+- **What it represents** — a business-rule violation (`DomainException`), a runtime/programmer error (`RuntimeException`), or a case Laravel already handles (auth → 403, model-not-found → 404)
+- **Static factory names** the user hints at (`forOrder(...)`, `forUser(...)`)
+- **Custom HTTP response?** — a non-500 status (e.g. 409 Conflict)
 
-## Step 2: Inspect
+## Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/app/Exceptions/ 2>/dev/null
-```
+Ask only when a needed detail is missing:
+- The case is a standard 404/403/422/401 → Laravel's built-ins already cover it; confirm a custom exception is really wanted
+- Base class unclear → default `DomainException` for business rules; ask only if it isn't obviously a domain rule
+- Custom `render()` → only when the HTTP status isn't 500
 
-## Step 3: Resolve Ambiguity
+## Delegate
 
-- 404/403/422/401 cases → Laravel's built-ins handle these. Confirm: "Laravel auto-handles 404/403/422/401 via standard exceptions. Are you sure you need a custom one, or do you want a different status?"
-- Base class → assume `DomainException` for business rules; ask only if not obviously a domain rule
-- Custom render() needed → only if HTTP status != 500. Ask if unclear.
+Use the Task tool with `subagent_type: "exception"`, passing the parsed details.
 
-## Step 4: Build Context Blob
+## Synthesize
 
-```
-Context for exception agent:
-- Module: {Module}
-- Class: {Name}Exception
-- Path: Modules/{Module}/app/Exceptions/{Name}Exception.php
-- Base class: DomainException | RuntimeException | other
-- Static factories: [forBill(int $billId), forUser(int $userId)]
-- HTTP response: default | custom (status: 409, body shape: {message, code})
-- report() override: yes/no (custom logging channel?)
-- Existing siblings: [InvitationAlreadyProcessedException.php]
-- ⚠️ Compliance: NEVER include raw PII in exception messages (per DATA-001)
-```
+Report at the feature level: class path, base class, factories, and any custom render/report. Example:
 
-## Step 5: Delegate
+> Created `app/Exceptions/OrderAlreadyShippedException.php` extending `DomainException`, factory `forOrder(int $orderId)`, custom `render()` returning 409 with `{message, code: 'order_already_shipped'}`.
 
-Task tool, `subagent_type: "bench:exception"`, pass the blob.
+## Anti-Patterns
 
-## Step 6: Synthesize
-
-> "Created `Modules/Household/app/Exceptions/InvitationAlreadyProcessedException.php` extending `DomainException`. Static factory `forInvitation(int $invitationId)`. Custom `render()` returns 409 with `{message, code: 'invitation_already_processed'}`. No PII in message (just the ID)."
-
-## When to Ask vs Assume
-
-- PII in messages → NEVER include; reject if user requests
-- Standard HTTP cases → suggest Laravel built-ins instead of a custom exception
-- Static factories → assume yes (project convention); discover names from context
+- Don't pass raw `$ARGUMENTS` to the agent — pass the parsed details
+- Don't inspect the project or read files here — that's the agent's job
+- Don't spin up a custom exception for a case Laravel's built-ins already handle (404/403/422/401)

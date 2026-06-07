@@ -10,52 +10,40 @@ The user's request: **$ARGUMENTS**
 ## Step 1: Parse
 
 Extract:
-- **Module** (Bill, Household, etc.)
 - **Seeder class** — `{Model}Seeder`
-- **What to seed** (count + variations)
+- **What to seed** (count + variations via factory states)
 - **Dependencies** on other seeders
 
-## Step 2: Inspect
+## Step 2: Resolve Ambiguity
 
-```bash
-ls Modules/{Module}/ 2>/dev/null || echo "MODULE_MISSING"
-ls Modules/{Module}/database/seeders/ 2>/dev/null
-ls Modules/{Module}/database/factories/ 2>/dev/null
-```
+- Factory missing → flag: "The seeder uses `{Model}Factory`, which doesn't exist. Generate `/factory` first?"
+- Idempotency → yes for seeders that may touch a shared/persistent DB; not needed for throwaway dev data
+- Registration in `DatabaseSeeder` → assume yes
 
-## Step 3: Resolve Ambiguity
-
-- Factory missing → flag: "Seeder uses factory — `BillFactory` doesn't exist. Generate `/factory` first?"
-- Idempotency needed → for prod-touching seeders yes; for dev test data usually not
-- Registration in DatabaseSeeder → assume yes
-
-## Step 4: Build Context Blob
+## Step 3: Build Context Blob
 
 ```
 Context for seeder agent:
-- Module: {Module}
 - Class: {Model}Seeder
-- Path: Modules/{Module}/database/seeders/{Model}Seeder.php
 - Uses factory: {Model}Factory
 - What to seed:
-    50 random bills via factory()
-    10 paid bills via factory()->paid()
-    5 overdue bills via factory()->overdue()
-- Idempotency: yes if prod-bound, no for dev test data
-- Register in: Modules/{Module}/database/seeders/DatabaseSeeder.php
-- Existing siblings: [...]
+    50 random orders via factory()
+    10 paid orders via factory()->paid()
+    5 cancelled orders via factory()->cancelled()
+- Idempotency: yes if it may touch a shared DB, else no
+- Register in DatabaseSeeder: yes
 ```
 
-## Step 5: Delegate
+## Step 4: Delegate
 
-Task tool, `subagent_type: "bench:seeder"`, pass the blob.
+Task tool, `subagent_type: "seeder"`, pass the blob.
 
-## Step 6: Synthesize
+## Step 5: Synthesize
 
-> "Created `Modules/Bill/database/seeders/BillSeeder.php`. Seeds 50 random + 10 paid + 5 overdue via factory states. Registered in `DatabaseSeeder`."
+Report the seeder path, what it seeds (counts + factory states), and that it's registered in `DatabaseSeeder`.
 
 ## When to Ask vs Assume
 
-- Use factory → always
-- Registration in DatabaseSeeder → assume yes
-- Idempotency → only for prod-touching seeders
+- Use a factory → always (never hand-craft data)
+- Registration in `DatabaseSeeder` → assume yes
+- Idempotency → only when it may touch a shared/persistent DB

@@ -2,47 +2,59 @@
 
 ## Pattern
 
-Token-based authentication using Laravel Sanctum for mobile apps and external API consumers.
+Token-based authentication using Laravel Sanctum for SPAs, mobile apps, and external API consumers. Stateless — each request carries a bearer token; no session cookie or CSRF token.
 
-## When to Use
+## When to use
 
-Use this authentication method when explicitly building API endpoints for:
-
+- SPAs that hit the Laravel backend across domains or with token-based auth
 - Mobile applications
 - Third-party API integrations
-- External service consumers
-- Different domains
+- Service-to-service calls
+
+For server-rendered web apps with session cookies, see AUTH-001-web.
+
+## Setup
+
+```bash
+composer require laravel/sanctum
+php artisan vendor:publish --tag=sanctum-config
+php artisan migrate
+```
 
 ## Middleware
 
+Routes are wrapped with the `auth:sanctum` middleware:
+
 ```php
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::apiResource('households', HouseholdController::class);
+    Route::apiResource('orders', OrderController::class);
 });
 ```
 
-## Client Authentication
+`Route::apiResource` registers 5 routes (index, show, store, update, destroy) — no view-returning `create` / `edit`.
 
-- Bearer token in Authorization header
-- `Authorization: Bearer {token}`
+## Client authentication
 
-## Specification Format
+- Issue a token: `$user->createToken('token-name')->plainTextToken`
+- Client sends it on every request:
+  ```
+  Authorization: Bearer {token}
+  ```
 
-When documenting API-only endpoints, specify explicitly:
+## Accessing the current user
 
-```markdown
-## Endpoint
+Inside the controller:
+- `$request->user()` — current authenticated user (the Sanctum guard resolves it from the token)
+- `Auth::guard('sanctum')->user()` — explicit guard reference
 
-\```
-POST /api/households
-Content-Type: application/json
-Authorization: Bearer {token}
-\```
+For passing the user OUT of HTTP context (into an Action, Job, etc.), see ACTION-001-structure: the controller passes `$request->user()` into the action's `execute(User $user, ...)`.
 
-**Authentication:** API token (see AUTH-002-api)
+## Token abilities (optional)
+
+Sanctum supports per-token scopes:
+
+```php
+$token = $user->createToken('mobile-app', ['orders:read', 'orders:write']);
+
+Route::middleware(['auth:sanctum', 'ability:orders:write'])->post('/orders', ...);
 ```
-
-## Related
-
-- **AUTH-001-web** - Session-based authentication (default)
-- **POLICY-001** - Authorization handled via policies

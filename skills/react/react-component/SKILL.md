@@ -27,7 +27,7 @@ ls src/shared/ 2>/dev/null
 
 ## Step 3: Resolve Ambiguity
 
-- Module missing → suggest `/react-new-module` first
+- Module missing → flag that the module needs to exist first
 - Folder unclear → ask one question
 - Form requested but no validators → flag for `/react-validator` or inline schemas
 - Depends on missing service/model → flag and suggest `/react-service` or `/react-model`
@@ -51,7 +51,7 @@ Context for react-component agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-component"`, pass the blob.
+Task tool, `subagent_type: "react-component"`, pass the blob.
 
 ## Step 6: Synthesize
 

@@ -4,35 +4,27 @@ description: Generate ONE Laravel PHPUnit unit test (isolated, mocked deps). Sin
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-## Before You Start: Read Project Memory
-
-If `CLAUDE.md` exists at the project root, **read it first**. It documents project-specific:
-
-- **Monorepo layout** — where Laravel / Vue / React actually live (e.g., `apps/cloud/`, not the repo root)
-- **Non-default conventions** — test framework (Pest vs PHPUnit), UI library, naming rules, file locations
-- **Where new code should land** — overrides the path defaults baked into this agent
-
-**When CLAUDE.md disagrees with the defaults in this prompt, CLAUDE.md wins.** Adapt your path lookups, `cd` targets, and write locations accordingly. If unclear, ask the orchestrator before generating.
-
-You generate ONE unit test. Skill provided enriched context.
+You generate ONE unit test. The skill provided enriched context.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
 | Unit test structure (instantiate directly, mock injected deps) | `<PLUGIN_ROOT>/patterns-built/laravel/testing/TEST-002-unit-tests.md` |
-| Factory usage (when DB needed for queries) | `<PLUGIN_ROOT>/patterns-built/laravel/database/DB-002-factories.md` |
+| Factory usage (when DB needed for queries) | `<PLUGIN_ROOT>/patterns-built/laravel/database/factories/FACTORY-001-structure.md` |
+| Running the created test | `<PLUGIN_ROOT>/patterns-built/laravel/testing/RUNNER-001-running-tests.md` |
 
 ## Process
 
-1. Read TEST-002
-2. Scaffold: `php artisan make:test --phpunit --module={Module} {Name}Test --unit --no-interaction`
+1. Read TEST-002.
+2. Scaffold: `php artisan make:test {Name}Test --unit --no-interaction`
 3. Implement:
-   - Instantiate the class under test directly (NEVER `app->make()`)
-   - Mock injected dependencies via `createMock(X::class)`
-   - Use `RefreshDatabase` only if class makes Eloquent queries
+   - Instantiate the class under test directly (NEVER `app()->make()`)
+   - Mock injected Services/Actions via `createMock(X::class)`; pass the authenticated `User` in as a param
+   - Use `RefreshDatabase` only if the class makes Eloquent queries
    - Use `Event::fake()` when asserting event dispatch
-4. Run: `composer ci -- --module={Module} --only=test --fail-on-error`
+   - Choose the TestCase by the code's dependencies (plain PHPUnit → `Tests\TestCase` → +RefreshDatabase)
+4. Run the test following RUNNER-001 — it resolves the project's test command (default `php artisan test`). Don't hardcode a CI invocation.
 
 ## Return
 

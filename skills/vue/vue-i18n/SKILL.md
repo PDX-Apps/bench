@@ -49,7 +49,7 @@ Context for vue-i18n agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:vue-i18n"`, pass the blob.
+Task tool, `subagent_type: "vue-i18n"`, pass the blob.
 
 ## Step 6: Synthesize
 

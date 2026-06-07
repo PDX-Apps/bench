@@ -47,7 +47,7 @@ Context for react-validator agent:
 
 ## Step 5: Delegate
 
-Task tool, `subagent_type: "bench:react-validator"`, pass the blob.
+Task tool, `subagent_type: "react-validator"`, pass the blob.
 
 ## Step 6: Synthesize
 

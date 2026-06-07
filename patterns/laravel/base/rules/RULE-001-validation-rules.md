@@ -9,7 +9,9 @@ Custom validation rule classes implementing Laravel's `ValidationRule` contract.
 ```php
 <?php
 
-namespace Modules\Currency\Rules;
+declare(strict_types=1);
+
+namespace App\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -18,7 +20,7 @@ class ValidCurrency implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!is_string($value) || !in_array($value, ['USD', 'EUR', 'JPY'], true)) {
+        if (! is_string($value) || ! in_array($value, ['USD', 'EUR', 'JPY'], true)) {
             $fail('The :attribute must be a supported currency code.');
         }
     }
@@ -40,6 +42,7 @@ class ValidMoneyAmount implements DataAwareRule, ValidationRule
     public function setData(array $data): static
     {
         $this->data = $data;
+
         return $this;
     }
 
@@ -86,23 +89,14 @@ public function rules(): array
 }
 ```
 
-## Rules
-
-- Implement `Illuminate\Contracts\Validation\ValidationRule` (Laravel 12 — NOT the deprecated `Rule` interface)
-- Single method: `validate(string $attribute, mixed $value, Closure $fail): void`
-- Call `$fail('message')` to fail validation; don't throw exceptions
-- Use `DataAwareRule` interface for cross-field validation
-- Constructor parameters for configurable rules
-- Live in `Modules/{Module}/app/Rules/`
-- Naming: descriptive (e.g., `ValidMoneyAmount`, `UniqueAcrossModules`) — no `Rule` suffix needed
-- Use `:attribute` placeholder in error messages — Laravel substitutes it
-- Strict types via `declare(strict_types=1)` recommended
-
 ## Key Points
 
-- Implement `ValidationRule` (call `$fail()` not throw)
-- Add `DataAwareRule` when you need other request fields
-- Constructor for per-instance configuration
-- Use in FormRequest as instance: `new MyRule(config)` — not as a class string
-- See HTTP-002-form-requests for FormRequest patterns
-- See VAL-* docs in module folders for project-specific validation specifications
+- Implement `Illuminate\Contracts\Validation\ValidationRule` (the current contract — not the deprecated `Rule` interface)
+- Single method: `validate(string $attribute, mixed $value, Closure $fail): void`
+- Call `$fail('message')` to fail validation; don't throw exceptions
+- Add `DataAwareRule` when you need other request fields (`setData()`)
+- Constructor parameters for configurable, reusable rules; use as an instance — `new MyRule(config)`, not a class string
+- Live in `app/Rules/`
+- Naming: descriptive, no `Rule` suffix needed (e.g., `ValidMoneyAmount`, `ValidCurrency`)
+- Use the `:attribute` placeholder in error messages — Laravel substitutes it
+- `declare(strict_types=1)` at the top
