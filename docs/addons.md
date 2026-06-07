@@ -187,7 +187,7 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-blade` | Server-rendered Blade UI — components, layouts, forms, pages (`/blade`) |
+| `bench-blade` | Blade rendering mode — suppresses the SPA page-ownership slice (page/route/layout/data agents replaced with redirects to `/blade`) while keeping component patterns active for islands; owns the Blade→SPA handoff (`BLADE-005`). Activated automatically when the `rendering` concern sets `mode: blade` in `.bench/rendering.yaml`. |
 | `bench-livewire` | Livewire 3 (+ Volt) reactive components (`/livewire`) |
 | `bench-filament` | Filament 3 admin panels — resources/forms/tables (`/filament-resource`) |
 | `bench-inertia` | Inertia.js v2 server-driven SPA (Laravel + Vue/React) (`/inertia`) |
