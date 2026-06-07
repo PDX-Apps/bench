@@ -1,0 +1,16 @@
+name: bench-plan
+version: 0.1.0
+description: |
+  Turn a ticket/PRD/feature description into a technical plan the implement
+  workflow can execute. Two phases: GATHER (read the source, follow code paths,
+  inspect schema + related patterns, map the affected surface) then PLAN (an
+  ordered, file-level technical plan with acceptance criteria). The gather phase
+  is the value — a plan grounded in the actual codebase, not guesswork.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/bench-plan
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT
