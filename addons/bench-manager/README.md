@@ -1,6 +1,6 @@
 # bench-manager
 
-The `/bench-*` toolkit for **tailoring Bench to your project**. Bundled by default (`bench init` loads it; opt out with `--no-onboard`). It's how you teach Bench your project's conventions and scaffold your own domains — everything it writes lands in `./.bench/`, your project-local, committable home for overrides and custom slices.
+The `/bench-*` toolkit for **tailoring Bench to your project**. Bundled by default (`bench build` loads it; opt out with `--no-onboard`). It's how you teach Bench your project's conventions and scaffold your own domains — everything it writes lands in `./.bench/`, your project-local, committable home for overrides and custom slices.
 
 ## Commands
 
@@ -30,4 +30,4 @@ skills/               the six /bench-* commands above
 
 The two user-facing creators (`/bench-override`, `/bench-slice`) are thin routers; the authoring agents carry the bench-grade knowledge of how to build each artifact type. Output is a project-local contribution under `./.bench/` — auto-discovered on the next `bench rebuild` (no manifest required), so it persists across rebuilds. **Commit `.bench/` with your project.**
 
-See [docs/contribution-system.md](../../docs/contribution-system.md) for the contribution modes and [docs/addons.md](../../docs/addons.md) for the addon contract.
+See [docs/layering.md](../../docs/layering.md) for the contribution modes and [docs/addons.md](../../docs/addons.md) for the addon contract.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # contribution.sh — apply a contribution file to a target file by its declared mode.
 #
-# The contribution model (see docs/contribution-system.md). A *contribution* is a
+# The contribution model (see docs/layering.md). A *contribution* is a
 # markdown file that layers onto a base/target file. Its leading YAML frontmatter
 # MAY declare `mode:`:
 #

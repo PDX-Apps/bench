@@ -1,6 +1,6 @@
 # Authoring a `.bench/` contribution — by mode
 
-How project-local overrides under `./.bench/` layer onto Bench's bundled files. Read this before writing any `.bench/` pattern, skill, or agent override. The full design is in the source's `docs/contribution-system.md`; this is the field guide.
+How project-local overrides under `./.bench/` layer onto Bench's bundled files. Read this before writing any `.bench/` pattern, skill, or agent override. The full design is in the source's `docs/layering.md`; this is the field guide.
 
 A `.bench/` file mirrors the path of the bundled file it contributes to (e.g. `.bench/patterns/laravel/models/MODEL-001-structure.md` layers onto the bundled `MODEL-001-structure`). Its leading frontmatter declares **how** it layers, via `mode:`. **No `mode:` key = `replace`** (legacy full-file fork), so old overrides keep working.
 
