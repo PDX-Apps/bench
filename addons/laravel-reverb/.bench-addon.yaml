@@ -1,0 +1,16 @@
+name: laravel-reverb
+version: 0.1.0
+description: |
+  Real-time broadcasting over laravel/reverb (first-party WebSocket server):
+  events implementing ShouldBroadcast, public / private / presence channels with
+  authorization, the Echo client subscription, and Reverb server config. Ships a
+  /broadcast command + agent and the REVERB-001-broadcasting pattern.
+
+  Opt-in addon — install per-project with:
+    bench addon add laravel-reverb
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://laravel.com/docs/reverb
+license: MIT
