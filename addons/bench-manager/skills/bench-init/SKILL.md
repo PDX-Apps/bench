@@ -35,10 +35,26 @@ Then ask the user how far to go:
 
 For each accepted item: override → the matching author (`pattern-author`/`skill-author`/`agent-author`, `intent: fork`, `defer_rebuild: true`); slice candidate → the slice sequence (`pattern-author` capture → `skill-author` new). Show drafts for approval.
 
-## Finish — one rebuild + summary
+## Pass 3 — Matching addons (offer, don't fork)
+
+Some conventions are better served by a **bundled addon** than a project override — a package has a whole pattern set, not a one-line tweak. List what's available and map detections to addons:
 
 ```bash
-{install}/bin/bench rebuild
+<PLUGIN_ROOT>/bin/bench addon available     # name + description of every bundled addon
+```
+
+Scan `composer.json` / `package.json` for packages that have a matching addon (e.g. `spatie/laravel-permission` → `bench-spatie-permission`, `laravel/octane` → `bench-laravel-octane`, `nwidart/laravel-modules` → `bench-laravel-modules`, `spatie/laravel-query-builder` → `laravel-query-builder`, Inertia/Livewire/Filament/Cashier/Scout/Horizon/Socialite → their addons). For each match, **offer** to install it:
+
+> "Detected `spatie/laravel-permission` — there's a `bench-spatie-permission` addon (roles/permissions scaffolding + authz patterns). Add it?"
+
+On yes, run `<PLUGIN_ROOT>/bin/bench addon add <name>` (it rebuilds). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
+
+## Finish — one rebuild + summary
+
+Run the installed CLI (`<PLUGIN_ROOT>` is substituted to this project's real install path at build time — never guess a path or use another project's copy). The install already exists from `bench build`; this only re-resolves the new `.bench/` overrides:
+
+```bash
+<PLUGIN_ROOT>/bin/bench rebuild
 ```
 ```
 Bench tailored to {project}.
@@ -54,3 +70,4 @@ Your CLAUDE.md was untouched. Adjust anytime:
 - **Never writes CLAUDE.md** — project context rides inside the `.bench/` overrides each concern/author writes.
 - **Everything is opt-in.** A run that captures nothing is valid.
 - **One rebuild** at the end (`defer_rebuild: true` everywhere).
+- **The CLI is `<PLUGIN_ROOT>/bin/bench`** — the installed copy for *this* project. It self-delegates `rebuild`/`addon` to the real bench source via the install's `.install-source` record, so you don't need to know where bench is cloned. Never substitute a guessed path or another project's plugin copy. If `rebuild` reports no install, `bench build` hasn't run for this project yet — that's the prerequisite, surface it rather than improvising.

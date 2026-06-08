@@ -26,9 +26,9 @@ The user's request: **$ARGUMENTS**
 1. **Parse** `<type>` and `<name>`.
 2. **Resolve the install root** — `{project_root}/.claude/plugins/bench/`. Verify it exists.
 3. **Find candidate(s):**
-   - patterns: `find {install}/patterns-built -name '*.md' -ipath "*${name}*" -not -name '_meta.yaml'`
-   - skills: `find {install}/skills -name SKILL.md -ipath "*${name}*"`
-   - agents: `find {install}/agents -name '*.md' -ipath "*${name}*"`
+   - patterns: `find <PLUGIN_ROOT>/patterns-built -name '*.md' -ipath "*${name}*" -not -name '_meta.yaml'`
+   - skills: `find <PLUGIN_ROOT>/skills -name SKILL.md -ipath "*${name}*"`
+   - agents: `find <PLUGIN_ROOT>/agents -name '*.md' -ipath "*${name}*"`
 4. **Handle the result:**
    - Zero → "not found" + suggest `/bench-list <type>`.
    - One → Read it and display the full content, with the resolved path at the top.

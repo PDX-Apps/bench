@@ -23,9 +23,9 @@ The user's request: **$ARGUMENTS**
 
 1. **Resolve the install root** — `{project_root}/.claude/plugins/bench/`. Verify it exists.
 2. **List per the argument:**
-   - **patterns** — `find {install}/patterns-built -name '*.md' -not -name '_meta.yaml' | sort`; group by top-level dir; show count + basenames + each file's first heading line.
-   - **skills** — `ls -d {install}/skills/*/`; for each, show the first `description:` line.
-   - **agents** — `ls {install}/agents/*.md`; for each, show `name:` + first `description:` line.
+   - **patterns** — `find <PLUGIN_ROOT>/patterns-built -name '*.md' -not -name '_meta.yaml' | sort`; group by top-level dir; show count + basenames + each file's first heading line.
+   - **skills** — `ls -d <PLUGIN_ROOT>/skills/*/`; for each, show the first `description:` line.
+   - **agents** — `ls <PLUGIN_ROOT>/agents/*.md`; for each, show `name:` + first `description:` line.
 3. **Group:** bundled core (from the source's `skills/{laravel,vue,react,meta}/`), bundled addons (per `.install-addons-config`), project-local (`{project_root}/.bench/`). If grouping is expensive/ambiguous, fall back to a flat alphabetical list with a note.
 4. **Filter** (case-insensitive substring on the name) if provided.
 5. **Output** a compact, scannable grouped list.

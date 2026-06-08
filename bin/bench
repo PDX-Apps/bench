@@ -10,7 +10,8 @@
 #   bench build --addon=PATH     build with an addon (repeatable)
 #   bench rebuild               re-run install.sh inside current project's plugin
 #   bench addon list            show registered addons for this project
-#   bench addon add PATH        add an addon and rebuild
+#   bench addon available       list bundled addons shipped with bench
+#   bench addon add PATH        add an addon (path or bundled name) and rebuild
 #   bench addon remove NAME-OR-PATH    remove an addon and rebuild
 #   bench profile [set NAME]    show or set the skill profile (compact|standard)
 #   bench status                show what's installed + versions detected
@@ -65,8 +66,11 @@ Usage:
   bench addon list
     Show addons registered for the current project's install.
 
-  bench addon add PATH
-    Add an addon to the current project and rebuild.
+  bench addon available
+    List the bundled addons shipped with bench (name + description).
+
+  bench addon add PATH-OR-NAME
+    Add an addon (path or bundled name) to the current project and rebuild.
 
   bench addon remove NAME-OR-PATH
     Remove an addon from the current project (matches by name from manifest
@@ -175,6 +179,24 @@ case "$CMD" in
           echo "Auto-discovered project-local: $PWD/.bench  (name: ${name:-unknown})"
         fi
         ;;
+      available)
+        # List the BUNDLED addons shipped with bench (name + one-line description), so a
+        # skill can map a detected package -> addon without scanning the addons/ folder.
+        BENCH_SRC="$PLUGIN_SRC"
+        [[ -f "$TARGET/.install-source" ]] && BENCH_SRC="$(cat "$TARGET/.install-source")"
+        if [[ ! -d "$BENCH_SRC/addons" ]]; then
+          echo "No bundled addons found (bench source: $BENCH_SRC)" >&2
+          exit 1
+        fi
+        echo "Available bundled addons (add with: bench addon add <name>):"
+        for m in "$BENCH_SRC"/addons/*/.bench-addon.yaml; do
+          [[ -f "$m" ]] || continue
+          nm=$(grep -E '^name:' "$m" | head -1 | sed -E 's/^name:[[:space:]]*//; s/[[:space:]]+$//')
+          # first non-empty line of the description: block
+          desc=$(awk '/^description:/{d=1;next} d&&/^[[:space:]]+[^[:space:]]/{sub(/^[[:space:]]+/,"");print;exit} d&&/^[^[:space:]]/{exit}' "$m")
+          printf '  %-26s %s\n' "${nm:-$(basename "$(dirname "$m")")}" "$desc"
+        done
+        ;;
       add)
         require_installed
         NEW_ADDON="${1:?path or bundled addon name required}"
@@ -260,7 +282,7 @@ case "$CMD" in
         ;;
       *)
         echo "Unknown addon subcommand: $SUB" >&2
-        echo "Use: bench addon [list|add PATH|remove NAME-OR-PATH]" >&2
+        echo "Use: bench addon [list|available|add PATH-OR-NAME|remove NAME-OR-PATH]" >&2
         exit 1
         ;;
     esac

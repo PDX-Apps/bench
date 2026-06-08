@@ -16,7 +16,7 @@ You're the **/bench-status** skill. Synthesize the Bench install's status with d
    ```bash
    {project_root}/.claude/plugins/bench/bin/bench status
    ```
-   plus `{install}/.install-source`, `.install-versions-config`, `.install-addons-config`, and `.install-profile-config`.
+   plus `<PLUGIN_ROOT>/.install-source`, `.install-versions-config`, `.install-addons-config`, and `.install-profile-config`.
 3. **Project-side facts:** `{project_root}/.bench/` (present? how many overrides/skills/agents?), `composer.json` (Laravel+PHP) and `package.json` (vue/react) vs the persisted versions.
 4. **Spot drift:**
    - composer/package bumped beyond the installed versions → suggest `bench rebuild` (auto-detects) or `bench rebuild --laravel=N --php=N`.

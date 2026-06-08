@@ -30,7 +30,7 @@ Task(subagent_type: "pattern-author", description: "Capture {domain} pattern", p
   This is the pattern half of a /bench-slice — author a project pattern describing
   how THIS project writes {domain} classes (structure, naming, base classes, the
   full file set per unit, conventions). defer_rebuild: true.
-  project_root: {cwd}   bench_install_root: {install}
+  project_root: {cwd}   bench_install_root: <PLUGIN_ROOT>
 """)
 ```
 
@@ -48,7 +48,7 @@ Task(subagent_type: "skill-author", description: "Design /{domain} skill+agent",
   Domain pattern to read: {.bench pattern path}
   Hand off to agent-author for the paired {domain-slug} agent; its Pattern Lookup
   points at the domain pattern above. defer_rebuild: true.
-  project_root: {cwd}   bench_install_root: {install}
+  project_root: {cwd}   bench_install_root: <PLUGIN_ROOT>
 """)
 ```
 
@@ -59,7 +59,7 @@ Task(subagent_type: "skill-author", description: "Design /{domain} skill+agent",
 After the user approves all three drafts and they're written, rebuild a single time:
 
 ```bash
-{install}/bin/bench rebuild
+<PLUGIN_ROOT>/bin/bench rebuild
 ```
 
 Report the slice:
