@@ -1,0 +1,16 @@
+name: laravel-pennant
+version: 0.1.0
+description: |
+  Feature flags with laravel/pennant: class-based and closure feature definitions,
+  scope-aware checks (Feature::active / when), per-user/team scopes, rich values,
+  the @feature Blade directive, and route middleware. Ships a /feature command +
+  agent and the PENNANT-001-features pattern.
+
+  Opt-in addon — install per-project with:
+    bench addon add laravel-pennant
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://laravel.com/docs/pennant
+license: MIT
