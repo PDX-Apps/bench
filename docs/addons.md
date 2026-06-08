@@ -183,6 +183,8 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 | `laravel-scout` | Full-text search — the Searchable trait + drivers (`/scout`) |
 | `laravel-horizon` | Redis queue config + conventions |
 | `laravel-socialite` | OAuth social login — redirect/callback flow (`/socialite`) |
+| `laravel-reverb` | Real-time broadcasting over Reverb (WebSockets) — ShouldBroadcast, channels, Echo (`/broadcast`) |
+| `laravel-pennant` | Feature flags — define/check, scopes, `@feature`, middleware (`/feature`) |
 
 ### Laravel UI
 
