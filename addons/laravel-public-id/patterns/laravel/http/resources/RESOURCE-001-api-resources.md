@@ -2,7 +2,7 @@
 mode: append
 ---
 
-## Exposing the public ID (this project uses bench-laravel-public-id)
+## Exposing the public ID (this project uses laravel-public-id)
 
 Surface `public_id` as the resource's `id`; never expose the internal integer `id`:
 

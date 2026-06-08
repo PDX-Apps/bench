@@ -43,9 +43,9 @@ Some conventions are better served by a **bundled addon** than a project overrid
 <PLUGIN_ROOT>/bin/bench addon available     # name + description of every bundled addon
 ```
 
-Scan `composer.json` / `package.json` for packages that have a matching addon (e.g. `spatie/laravel-permission` → `bench-spatie-permission`, `laravel/octane` → `bench-laravel-octane`, `nwidart/laravel-modules` → `bench-laravel-modules`, `spatie/laravel-query-builder` → `laravel-query-builder`, Inertia/Livewire/Filament/Cashier/Scout/Horizon/Socialite → their addons). For each match, **offer** to install it:
+Scan `composer.json` / `package.json` for packages that have a matching addon (e.g. `spatie/laravel-permission` → `spatie-permission`, `laravel/octane` → `laravel-octane`, `nwidart/laravel-modules` → `laravel-modules`, `spatie/laravel-query-builder` → `spatie-query-builder`, Inertia/Livewire/Filament/Cashier/Scout/Horizon/Socialite → their addons). For each match, **offer** to install it:
 
-> "Detected `spatie/laravel-permission` — there's a `bench-spatie-permission` addon (roles/permissions scaffolding + authz patterns). Add it?"
+> "Detected `spatie/laravel-permission` — there's a `spatie-permission` addon (roles/permissions scaffolding + authz patterns). Add it?"
 
 On yes, run `<PLUGIN_ROOT>/bin/bench addon add <name>` (it rebuilds). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
 

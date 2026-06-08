@@ -8,9 +8,9 @@ Inspect `package.json` + a couple of existing components:
 
 | Signal | System | Generate… |
 |--------|--------|-----------|
-| `tailwindcss` dep + `@tailwind`/`@import "tailwindcss"` | **Tailwind** | utility classes in `className` (`bench-tailwind` addon sharpens this) |
-| shadcn/ui components in `components/ui/`, `class-variance-authority` | **shadcn/ui** | its components + `cn()` + CVA variants (`bench-shadcn`) |
-| `@mui/*`, `@chakra-ui/*` | **UI library** | the library's components + its theming (`bench-mui`/`bench-chakra`) |
+| `tailwindcss` dep + `@tailwind`/`@import "tailwindcss"` | **Tailwind** | utility classes in `className` (`tailwind` addon sharpens this) |
+| shadcn/ui components in `components/ui/`, `class-variance-authority` | **shadcn/ui** | its components + `cn()` + CVA variants (`shadcn`) |
+| `@mui/*`, `@chakra-ui/*` | **UI library** | the library's components + its theming (`mui`/`chakra`) |
 | `*.module.css` imports | **CSS Modules** | `import styles` + `className={styles.x}` |
 | `styled-components`/`@emotion` | **CSS-in-JS** | styled components, match the existing approach |
 
@@ -46,7 +46,7 @@ export function Button({ variant = 'primary', ...props }: ButtonProps) {
 
 ## Conventions
 
-- **Match, don't impose.** The base never forces Tailwind or a UI library; opinionated systems are addons (`bench-tailwind`, `bench-shadcn`, `bench-mui`, `bench-chakra`, `bench-radix`).
+- **Match, don't impose.** The base never forces Tailwind or a UI library; opinionated systems are addons (`tailwind`, `shadcn`, `mui`, `chakra`, `radix`).
 - **Theme via CSS custom properties** (greenfield). One token file is the theming surface; dark mode = a `[data-theme]` / `prefers-color-scheme` override.
 - **No inline `style={{}}`** except genuinely dynamic computed values. Static styling goes in classes.
 
@@ -57,4 +57,4 @@ export function Button({ variant = 'primary', ...props }: ButtonProps) {
 
 ## See also
 
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `bench-tailwind`, `bench-shadcn`, `bench-mui`, `bench-chakra`
+- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `tailwind`, `shadcn`, `mui`, `chakra`

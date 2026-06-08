@@ -41,11 +41,11 @@ Like the Vue base, this is deliberately thin — frontend has few universal conv
 
 ## Addons (opt-in, per project)
 
-- **Styling:** `bench-tailwind`
-- **UI libraries:** `bench-shadcn` · `bench-mui` · `bench-chakra` · `bench-radix`
+- **Styling:** `tailwind`
+- **UI libraries:** `shadcn` · `mui` · `chakra` · `radix`
 - **Data:** (React Query ships in base)
-- **Routing:** `bench-tanstack-router`
+- **Routing:** `tanstack-router`
 - **E2E testing:** `bench-playwright` (the base ships Vitest + Testing Library)
-- **Meta-framework:** `bench-nextjs` · `bench-remix`
+- **Meta-framework:** `nextjs` · `remix`
 
 A project installs only the addons matching its stack; the agents generate that flavour instead of the generic base.

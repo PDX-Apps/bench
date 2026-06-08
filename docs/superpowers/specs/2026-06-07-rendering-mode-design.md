@@ -40,20 +40,20 @@ The base Vue track already separates along exactly this line:
 ### The two composed axes
 
 - **Component framework** — `--frontend=vue|react|none`. Unchanged. *What* interactive UI is written in.
-- **Page ownership / rendering** — expressed as an **addon** that replace-overrides the page-ownership slice. Near-term values: SPA (no addon) and Blade (`bench-blade`).
+- **Page ownership / rendering** — expressed as an **addon** that replace-overrides the page-ownership slice. Near-term values: SPA (no addon) and Blade (`laravel-blade`).
 
 ### The valid matrix (entirely from existing axes)
 
 | `--frontend` | rendering addon | Result |
 |---|---|---|
 | vue / react | — | Standalone SPA (base default) |
-| vue / react | bench-blade | Blade SSR + framework islands |
-| none | bench-blade | Pure Blade |
+| vue / react | laravel-blade | Blade SSR + framework islands |
+| none | laravel-blade | Pure Blade |
 | none | — | Backend-only |
 
-### Work item 1 — bench-blade gains *suppression* (replace the page-ownership slice)
+### Work item 1 — laravel-blade gains *suppression* (replace the page-ownership slice)
 
-Today `bench-blade` only **adds** a parallel `/blade` track under `patterns/laravel/views/`. It does not suppress the Vue SPA-routing slice, so a Blade+islands project still surfaces `vue-page` / `vue-route` / `vue-layout`. To deliver the suppression half, bench-blade adds **same-path replace-overrides** for the page-ownership slice only:
+Today `laravel-blade` only **adds** a parallel `/blade` track under `patterns/laravel/views/`. It does not suppress the Vue SPA-routing slice, so a Blade+islands project still surfaces `vue-page` / `vue-route` / `vue-layout`. To deliver the suppression half, laravel-blade adds **same-path replace-overrides** for the page-ownership slice only:
 
 - `agents/vue/vue-page.md`, `vue-route.md`, `vue-layout.md`, `vue-query.md` → replaced with short "pages/routes/layouts are owned by Blade — use `/blade`" redirects.
 - The matching base patterns `patterns/frontend/vue/base/routing/*` and `data/QUERY-001*` → replaced with Blade-redirect content.
@@ -65,9 +65,9 @@ The existing additive Blade track stays: `skills/blade/`, `agents/blade-page.md`
 
 This is pure existing layering (same-path replace) — no new build code.
 
-### Work item 2 — bench-blade owns the Blade → full-SPA **handoff** pattern (decision: B only)
+### Work item 2 — laravel-blade owns the Blade → full-SPA **handoff** pattern (decision: B only)
 
-A new pattern in bench-blade — `patterns/laravel/views/BLADE-005-spa-handoff.md` — documents the one repeatable, easy-to-get-wrong seam: a Blade shell that boots a **full** Vue/React SPA. It covers:
+A new pattern in laravel-blade — `patterns/laravel/views/BLADE-005-spa-handoff.md` — documents the one repeatable, easy-to-get-wrong seam: a Blade shell that boots a **full** Vue/React SPA. It covers:
 
 - the catch-all Laravel route (e.g. `/app/{any?}` → shell view),
 - the shell Blade view (`<div id="app">` + `@vite`),
@@ -112,7 +112,7 @@ mode: blade   # or spa
 
 `bench build` / `rebuild` reads `.bench/rendering.yaml` and folds the mapped addon into the **resolved addon set** before the existing dependency-expansion + install passes run:
 
-- `mode: blade` → ensure `bench-blade` is in the resolved set (deps-first, de-duped — reuses the `depends_on.addons` expansion path).
+- `mode: blade` → ensure `laravel-blade` is in the resolved set (deps-first, de-duped — reuses the `depends_on.addons` expansion path).
 - `mode: spa` (or no file) → no addon added.
 
 Re-resolved on every `rebuild`, like the `.bench/` project-local auto-discovery — the config travels in the repo.
@@ -136,13 +136,13 @@ These are **not built now.** Scope for this spec is **Blade SSR + Vue SPA** only
 ## Affected / new files (implementation preview)
 
 - **New:** `concerns/rendering.md`
-- **New:** `addons/bench-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`
-- **New (replace-overrides in bench-blade):**
-  - `addons/bench-blade/agents/vue/vue-page.md`, `vue-route.md`, `vue-layout.md`, `vue-query.md`
-  - `addons/bench-blade/patterns/frontend/vue/base/routing/{LAYOUT,PAGE,ROUTE}-001*`, `data/QUERY-001*`
+- **New:** `addons/laravel-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`
+- **New (replace-overrides in laravel-blade):**
+  - `addons/laravel-blade/agents/vue/vue-page.md`, `vue-route.md`, `vue-layout.md`, `vue-query.md`
+  - `addons/laravel-blade/patterns/frontend/vue/base/routing/{LAYOUT,PAGE,ROUTE}-001*`, `data/QUERY-001*`
   - React mirror of the above
 - **Modified:** `scripts/install.sh` (+ possibly `bin/bench` / `scripts/init-project.sh`) — read `.bench/rendering.yaml`, map mode→addon into the resolved set.
-- **Modified docs:** `docs/architecture.md` (rendering as framework × page-ownership), `docs/addons.md` (bench-blade now suppresses + handoff), `addons/bench-blade/README.md`.
+- **Modified docs:** `docs/architecture.md` (rendering as framework × page-ownership), `docs/addons.md` (laravel-blade now suppresses + handoff), `addons/laravel-blade/README.md`.
 - **Working notes:** mark the rendering-mode idea-bank item resolved.
 
 ## Open questions

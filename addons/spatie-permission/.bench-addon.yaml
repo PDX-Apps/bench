@@ -1,0 +1,17 @@
+name: spatie-permission
+version: 0.1.0
+description: |
+  spatie/laravel-permission conventions + scaffolding for Laravel: the HasRoles
+  trait on the authenticatable, roles + permissions defined in a seeder, permission
+  checks (can / hasRole, @can, middleware), and a super-admin Gate::before. Ships a
+  /permission command + agent and the PERMISSION-002-spatie pattern. Pairs with the
+  core `permissions` concern, which captures the project's actual role/permission names.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/spatie-permission
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://spatie.be/docs/laravel-permission
+license: MIT

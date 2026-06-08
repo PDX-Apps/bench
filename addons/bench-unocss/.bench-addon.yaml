@@ -1,8 +1,0 @@
-name: bench-unocss
-version: 0.1.0
-description: |
-  Style generated Vue/React components with UnoCSS (atomic, on-demand). Appends
-  UnoCSS conventions onto the core styling patterns.
-depends_on:
-  bench: ">=0.8.0"
-license: MIT

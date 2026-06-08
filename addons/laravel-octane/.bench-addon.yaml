@@ -1,0 +1,16 @@
+name: laravel-octane
+version: 0.1.0
+description: |
+  Safety guidance for running the app under Laravel Octane (FrankenPHP / Swoole /
+  RoadRunner). The worker boots once and serves many requests, so code that was
+  safe in PHP-FPM can now leak state or memory across requests. Ships the
+  OCTANE-001 safety pattern and appends an "Octane safety" note to the core
+  service + provider patterns.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-octane
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

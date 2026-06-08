@@ -155,13 +155,13 @@ For backend-only projects (`--frontend=none`), both vue and react are pruned. On
 `--frontend` captures the **component framework** (vue / react / none). The **rendering model** (SPA vs Blade SSR) is a separate question answered by a page-ownership **addon**, not a new axis.
 
 - The `rendering` concern (asked at `/bench-init`) writes `.bench/rendering.yaml` (`mode: spa | blade | inertia | livewire`). It writes config only — it does not run `bench addon add`.
-- `scripts/install.sh` reads `.bench/rendering.yaml` and folds the mapped addon (`blade → bench-blade`, `inertia → bench-inertia`, `livewire → bench-livewire`) into the resolved addon set before dependency expansion. `spa` / absent → no addon added.
-- **bench-blade** implements `blade` mode by shipping same-path **replace-overrides** for the SPA page-ownership slice — `vue-page`, `vue-route`, `vue-layout`, `vue-query` (and React equivalents) and their `routing/` + `data/` patterns — swapping them to "pages are Blade, use `/blade`" redirects. Component / composable / hook / store patterns are left active, so Vue/React **islands** continue to work inside Blade pages.
+- `scripts/install.sh` reads `.bench/rendering.yaml` and folds the mapped addon (`blade → laravel-blade`, `inertia → inertia`, `livewire → livewire`) into the resolved addon set before dependency expansion. `spa` / absent → no addon added.
+- **laravel-blade** implements `blade` mode by shipping same-path **replace-overrides** for the SPA page-ownership slice — `vue-page`, `vue-route`, `vue-layout`, `vue-query` (and React equivalents) and their `routing/` + `data/` patterns — swapping them to "pages are Blade, use `/blade`" redirects. Component / composable / hook / store patterns are left active, so Vue/React **islands** continue to work inside Blade pages.
 - **`BLADE-005-spa-handoff`** covers the one-off case where a Blade shell route boots a full SPA (catch-all route, shell view, bootstrap payload, client-router base path).
 
-Valid matrix: `vue|react` + no addon = SPA (default); `vue|react` + bench-blade = Blade SSR + framework islands; `none` + bench-blade = pure Blade; `none` + nothing = backend-only.
+Valid matrix: `vue|react` + no addon = SPA (default); `vue|react` + laravel-blade = Blade SSR + framework islands; `none` + laravel-blade = pure Blade; `none` + nothing = backend-only.
 
-Other modes follow the same shape: `inertia` → **bench-inertia** (routing/data become Inertia idioms — `Inertia::render`, `<Link>`, props — while pages stay Vue/React components), and `livewire` → **bench-livewire** (which `depends_on` bench-blade, so Blade owns pages/layouts/routes and Livewire adds reactive components). Each is just a `mode` value mapping to an addon that replace-overrides the appropriate slice; meta-frameworks would extend identically.
+Other modes follow the same shape: `inertia` → **inertia** (routing/data become Inertia idioms — `Inertia::render`, `<Link>`, props — while pages stay Vue/React components), and `livewire` → **livewire** (which `depends_on` laravel-blade, so Blade owns pages/layouts/routes and Livewire adds reactive components). Each is just a `mode` value mapping to an addon that replace-overrides the appropriate slice; meta-frameworks would extend identically.
 
 ---
 

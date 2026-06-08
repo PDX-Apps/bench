@@ -3,9 +3,9 @@
 # Generic React + TS base: function components + hooks, Zustand, React Router,
 # Vite, Vitest + Testing Library, TanStack Query (React Query), react-hook-form
 # + Zod. Styling/UI-library/router/meta-framework choices are project-specific
-# (detect-and-match) and ship as addons (bench-tailwind, bench-shadcn, bench-mui,
-# bench-chakra, bench-radix, bench-tanstack-router, bench-playwright,
-# bench-nextjs, bench-remix).
+# (detect-and-match) and ship as addons (tailwind, shadcn, mui,
+# chakra, radix, tanstack-router, bench-playwright,
+# nextjs, remix).
 
 target:
   react: "18.x"

@@ -3,8 +3,8 @@
 # Generic Vue 3 base: <script setup> + TS, Pinia, Vue Router, Vite, Vitest,
 # TanStack Query (Vue Query), Zod. Styling/UI-library/data-library/meta-framework
 # choices are project-specific (detect-and-match) and ship as addons
-# (bench-tailwind, bench-unocss, bench-primevue, bench-vuetify, bench-shadcn-vue,
-# bench-quasar, bench-pinia-colada, bench-playwright, bench-nuxt).
+# (tailwind, unocss, primevue, vuetify, shadcn-vue,
+# quasar, pinia-colada, bench-playwright, nuxt).
 
 target:
   vue: "3.5.x"

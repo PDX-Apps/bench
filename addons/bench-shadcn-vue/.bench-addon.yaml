@@ -1,9 +1,0 @@
-name: bench-shadcn-vue
-version: 0.1.0
-description: |
-  Build Vue UIs with shadcn-vue — copy-paste components (Reka UI primitives +
-  Tailwind + CVA) that you own in components/ui/. Appends shadcn-vue conventions
-  onto the component + styling patterns.
-depends_on: { bench: ">=0.8.0" }
-homepage: https://www.shadcn-vue.com
-license: MIT

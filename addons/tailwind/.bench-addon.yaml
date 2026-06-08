@@ -1,0 +1,9 @@
+name: tailwind
+version: 0.1.0
+description: |
+  Style generated Vue/React components with Tailwind CSS v4 (CSS-first config).
+  Appends Tailwind conventions onto the core styling patterns so components are
+  generated with utility classes + @theme tokens instead of scoped/module CSS.
+depends_on:
+  bench: ">=0.8.0"
+license: MIT

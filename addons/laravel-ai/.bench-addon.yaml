@@ -1,4 +1,4 @@
-name: bench-laravel-ai
+name: laravel-ai
 version: 0.1.0
 description: |
   Build AI features with the official laravel/ai SDK — class-based Agents

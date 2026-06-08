@@ -1,0 +1,10 @@
+name: tanstack-router
+version: 0.1.0
+description: |
+  Use TanStack Router (fully type-safe) instead of the base React Router. Replaces
+  the React routing pattern so routes are generated with createRoute/createRouter,
+  type-safe params, and <Outlet/> layouts.
+depends_on:
+  bench: ">=0.8.0"
+homepage: https://tanstack.com/router
+license: MIT

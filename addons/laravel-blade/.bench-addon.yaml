@@ -1,0 +1,15 @@
+name: laravel-blade
+version: 0.1.0
+description: |
+  Laravel Blade UI track — for server-rendered apps that use Blade (not a
+  Vue/React SPA). Components (anonymous + class-based), layouts/slots, forms with
+  validation, and full page views wired from controllers. Pair with livewire
+  for reactivity.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-blade
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

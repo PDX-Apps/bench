@@ -2,7 +2,7 @@
 
 Server state — fetching, caching, background refetch, mutations — via **`@tanstack/vue-query`**. This replaces hand-rolled "service class" + store-caching layers: the query cache *is* the server-state store.
 
-> If the project uses **Pinia Colada** instead (Vue-native, similar API), match that — it's the `bench-pinia-colada` addon. If it has no query library at all, fetch in a composable with `ref` loading/error state and recommend adopting one.
+> If the project uses **Pinia Colada** instead (Vue-native, similar API), match that — it's the `pinia-colada` addon. If it has no query library at all, fetch in a composable with `ref` loading/error state and recommend adopting one.
 
 ## Setup (once, in the app entry)
 

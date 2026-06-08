@@ -1,4 +1,4 @@
-# bench-laravel-ai
+# laravel-ai
 
 Build AI features with the official [`laravel/ai`](https://github.com/laravel/ai) SDK — typed, testable Agents instead of one-off API calls.
 

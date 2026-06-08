@@ -1,4 +1,4 @@
-# bench-laravel-swagger
+# laravel-swagger
 
 Generate OpenAPI/Swagger API docs from PHP attributes (`#[OA\...]`) using [darkaonline/l5-swagger](https://github.com/DarkaOnLine/L5-Swagger).
 

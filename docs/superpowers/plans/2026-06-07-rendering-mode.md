@@ -4,7 +4,7 @@
 
 **Goal:** Let a project declare its rendering model (Vue SPA vs Blade SSR + optional Vue islands) so Bench suppresses the wrong frontend track and asks the question at `/bench-init` — using only the existing addon + concern systems, no new axis.
 
-**Architecture:** Rendering = `--frontend` (component framework) × a page-ownership **addon**. `bench-blade` gains same-path **replace-overrides** that swap only the page-ownership slice (`vue-page`/`vue-route`/`vue-layout`/`vue-query` + their patterns) to "Blade owns this" redirects, while leaving component patterns intact for islands. A core `rendering` concern writes `.bench/rendering.yaml`; `install.sh` reads it and folds the mapped addon (`blade → bench-blade`) into the resolved addon set via the existing dependency-expansion path.
+**Architecture:** Rendering = `--frontend` (component framework) × a page-ownership **addon**. `laravel-blade` gains same-path **replace-overrides** that swap only the page-ownership slice (`vue-page`/`vue-route`/`vue-layout`/`vue-query` + their patterns) to "Blade owns this" redirects, while leaving component patterns intact for islands. A core `rendering` concern writes `.bench/rendering.yaml`; `install.sh` reads it and folds the mapped addon (`blade → laravel-blade`) into the resolved addon set via the existing dependency-expansion path.
 
 **Tech Stack:** Bash (`scripts/install.sh`), Markdown pattern/agent/concern files, the existing layering (same-path replace) + concern + addon-dependency machinery.
 
@@ -38,19 +38,19 @@ A passing assertion = the agent file's body is the Blade redirect; a failing one
 
 ---
 
-## Task 1: bench-blade suppresses the Vue page-ownership slice (replace-overrides)
+## Task 1: laravel-blade suppresses the Vue page-ownership slice (replace-overrides)
 
 Swap only `vue-page`/`vue-route`/`vue-layout`/`vue-query` agents + their patterns to Blade redirects. Leave `vue-component`/`vue-composable`/`vue-store` etc. untouched.
 
 **Files:**
-- Create: `addons/bench-blade/agents/vue/vue-page.md`
-- Create: `addons/bench-blade/agents/vue/vue-route.md`
-- Create: `addons/bench-blade/agents/vue/vue-layout.md`
-- Create: `addons/bench-blade/agents/vue/vue-query.md`
-- Create: `addons/bench-blade/patterns/frontend/vue/base/routing/PAGE-001-pages.md`
-- Create: `addons/bench-blade/patterns/frontend/vue/base/routing/ROUTE-001-routes.md`
-- Create: `addons/bench-blade/patterns/frontend/vue/base/routing/LAYOUT-001-layouts.md`
-- Create: `addons/bench-blade/patterns/frontend/vue/base/data/QUERY-001-tanstack-query.md`
+- Create: `addons/laravel-blade/agents/vue/vue-page.md`
+- Create: `addons/laravel-blade/agents/vue/vue-route.md`
+- Create: `addons/laravel-blade/agents/vue/vue-layout.md`
+- Create: `addons/laravel-blade/agents/vue/vue-query.md`
+- Create: `addons/laravel-blade/patterns/frontend/vue/base/routing/PAGE-001-pages.md`
+- Create: `addons/laravel-blade/patterns/frontend/vue/base/routing/ROUTE-001-routes.md`
+- Create: `addons/laravel-blade/patterns/frontend/vue/base/routing/LAYOUT-001-layouts.md`
+- Create: `addons/laravel-blade/patterns/frontend/vue/base/data/QUERY-001-tanstack-query.md`
 
 - [ ] **Step 1: Confirm the exact base filenames to shadow**
 
@@ -59,7 +59,7 @@ Expected: `PAGE-001-pages.md`, `ROUTE-001-routes.md`, `LAYOUT-001-layouts.md`, `
 
 - [ ] **Step 2: Write the agent redirect — `vue-page.md`**
 
-`addons/bench-blade/agents/vue/vue-page.md`:
+`addons/laravel-blade/agents/vue/vue-page.md`:
 
 ```markdown
 ---
@@ -67,7 +67,7 @@ name: vue-page
 description: In a Blade-rendered project, pages are owned by Blade — not Vue Router.
 ---
 
-This project renders UI with **Blade** (the `bench-blade` addon is active). Pages, routes,
+This project renders UI with **Blade** (the `laravel-blade` addon is active). Pages, routes,
 and layouts are server-owned — there is no client-side Vue page or router track here.
 
 - To build a **page**, use `/blade` (the `blade-page` agent) — a Laravel route + Blade view.
@@ -81,7 +81,7 @@ Do not scaffold a Vue page, `<RouterView>`, or a client route. Redirect the requ
 
 - [ ] **Step 3: Write `vue-route.md`**
 
-`addons/bench-blade/agents/vue/vue-route.md`:
+`addons/laravel-blade/agents/vue/vue-route.md`:
 
 ```markdown
 ---
@@ -89,7 +89,7 @@ name: vue-route
 description: In a Blade-rendered project, routing is owned by Laravel — not Vue Router.
 ---
 
-This project renders UI with **Blade** (the `bench-blade` addon is active). URL → view
+This project renders UI with **Blade** (the `laravel-blade` addon is active). URL → view
 mapping is a Laravel route returning a Blade view — there is no client Vue Router track.
 
 - To add a route, use `/blade` / your Laravel routes file — not `vue-router`.
@@ -100,7 +100,7 @@ Do not scaffold a Vue Router route or `router/index.ts` entry. Redirect to `/bla
 
 - [ ] **Step 4: Write `vue-layout.md`**
 
-`addons/bench-blade/agents/vue/vue-layout.md`:
+`addons/laravel-blade/agents/vue/vue-layout.md`:
 
 ```markdown
 ---
@@ -108,7 +108,7 @@ name: vue-layout
 description: In a Blade-rendered project, layouts are Blade layouts — not Vue shells.
 ---
 
-This project renders UI with **Blade** (the `bench-blade` addon is active). Layouts are
+This project renders UI with **Blade** (the `laravel-blade` addon is active). Layouts are
 Blade layouts (`@extends` / `<x-layout>`), not Vue app shells.
 
 - To build a layout, use `/blade` (`BLADE-002-layouts`).
@@ -119,7 +119,7 @@ Do not scaffold a Vue layout component or `<RouterView>` shell. Redirect to `/bl
 
 - [ ] **Step 5: Write `vue-query.md`**
 
-`addons/bench-blade/agents/vue/vue-query.md`:
+`addons/laravel-blade/agents/vue/vue-query.md`:
 
 ```markdown
 ---
@@ -127,7 +127,7 @@ name: vue-query
 description: In a Blade-rendered project, page data comes from the server, not a client query layer.
 ---
 
-This project renders UI with **Blade** (the `bench-blade` addon is active). Page data is
+This project renders UI with **Blade** (the `laravel-blade` addon is active). Page data is
 provided server-side (controller → Blade view props); there is no SPA client-data layer.
 
 - Pass data from a controller into a Blade view — see `/blade` (`BLADE-004-pages`).
@@ -140,7 +140,7 @@ Do not scaffold a TanStack Query hook or query-client registration. Redirect to 
 
 - [ ] **Step 6: Write the four pattern redirects**
 
-Each pattern file mirrors its base counterpart's path and is a short redirect. Use this body for `addons/bench-blade/patterns/frontend/vue/base/routing/PAGE-001-pages.md` (adjust the noun for the other three):
+Each pattern file mirrors its base counterpart's path and is a short redirect. Use this body for `addons/laravel-blade/patterns/frontend/vue/base/routing/PAGE-001-pages.md` (adjust the noun for the other three):
 
 ```markdown
 # PAGE-001 — Pages (Blade-rendered project)
@@ -164,7 +164,7 @@ No frontmatter `mode:` is needed — a same-path file with no mode is a **full r
 
 Run (using the helper from the top of this plan):
 ```bash
-PLUGIN=$(bash "$CLAUDE_JOB_DIR/tmp/fixture-build.sh" spa --addon=bench-blade)
+PLUGIN=$(bash "$CLAUDE_JOB_DIR/tmp/fixture-build.sh" spa --addon=laravel-blade)
 grep -l "owned by Blade\|Blade-rendered project\|Redirect" "$PLUGIN"/agents/vue-page.md
 grep -L "Blade" "$PLUGIN"/agents/vue-component.md   # component MUST be untouched (no Blade text)
 ```
@@ -178,25 +178,25 @@ Expected: exits 0 / all green (these new files are addon replaces, not versioned
 - [ ] **Step 9: Commit**
 
 ```bash
-git add addons/bench-blade/agents/vue addons/bench-blade/patterns/frontend
-git commit -m "bench-blade: suppress the Vue SPA page-ownership slice (replace-overrides)"
+git add addons/laravel-blade/agents/vue addons/laravel-blade/patterns/frontend
+git commit -m "laravel-blade: suppress the Vue SPA page-ownership slice (replace-overrides)"
 ```
 
 ---
 
-## Task 2: bench-blade owns the Blade → full-SPA handoff pattern
+## Task 2: laravel-blade owns the Blade → full-SPA handoff pattern
 
 **Files:**
-- Create: `addons/bench-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`
+- Create: `addons/laravel-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`
 
 - [ ] **Step 1: Confirm the existing BLADE-00x numbering**
 
-Run: `ls addons/bench-blade/patterns/laravel/views/`
+Run: `ls addons/laravel-blade/patterns/laravel/views/`
 Expected: `BLADE-001-components.md` … `BLADE-004-pages.md`. New file is `BLADE-005-spa-handoff.md`.
 
 - [ ] **Step 2: Write the handoff pattern**
 
-`addons/bench-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`:
+`addons/laravel-blade/patterns/laravel/views/BLADE-005-spa-handoff.md`:
 
 ```markdown
 # BLADE-005 — Blade → full SPA handoff
@@ -268,14 +268,14 @@ The client router's base must match the catch-all mount path so deep links resol
 
 - [ ] **Step 3: Verify it builds in**
 
-Run: `PLUGIN=$(bash "$CLAUDE_JOB_DIR/tmp/fixture-build.sh" spa --addon=bench-blade); ls "$PLUGIN"/patterns-built/laravel/views/BLADE-005-spa-handoff.md`
+Run: `PLUGIN=$(bash "$CLAUDE_JOB_DIR/tmp/fixture-build.sh" spa --addon=laravel-blade); ls "$PLUGIN"/patterns-built/laravel/views/BLADE-005-spa-handoff.md`
 Expected: the file path prints (it landed in the built plugin).
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add addons/bench-blade/patterns/laravel/views/BLADE-005-spa-handoff.md
-git commit -m "bench-blade: add Blade -> full-SPA handoff pattern (BLADE-005)"
+git add addons/laravel-blade/patterns/laravel/views/BLADE-005-spa-handoff.md
+git commit -m "laravel-blade: add Blade -> full-SPA handoff pattern (BLADE-005)"
 ```
 
 ---
@@ -324,7 +324,7 @@ mode: blade   # or: spa
 This file is read by `bench build` / `bench rebuild`, which activates the matching
 page-ownership addon:
 
-- `mode: blade` → the build folds in **bench-blade**, which replaces the SPA page-ownership
+- `mode: blade` → the build folds in **laravel-blade**, which replaces the SPA page-ownership
   slice (the four `affects:` patterns + their `vue-page`/`vue-route`/`vue-layout`/`vue-query`
   agents) with "pages are Blade" redirects, while leaving component/composable/store patterns
   active so Vue islands keep working.
@@ -375,7 +375,7 @@ RENDERING_YAML="$PROJECT_ROOT/.bench/rendering.yaml"
 if [[ -f "$RENDERING_YAML" ]]; then
   rmode=$(grep -E '^mode:' "$RENDERING_YAML" | head -1 | sed -E 's/^mode:[[:space:]]*//; s/[[:space:]#].*$//')
   case "$rmode" in
-    blade) rmode_addon="bench-blade" ;;
+    blade) rmode_addon="laravel-blade" ;;
     spa|"") rmode_addon="" ;;
     *) echo "WARNING: .bench/rendering.yaml mode '$rmode' unknown; expected spa|blade" >&2; rmode_addon="" ;;
   esac
@@ -396,7 +396,7 @@ fi
 Run: `bash -n scripts/install.sh`
 Expected: no output (syntax OK).
 
-- [ ] **Step 4: Verify the mapping activates bench-blade WITHOUT an explicit --addon flag**
+- [ ] **Step 4: Verify the mapping activates laravel-blade WITHOUT an explicit --addon flag**
 
 Run (note: `blade` arg makes the helper write `.bench/rendering.yaml`, and NO `--addon` is passed):
 ```bash
@@ -405,7 +405,7 @@ grep -q "owned by Blade\|Blade-rendered project\|Redirect" "$PLUGIN"/agents/vue-
 ls "$PLUGIN"/patterns-built/laravel/views/BLADE-005-spa-handoff.md
 grep -L "Blade" "$PLUGIN"/agents/vue-component.md   # still untouched
 ```
-Expected: prints `SUPPRESSION-ACTIVE`; the BLADE-005 path lists; `vue-component.md` listed by `grep -L`. This proves config alone (no `--addon`) pulled in bench-blade and applied suppression.
+Expected: prints `SUPPRESSION-ACTIVE`; the BLADE-005 path lists; `vue-component.md` listed by `grep -L`. This proves config alone (no `--addon`) pulled in laravel-blade and applied suppression.
 
 - [ ] **Step 5: Verify SPA mode adds nothing**
 
@@ -431,11 +431,11 @@ git commit -m "install: map .bench/rendering.yaml mode -> page-ownership addon"
 Same as Task 1 for React, so `--frontend=react` Blade projects are covered. Confirm the React agent/pattern names first — they may differ from Vue.
 
 **Files:**
-- Create: `addons/bench-blade/agents/react/react-page.md`
-- Create: `addons/bench-blade/agents/react/react-route.md`
-- Create: `addons/bench-blade/agents/react/react-layout.md`
-- Create: `addons/bench-blade/agents/react/react-query.md`
-- Create: matching pattern redirects under `addons/bench-blade/patterns/frontend/react/base/...`
+- Create: `addons/laravel-blade/agents/react/react-page.md`
+- Create: `addons/laravel-blade/agents/react/react-route.md`
+- Create: `addons/laravel-blade/agents/react/react-layout.md`
+- Create: `addons/laravel-blade/agents/react/react-query.md`
+- Create: matching pattern redirects under `addons/laravel-blade/patterns/frontend/react/base/...`
 
 - [ ] **Step 1: Discover the exact React names + paths**
 
@@ -444,7 +444,7 @@ Expected: a list like `react-page.md`, `react-route.md`, `react-layout.md`, `rea
 
 - [ ] **Step 2: Write the four React agent redirects**
 
-Mirror Task 1 Step 2–5 wording, swapping "Vue"→"React", "`<RouterView>`"→"the React Router outlet / `<Outlet>`", "`/vue-component`"→"`/react-component`", "composables"→"hooks", "TanStack Query hook"→"TanStack Query / React Query hook". Example `addons/bench-blade/agents/react/react-page.md`:
+Mirror Task 1 Step 2–5 wording, swapping "Vue"→"React", "`<RouterView>`"→"the React Router outlet / `<Outlet>`", "`/vue-component`"→"`/react-component`", "composables"→"hooks", "TanStack Query hook"→"TanStack Query / React Query hook". Example `addons/laravel-blade/agents/react/react-page.md`:
 
 ```markdown
 ---
@@ -452,7 +452,7 @@ name: react-page
 description: In a Blade-rendered project, pages are owned by Blade — not the React router.
 ---
 
-This project renders UI with **Blade** (the `bench-blade` addon is active). Pages, routes,
+This project renders UI with **Blade** (the `laravel-blade` addon is active). Pages, routes,
 and layouts are server-owned — there is no client-side React page or router track here.
 
 - To build a **page**, use `/blade` (the `blade-page` agent) — a Laravel route + Blade view.
@@ -487,8 +487,8 @@ Expected: prints `REACT-SUPPRESSION-ACTIVE`; `react-component.md` listed by `gre
 - [ ] **Step 5: Commit**
 
 ```bash
-git add addons/bench-blade/agents/react addons/bench-blade/patterns/frontend/react
-git commit -m "bench-blade: mirror page-ownership suppression for React"
+git add addons/laravel-blade/agents/react addons/laravel-blade/patterns/frontend/react
+git commit -m "laravel-blade: mirror page-ownership suppression for React"
 ```
 
 ---
@@ -497,21 +497,21 @@ git commit -m "bench-blade: mirror page-ownership suppression for React"
 
 **Files:**
 - Modify: `docs/architecture.md` (rendering section)
-- Modify: `docs/addons.md` (bench-blade row)
-- Modify: `addons/bench-blade/README.md`
+- Modify: `docs/addons.md` (laravel-blade row)
+- Modify: `addons/laravel-blade/README.md`
 - Modify: `docs/working-notes.md` (mark idea-bank item resolved)
 
 - [ ] **Step 1: architecture.md — add rendering as framework × page-ownership**
 
-Find the frontend/axis discussion (Run: `grep -n "frontend\|vue|react|none\|axis" docs/architecture.md | head`) and add a short subsection stating: the `--frontend` axis is the **component framework**; **rendering model** (SPA vs Blade SSR) is a separate concern that activates a page-ownership addon (`bench-blade`) which replace-overrides the page/route/layout/data slice while keeping component patterns. Note Inertia/Livewire as future modes of the same shape.
+Find the frontend/axis discussion (Run: `grep -n "frontend\|vue|react|none\|axis" docs/architecture.md | head`) and add a short subsection stating: the `--frontend` axis is the **component framework**; **rendering model** (SPA vs Blade SSR) is a separate concern that activates a page-ownership addon (`laravel-blade`) which replace-overrides the page/route/layout/data slice while keeping component patterns. Note Inertia/Livewire as future modes of the same shape.
 
-- [ ] **Step 2: addons.md — update the bench-blade row**
+- [ ] **Step 2: addons.md — update the laravel-blade row**
 
-Find it (Run: `grep -n "bench-blade" docs/addons.md`) and change the description to reflect that it now **suppresses** the SPA page-ownership slice and owns the Blade→SPA handoff — not just an additive `/blade` track. Add a one-liner under the Laravel UI table that the `rendering` concern selects it automatically.
+Find it (Run: `grep -n "laravel-blade" docs/addons.md`) and change the description to reflect that it now **suppresses** the SPA page-ownership slice and owns the Blade→SPA handoff — not just an additive `/blade` track. Add a one-liner under the Laravel UI table that the `rendering` concern selects it automatically.
 
-- [ ] **Step 3: bench-blade README — document modes + handoff**
+- [ ] **Step 3: laravel-blade README — document modes + handoff**
 
-Run: `cat addons/bench-blade/README.md` then add a "Rendering modes" section: pure Blade (`--frontend=none`), Blade + framework islands (`--frontend=vue|react` + this addon, component patterns stay, page slice suppressed), and the BLADE-005 full-SPA handoff. Mention activation via the `rendering` concern / `.bench/rendering.yaml`.
+Run: `cat addons/laravel-blade/README.md` then add a "Rendering modes" section: pure Blade (`--frontend=none`), Blade + framework islands (`--frontend=vue|react` + this addon, component patterns stay, page slice suppressed), and the BLADE-005 full-SPA handoff. Mention activation via the `rendering` concern / `.bench/rendering.yaml`.
 
 - [ ] **Step 4: working-notes.md — mark resolved**
 
@@ -519,14 +519,14 @@ Find the "Frontend rendering MODE" idea-bank bullet (Run: `grep -n "rendering MO
 
 - [ ] **Step 5: Verify the docs reference reality**
 
-Run: `grep -n "rendering" docs/architecture.md docs/addons.md addons/bench-blade/README.md`
-Expected: each file now mentions rendering mode; no leftover claim that bench-blade is "additive only".
+Run: `grep -n "rendering" docs/architecture.md docs/addons.md addons/laravel-blade/README.md`
+Expected: each file now mentions rendering mode; no leftover claim that laravel-blade is "additive only".
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add docs/architecture.md docs/addons.md addons/bench-blade/README.md docs/working-notes.md
-git commit -m "docs: rendering mode (framework x page-ownership); bench-blade suppression + handoff"
+git add docs/architecture.md docs/addons.md addons/laravel-blade/README.md docs/working-notes.md
+git commit -m "docs: rendering mode (framework x page-ownership); laravel-blade suppression + handoff"
 ```
 
 ---
@@ -551,6 +551,6 @@ Expected: SPA cell keeps the Vue page agent; Blade cell suppresses the page agen
 ## Self-review notes (author)
 
 - **Spec coverage:** Work items 1–4 from the spec → Tasks 1,2,3,4; React mirror (spec "affected files" + open question) → Task 5; docs → Task 6. Extension point (Inertia/Livewire) intentionally not built — noted in Task 6 Step 4.
-- **Type/name consistency:** agent names (`vue-page`/`vue-route`/`vue-layout`/`vue-query`), config key (`mode:`), file (`.bench/rendering.yaml`), addon name (`bench-blade`), pattern id (`BLADE-005-spa-handoff`) are used identically across Tasks 1, 3, 4, 6.
+- **Type/name consistency:** agent names (`vue-page`/`vue-route`/`vue-layout`/`vue-query`), config key (`mode:`), file (`.bench/rendering.yaml`), addon name (`laravel-blade`), pattern id (`BLADE-005-spa-handoff`) are used identically across Tasks 1, 3, 4, 6.
 - **Known soft spot:** the fixture build assumes `bin/bench build` runs from a fresh git-init'd dir with only composer.json/package.json. If `build` requires more (e.g. a real `.git` remote or vendor/), Task 1 Step 7 will surface it immediately — adjust the fixture, not the design.
 ```

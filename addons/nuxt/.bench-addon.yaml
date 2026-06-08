@@ -1,0 +1,9 @@
+name: nuxt
+version: 0.1.0
+description: |
+  Build with Nuxt instead of a plain Vue SPA — file-based routing (pages/),
+  useFetch/useAsyncData with SSR, layouts/, and server/api routes. Replaces the
+  Vue routing + data-fetching patterns with Nuxt idioms.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://nuxt.com
+license: MIT

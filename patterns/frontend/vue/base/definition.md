@@ -44,10 +44,10 @@ Frontend has far fewer universal conventions than a backend framework. So this b
 
 Bench keeps the base generic and ships the popular opinionated choices as addons:
 
-- **Styling:** `bench-tailwind` · `bench-unocss`
-- **UI libraries:** `bench-primevue` · `bench-vuetify` · `bench-shadcn-vue` · `bench-quasar`
-- **Data:** `bench-pinia-colada` (Vue-native alternative to TanStack Query)
+- **Styling:** `tailwind` · `unocss`
+- **UI libraries:** `primevue` · `vuetify` · `shadcn-vue` · `quasar`
+- **Data:** `pinia-colada` (Vue-native alternative to TanStack Query)
 - **E2E testing:** `bench-playwright` (the base ships Vitest unit/component tests)
-- **Meta-framework:** `bench-nuxt`
+- **Meta-framework:** `nuxt`
 
 A project installs only the addons matching its stack; the agents then generate that flavour instead of the generic base.

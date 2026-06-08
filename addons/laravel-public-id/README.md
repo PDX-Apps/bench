@@ -1,4 +1,4 @@
-# bench-laravel-public-id
+# laravel-public-id
 
 Expose **ULID public identifiers** in your API while keeping fast auto-increment integer primary keys internally — preventing resource enumeration without sacrificing join/index performance.
 

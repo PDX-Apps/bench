@@ -8,8 +8,8 @@ Before styling a generated component, determine the project's approach (from `pa
 
 | Signal | System | Generate… |
 |--------|--------|-----------|
-| `tailwindcss` dep + `@tailwind`/`@import "tailwindcss"` | **Tailwind** | utility classes in `class="…"`; no `<style>` block (`bench-tailwind` addon sharpens this) |
-| `unocss` dep | **UnoCSS** | atomic classes; presets per config (`bench-unocss`) |
+| `tailwindcss` dep + `@tailwind`/`@import "tailwindcss"` | **Tailwind** | utility classes in `class="…"`; no `<style>` block (`tailwind` addon sharpens this) |
+| `unocss` dep | **UnoCSS** | atomic classes; presets per config (`unocss`) |
 | A UI library (`primevue`, `vuetify`, `quasar`, `naive-ui`, shadcn-vue components in `components/ui/`) | **UI library** | the library's components + its theming system (its `bench-*` addon) |
 | `*.module.css` imports | **CSS Modules** | `<style module>` / `styles.x` |
 | only `<style scoped>` in existing components | **Scoped CSS** | `<style scoped>` |
@@ -56,7 +56,7 @@ defineProps<{ variant?: 'primary' | 'ghost' }>()
 
 ## Conventions
 
-- **Match, don't impose.** The base never forces Tailwind or a UI library; it adapts. Opinionated systems are addons (`bench-tailwind`, `bench-unocss`, `bench-primevue`, `bench-vuetify`, `bench-quasar`, `bench-shadcn-vue`).
+- **Match, don't impose.** The base never forces Tailwind or a UI library; it adapts. Opinionated systems are addons (`tailwind`, `unocss`, `primevue`, `vuetify`, `quasar`, `shadcn-vue`).
 - **Theme via CSS custom properties** (greenfield). One token file is the theming surface; dark mode = a `[data-theme]` / `prefers-color-scheme` override of the same vars. No hard-coded colors scattered in components.
 - **Scoped by default** so styles don't leak; reach for `:global()` deliberately.
 - **No inline `style="…"`** except for genuinely dynamic, computed values (a measured width, a transform). Static styling goes in classes.
@@ -69,4 +69,4 @@ defineProps<{ variant?: 'primary' | 'ghost' }>()
 
 ## See also
 
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `bench-tailwind`, `bench-unocss`, `bench-primevue`, `bench-vuetify`, `bench-shadcn-vue`, `bench-quasar`
+- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `tailwind`, `unocss`, `primevue`, `vuetify`, `shadcn-vue`, `quasar`

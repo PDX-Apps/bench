@@ -28,3 +28,5 @@ Write a `.bench/` override (mode `append`) of **PERMISSION-001-model.md** captur
 - List the project's roles/permissions (`{roles}`) so generated authz (policies, gates, `#[Authorize]`) uses the **real names**, not invented ones.
 
 The base POLICY-001/002 patterns are untouched — they teach how to write a policy; this override teaches what to check.
+
+If the model is `spatie`, the **scaffolding** (HasRoles, seeders, middleware, the `/permission` command) lives in the `spatie-permission` addon — this concern only captures the model + role names; the addon supplies the how. Offer to install it.

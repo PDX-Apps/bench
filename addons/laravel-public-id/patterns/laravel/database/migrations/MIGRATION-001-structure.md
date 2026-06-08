@@ -2,7 +2,7 @@
 mode: append
 ---
 
-## Public ID column (this project uses bench-laravel-public-id)
+## Public ID column (this project uses laravel-public-id)
 
 Add a unique `public_id` (ULID) alongside the integer primary key:
 

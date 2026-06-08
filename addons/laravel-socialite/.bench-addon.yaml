@@ -1,0 +1,16 @@
+name: laravel-socialite
+version: 0.1.0
+description: |
+  Laravel Socialite OAuth social login (Google, GitHub, etc.): the redirect +
+  callback flow, mapping a provider user to a local User, linking accounts,
+  stateless API usage, and securing the callback. Ships the SOCIALITE-001
+  pattern plus a /socialite command + agent that scaffolds the redirect/callback
+  controller and routes for a provider.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-socialite
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

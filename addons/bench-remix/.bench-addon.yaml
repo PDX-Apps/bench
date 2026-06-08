@@ -1,9 +1,0 @@
-name: bench-remix
-version: 0.1.0
-description: |
-  Build with Remix / React Router v7 (framework mode) — file-based routes with
-  server loaders + actions, useLoaderData, and nested layouts. Replaces the React
-  routing + data-fetching patterns with the loader/action model.
-depends_on: { bench: ">=0.8.0" }
-homepage: https://remix.run
-license: MIT

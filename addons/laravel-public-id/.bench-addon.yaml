@@ -1,4 +1,4 @@
-name: bench-laravel-public-id
+name: laravel-public-id
 version: 0.1.0
 description: |
   Expose ULID/UUID public identifiers in your API while keeping fast

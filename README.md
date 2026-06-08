@@ -22,16 +22,18 @@ Bench is a pluggable kit of **slash commands + worker agents + versioned framewo
 
 ## Install
 
-One-time per project: build Bench for it, then open Claude Code.
+Clone Bench once; then build it into each project you want to use it in.
 
 ```bash
-# One-time: clone Bench somewhere stable
+# Once, globally — clone Bench somewhere stable:
 git clone git@github.com:PDX-Apps/bench.git ~/tools/bench
 
-# In each project, from its root:
+# Then, once per project — from the project root:
 cd ~/my-app
 ~/tools/bench/bin/bench build
 ```
+
+(Tip: symlink `~/tools/bench/bin/bench` onto your `PATH` so it's just `bench build` everywhere — see `scripts/install-cli.sh`.)
 
 `bench build` detects your Laravel / PHP / Vue / React versions, **builds a copy of the plugin for this project** into `.claude/plugins/bench/` (patterns resolved for your versions, your `.bench/` overrides + addons merged), and registers it in `.claude/settings.json`.
 
@@ -95,10 +97,10 @@ Out of the box: **4 routers** (`/bench`, `/laravel`, `/frontend`, `/help`) + **2
 
 ## Addons
 
-Addons are opt-in plugins that extend — or *replace* — what core ships: adding commands, agents, and patterns, or swapping a default (the data layer, the router, the styling system) for an alternative. They layer on the same way as your own overrides (see [Layering](./docs/layering.md)), and can declare `depends_on.addons` so installing one pulls in what it needs (e.g. `bench-quality` pulls `laravel-ci` + `bench-playwright` and delegates to their agents instead of duplicating them).
+Addons are opt-in plugins that extend — or *replace* — what core ships: adding commands, agents, and patterns, or swapping a default (the data layer, the router, the styling system) for an alternative. They layer on the same way as your own overrides (see [Layering](./docs/layering.md)), and can declare `depends_on.addons` so installing one pulls in what it needs (e.g. `bench-quality` pulls `bench-ci` + `bench-playwright` and delegates to their agents instead of duplicating them).
 
 ```bash
-bench addon add bench-tailwind     # by bundled name
+bench addon add tailwind     # by bundled name
 bench addon add /path/to/my-addon  # or a path
 ```
 

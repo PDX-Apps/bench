@@ -1,4 +1,4 @@
-name: bench-laravel-boost
+name: laravel-boost
 version: 0.1.0
 description: |
   Makes Bench agents aware of Laravel Boost (laravel/boost), an MCP server that

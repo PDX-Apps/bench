@@ -1,0 +1,16 @@
+name: inertia
+version: 0.1.0
+description: |
+  Inertia.js (v2) — server-driven SPA for Laravel + Vue/React. Pages are returned
+  from controllers via Inertia::render and received as props; navigation is via
+  <Link>/router (no client-side router); forms use useForm. Replaces the core
+  client-router + data-fetching patterns with Inertia idioms and adds the Laravel
+  side (render, shared props, deferred props).
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/inertia
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

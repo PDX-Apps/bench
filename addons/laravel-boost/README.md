@@ -1,4 +1,4 @@
-# bench-laravel-boost
+# laravel-boost
 
 Makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) — an MCP server that gives AI assistants direct access to Laravel internals (database schema, tinker, routes, artisan commands, semantic docs search, and more).
 
@@ -115,7 +115,7 @@ The `/boost-install` skill enforces a few rules so it never surprises you:
 ## Remove
 
 ```bash
-bench addon remove bench-laravel-boost
+bench addon remove laravel-boost
 ```
 
 Removing the addon takes the awareness pattern + skill + agent out of the install. It does **not** uninstall the `laravel/boost` composer package from your project — do that separately with `composer remove laravel/boost` if desired.

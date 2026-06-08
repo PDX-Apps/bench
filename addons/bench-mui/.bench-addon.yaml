@@ -1,8 +1,0 @@
-name: bench-mui
-version: 0.1.0
-description: |
-  Build React UIs with MUI (Material UI). Appends MUI (Material UI) component + theming conventions onto the
-  React component and styling patterns.
-depends_on: { bench: ">=0.8.0" }
-homepage: https://mui.com
-license: MIT

@@ -1,0 +1,18 @@
+name: laravel-modules
+version: 0.1.0
+description: |
+  Make bench modular-aware for projects built on nwidart/laravel-modules — code
+  organized under Modules/{Module}/ instead of a flat app/. Appends a "Modular
+  layout" note to the core controller, model, migration, and service patterns so
+  generated artifacts land in the right module path + namespace, adds the
+  MODULE-001 structure pattern, and ships a /module command + agent to scaffold
+  a new module.
+
+  Opt-in addon — install per-project with:
+    bench addon add /path/to/bench/addons/laravel-modules
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/nWidart/laravel-modules
+license: MIT

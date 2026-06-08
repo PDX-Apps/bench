@@ -161,9 +161,9 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 |-------|--------------|
 | `bench-manager` | The `/bench-*` toolkit — `/bench-init`, `/bench-configure`, `/bench-override`, `/bench-slice`, `/bench-list/show/status` + the authoring agents (default-loaded) |
 | `bench-plan` | Turn a ticket/PRD into a technical plan the `implement` workflow can execute (`/plan`) |
-| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `laravel-ci` + `bench-playwright` |
-| `laravel-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
-| `tdd` | Test-first bug-fix loop (`/bug-fix`) |
+| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `bench-ci` + `bench-playwright` |
+| `bench-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
+| `bench-tdd` | Test-first bug-fix loop (`/bug-fix`) |
 | `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` |
 
 ### Laravel packages
@@ -172,55 +172,56 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 |-------|--------------|
 | `laravel-ai` | The official `laravel/ai` SDK — agents + tools (`/ai-agent`, `/ai-tool`) |
 | `laravel-swagger` | OpenAPI/Swagger from PHP attributes (`/swagger`) |
-| `laravel-query-builder` | spatie/laravel-query-builder filtering/sorting/includes (`/query-builder`) |
+| `spatie-query-builder` | spatie/laravel-query-builder filtering/sorting/includes (`/query-builder`) |
+| `spatie-permission` | spatie/laravel-permission roles/permissions scaffolding — HasRoles, seeder, middleware (`/permission`) |
 | `laravel-public-id` | ULID/UUID public identifiers over a fast internal PK |
 | `laravel-repository` | The repository pattern (interface + Eloquent impl + binding) (`/repository`) |
 | `laravel-octane` | Long-running-runtime safety guidance (Swoole/FrankenPHP/RoadRunner) |
 | `laravel-compliance` | PII / audit-logging / retention patterns (`/compliance-check`) |
 | `laravel-modules` | nwidart/laravel-modules awareness — `Modules\{X}\` layout (`/module`) |
-| `cashier` | Stripe billing — subscriptions, invoices, webhooks (`/cashier`) |
-| `scout` | Full-text search — the Searchable trait + drivers (`/scout`) |
-| `horizon` | Redis queue config + conventions |
-| `socialite` | OAuth social login — redirect/callback flow (`/socialite`) |
+| `laravel-cashier` | Stripe billing — subscriptions, invoices, webhooks (`/cashier`) |
+| `laravel-scout` | Full-text search — the Searchable trait + drivers (`/scout`) |
+| `laravel-horizon` | Redis queue config + conventions |
+| `laravel-socialite` | OAuth social login — redirect/callback flow (`/socialite`) |
 
 ### Laravel UI
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-blade` | Blade rendering mode — suppresses the SPA page-ownership slice (page/route/layout/data agents replaced with redirects to `/blade`) while keeping component patterns active for islands; owns the Blade→SPA handoff (`BLADE-005`). Activated automatically when the `rendering` concern sets `mode: blade` in `.bench/rendering.yaml`. |
-| `bench-livewire` | `livewire` rendering mode — Livewire 3 (+ Volt) reactive components (`/livewire`); `depends_on` bench-blade for Blade page/layout/route ownership. Auto-selected when the `rendering` concern sets `mode: livewire`. |
-| `bench-filament` | Filament 3 admin panels — resources/forms/tables (`/filament-resource`) |
-| `bench-inertia` | `inertia` rendering mode — Inertia.js v2 server-driven SPA (Laravel + Vue/React): routing/data become Inertia idioms, pages stay framework components (`/inertia`). Auto-selected when the `rendering` concern sets `mode: inertia`. |
+| `laravel-blade` | Blade rendering mode — suppresses the SPA page-ownership slice (page/route/layout/data agents replaced with redirects to `/blade`) while keeping component patterns active for islands; owns the Blade→SPA handoff (`BLADE-005`). Activated automatically when the `rendering` concern sets `mode: blade` in `.bench/rendering.yaml`. |
+| `livewire` | `livewire` rendering mode — Livewire 3 (+ Volt) reactive components (`/livewire`); `depends_on` laravel-blade for Blade page/layout/route ownership. Auto-selected when the `rendering` concern sets `mode: livewire`. |
+| `filament` | Filament 3 admin panels — resources/forms/tables (`/filament-resource`) |
+| `inertia` | `inertia` rendering mode — Inertia.js v2 server-driven SPA (Laravel + Vue/React): routing/data become Inertia idioms, pages stay framework components (`/inertia`). Auto-selected when the `rendering` concern sets `mode: inertia`. |
 
 ### Frontend styling
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-tailwind` | Tailwind CSS v4 (CSS-first) styling for generated components |
-| `bench-unocss` | UnoCSS atomic, on-demand styling |
+| `tailwind` | Tailwind CSS v4 (CSS-first) styling for generated components |
+| `unocss` | UnoCSS atomic, on-demand styling |
 
 ### Frontend component libraries
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-shadcn-vue` / `bench-shadcn` | shadcn (Vue / React) copy-paste components |
-| `bench-primevue` · `bench-vuetify` · `bench-quasar` | Vue component libraries |
-| `bench-radix` · `bench-mui` · `bench-chakra` | React component libraries |
+| `shadcn-vue` / `shadcn` | shadcn (Vue / React) copy-paste components |
+| `primevue` · `vuetify` · `quasar` | Vue component libraries |
+| `radix` · `mui` · `chakra` | React component libraries |
 
 ### Frontend data & routing
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-pinia-colada` | Pinia Colada data layer (replaces the base Vue TanStack Query) |
-| `bench-tanstack-router` | Type-safe TanStack Router (replaces the base React Router) |
+| `pinia-colada` | Pinia Colada data layer (replaces the base Vue TanStack Query) |
+| `tanstack-router` | Type-safe TanStack Router (replaces the base React Router) |
 
 ### Meta-frameworks
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-nextjs` | Next.js App Router (replaces the plain React SPA routing/data) |
-| `bench-nuxt` | Nuxt file-based routing + data (replaces the plain Vue SPA) |
-| `bench-remix` | Remix / React Router v7 framework mode |
+| `nextjs` | Next.js App Router (replaces the plain React SPA routing/data) |
+| `nuxt` | Nuxt file-based routing + data (replaces the plain Vue SPA) |
+| `remix` | Remix / React Router v7 framework mode |
 
 ### Testing
 

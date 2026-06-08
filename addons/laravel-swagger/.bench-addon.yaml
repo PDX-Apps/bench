@@ -1,4 +1,4 @@
-name: bench-laravel-swagger
+name: laravel-swagger
 version: 0.1.0
 description: |
   Generate OpenAPI/Swagger documentation from PHP attributes (#[OA\...]) using

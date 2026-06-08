@@ -237,9 +237,9 @@ RENDERING_YAML="$PROJECT_ROOT/.bench/rendering.yaml"
 if [[ -f "$RENDERING_YAML" ]]; then
   rmode=$(grep -E '^mode:' "$RENDERING_YAML" | head -1 | sed -E 's/^mode:[[:space:]]*//; s/[[:space:]#].*$//')
   case "$rmode" in
-    blade)    rmode_addon="bench-blade" ;;
-    inertia)  rmode_addon="bench-inertia" ;;
-    livewire) rmode_addon="bench-livewire" ;;   # bench-livewire depends_on bench-blade (pulled transitively)
+    blade)    rmode_addon="laravel-blade" ;;
+    inertia)  rmode_addon="inertia" ;;
+    livewire) rmode_addon="livewire" ;;   # livewire depends_on laravel-blade (pulled transitively)
     spa|"")   rmode_addon="" ;;
     *) echo "WARNING: .bench/rendering.yaml mode '$rmode' unknown; expected spa|blade|inertia|livewire" >&2; rmode_addon="" ;;
   esac

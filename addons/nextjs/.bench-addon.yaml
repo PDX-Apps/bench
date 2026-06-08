@@ -1,0 +1,10 @@
+name: nextjs
+version: 0.1.0
+description: |
+  Build with Next.js (App Router) instead of a plain React SPA — async Server
+  Components, file-based routing (app/), server-side data fetching with caching,
+  and layout.tsx shells. Replaces the React routing + data-fetching patterns with
+  Next.js idioms.
+depends_on: { bench: ">=0.8.0" }
+homepage: https://nextjs.org
+license: MIT

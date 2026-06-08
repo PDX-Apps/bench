@@ -2,7 +2,7 @@
 mode: append
 ---
 
-## Public IDs (this project uses bench-laravel-public-id)
+## Public IDs (this project uses laravel-public-id)
 
 Expose a **ULID `public_id`** in the API; keep the integer `id` as the internal primary key (fast joins/indexes). Resolve route-model binding on `public_id`.
 
