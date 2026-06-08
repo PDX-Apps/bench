@@ -1,6 +1,6 @@
 {
   "name": "bench",
-  "version": "0.8.0-beta.1",
+  "version": "0.9.0-beta.1",
   "description": "The AI engineering bench for Laravel + Vue/React projects. Skills + agents + patterns that adapt AI coding assistants to your project's conventions \u2014 monorepo layout, framework version, test framework, UI library, naming rules.",
   "author": {
     "name": "Irv"
