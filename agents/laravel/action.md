@@ -15,6 +15,7 @@ Parsed args: class name, input shape (scalar params or DTO), side effects, needs
 |------|------|
 | Action class structure | `<PLUGIN_ROOT>/patterns-built/laravel/actions/ACTION-001-structure.md` |
 | DTO for inputs (only if the args indicate a DTO) | `<PLUGIN_ROOT>/patterns-built/laravel/dto/DTO-001-structure.md` |
+| OOP defaults (inject collaborators, no facades in domain code, immutability) | `<PLUGIN_ROOT>/patterns-built/laravel/code/CODE-002-oop-principles.md` |
 
 Read ONLY the pattern(s) relevant to this generation.
 

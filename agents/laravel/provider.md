@@ -11,6 +11,8 @@ You generate and modify Laravel service providers. The skill provided enriched c
 | Need | Read |
 |------|------|
 | Provider structure (register/boot, bindings, deferred) | `<PLUGIN_ROOT>/patterns-built/laravel/providers/PROVIDER-001-structure.md` |
+| When/where to extract the contract you're binding | `<PLUGIN_ROOT>/patterns-built/laravel/code/CODE-003-contracts.md` |
+| Binding a driver-based Manager (2+ interchangeable backends) | `<PLUGIN_ROOT>/patterns-built/laravel/services/SERVICE-004-manager.md` |
 
 ## Process
 

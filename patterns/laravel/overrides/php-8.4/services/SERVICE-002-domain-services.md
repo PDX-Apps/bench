@@ -2,7 +2,7 @@
 overrides: base/services/SERVICE-002-domain-services.md
 target: php-8.4
 reason: PHP 8.4 doesn't have the pipe operator |> — chain via nested function calls or fluent method chains instead.
-base-hash: 940098
+base-hash: d1a4b5
 ---
 
 > ⚠️ **PHP 8.4 — no pipe operator.** This override exists for projects still on this older version. New projects should use the base (latest version) patterns.
@@ -234,6 +234,44 @@ class InvoiceDispatcher
     public function emailInvoice(User $user, array $invoice): void
 }
 ```
+
+## Contracts at boundaries
+
+A service that **wraps a third party** (a `StripeClient`, an `S3Client`) is a boundary — put it
+behind a contract so it can be faked in tests and swapped later. A focused **internal** utility
+(`PricingCalculator`) is not a boundary; inject it directly, no interface. This is the
+boundary-default rule — full guidance in [CODE-003](../code/CODE-003-contracts.md).
+
+```php
+// Boundary → define the contract in your domain terms…
+namespace App\Contracts;
+
+interface PaymentGateway
+{
+    public function charge(string $customerId, int $amountCents): ChargeResult;
+}
+
+// …the concrete implements it and translates at its edge…
+namespace App\Services;
+
+use App\Contracts\PaymentGateway;
+
+final class StripeGateway implements PaymentGateway
+{
+    public function charge(string $customerId, int $amountCents): ChargeResult { /* Stripe SDK here */ }
+}
+
+// …callers type-hint the contract (bound in a provider — see PROVIDER-001).
+final class CapturePaymentAction
+{
+    public function __construct(private PaymentGateway $gateway)
+    {
+    }
+}
+```
+
+When several backends implement that contract and the choice is config-driven, front them with a
+Manager ([SERVICE-004](./SERVICE-004-manager.md)).
 
 ## Usage
 
