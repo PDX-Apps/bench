@@ -1,0 +1,24 @@
+# .bench/e2e.yaml — how this project runs a browser verification (read by the `e2e-runner` agent)
+#
+# Written by the `e2e` concern; the agent reads it and never re-asks. The run
+# verifies a ticket's acceptance criteria in a live browser and reports pass/fail
+# per criterion with evidence.
+
+driver: chrome            # which browser MCP drives the run:
+                          #   chrome     → the claude-in-chrome MCP tools
+                          #   playwright → the Playwright MCP's browser tools
+
+pre_steps:                # run BEFORE driving the flow (each line → one item)
+  - read the ticket's acceptance criteria and derive the steps + expected outcomes
+  # add project setup if needed, e.g.:
+  # - seed a test user and sign in
+  # - select the staging environment
+
+post_steps:               # run AFTER the flow, to curate the result
+  - report pass/fail against each acceptance criterion
+
+screenshots: true         # capture a screenshot at each meaningful step (evidence)
+network: true             # inspect network requests; flag failed / 4xx / 5xx
+gif: true                 # record a GIF of the whole run
+
+# Advanced capture (network + gif) defaults on — set both false if it slows runs too much.

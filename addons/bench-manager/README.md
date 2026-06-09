@@ -1,13 +1,15 @@
 # bench-manager
 
-The `/bench-*` toolkit for **tailoring Bench to your project**. Bundled by default (`bench build` loads it; opt out with `--no-onboard`). It's how you teach Bench your project's conventions and scaffold your own domains — everything it writes lands in `./.bench/`, your project-local, committable home for overrides and custom slices.
+The `/bench-*` toolkit for **tailoring Bench to your project**. Bundled by default (`bench build` loads it; opt out with `--no-manager`). It's how you teach Bench your project's conventions and scaffold your own domains — everything it writes lands in `./.bench/`, your project-local, committable home for overrides and custom slices.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `/bench-init` | First-run setup. Scans your project for where it **deviates** from Bench's defaults (custom base classes, auth/permissions strategy, layout, test framework, response shape) and for proprietary domains worth a slice, then offers to capture each. **Never writes your `CLAUDE.md`.** |
+| `/bench-init` | First-run setup. Scans your project for where it **deviates** from Bench's defaults (custom base classes, auth/permissions strategy, layout, rendering, test framework, response shape) and for proprietary domains worth a slice, then offers to capture each. **Never writes your `CLAUDE.md`.** |
+| `/bench-configure [concern]` | Run Bench's declared concern setup (auth, test framework, permissions, CI, …) — interview + write the matching `.bench/` overrides/config. Run all concerns, or just the one you name. |
 | `/bench-override <change>` | Change a bundled default for this project — a pattern (how code is generated), a skill (how a command behaves), or an agent (how a worker runs). Routes to the right authoring agent, which writes an append / anchor / replace contribution into `.bench/`. |
+| `/bench-revert <target>` | Remove a project-local override — lists what's under `./.bench/`, deletes the one you pick, and rebuilds so the bundled default is restored. |
 | `/bench-slice <domain>` | Generate a full **skill → agent → pattern** for one of *your* domains (e.g. `app/Reports/`), so your proprietary code is scaffolded as cleanly as core Laravel. |
 | `/bench-list [patterns\|skills\|agents]` | Discover what's available — bundled core, bundled addons, and your project-local extensions. |
 | `/bench-show <type> <name>` | View the full body of a pattern / skill / agent before deciding to override it. |
@@ -23,9 +25,10 @@ agents/               authoring agents (the engine)
   agent-author        authors a worker agent (current shape: Pattern Lookup, no read-CLAUDE block)
 patterns/authoring/   the methodology the agents follow
   METHODOLOGY-layered-scan   how to understand a codebase efficiently
+  CONCERNS                   how concerns declare setup + write .bench/ config
   CONTRIBUTION-MODES         append / anchor / replace — how a .bench/ file layers onto the base
   RESEARCH-patterns/skills/agents   the per-artifact authoring lenses
-skills/               the six /bench-* commands above
+skills/               the eight /bench-* commands above
 ```
 
 The two user-facing creators (`/bench-override`, `/bench-slice`) are thin routers; the authoring agents carry the bench-grade knowledge of how to build each artifact type. Output is a project-local contribution under `./.bench/` — auto-discovered on the next `bench rebuild` (no manifest required), so it persists across rebuilds. **Commit `.bench/` with your project.**

@@ -28,11 +28,13 @@
 # Bench-manager addon (bundled by default):
 #   By default, init loads the bench-manager addon from addons/bench-manager/ which
 #   ships the /bench-* commands to tailor Bench to this project: /bench-init (scan
-#   for deviations + set up .bench/ overrides), /bench-override (change a default),
-#   /bench-slice (skill→agent→pattern for your own domains), and /bench-list,
-#   /bench-show, /bench-status (inspect).
-#   --no-onboard  skip the bundled addon (strictly hand-configured install)
-#   --onboard     force-include (default — flag exists for explicitness)
+#   for deviations + set up .bench/ overrides), /bench-configure (run concern setup),
+#   /bench-override (change a default), /bench-slice (skill→agent→pattern for your own
+#   domains), /bench-revert (remove an override), and /bench-list, /bench-show,
+#   /bench-status (inspect).
+#   --no-manager  skip the bundled addon (strictly hand-configured install)
+#   --manager     force-include (default — flag exists for explicitness)
+#   (--no-onboard / --onboard are accepted as back-compat aliases)
 #
 # Re-running is safe — refreshes the project copy and rebuilds.
 
@@ -47,7 +49,7 @@ MODE="copy"   # copy | symlink
 PASSTHROUGH=()  # version flags forwarded to install.sh
 
 REGISTER_MODE="ask"   # ask | yes | no — controls whether init writes to .claude/settings.json
-LOAD_ONBOARD=true     # bundle the bench-manager addon by default; --no-onboard opts out
+LOAD_MANAGER=true     # bundle the bench-manager addon by default; --no-manager opts out
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -58,8 +60,8 @@ while [[ $# -gt 0 ]]; do
       PASSTHROUGH+=("$1"); shift ;;
     --register)    REGISTER_MODE="yes"; shift ;;
     --no-register) REGISTER_MODE="no"; shift ;;
-    --no-onboard)  LOAD_ONBOARD=false; shift ;;
-    --onboard)     LOAD_ONBOARD=true; shift ;;
+    --no-manager|--no-onboard)  LOAD_MANAGER=false; shift ;;
+    --manager|--onboard)        LOAD_MANAGER=true; shift ;;
     -h|--help)
       grep -E '^#( |$)' "${BASH_SOURCE[0]}" | sed 's/^# //; s/^#//'
       exit 0 ;;
@@ -68,10 +70,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Auto-load the bundled bench-manager addon unless explicitly opted out.
-# This ships the /bench-init, /bench-override, /bench-slice, /bench-list,
-# /bench-show, and /bench-status skills + their authoring agents — the flow for
-# tailoring Bench to a project. Opt out with --no-onboard for a hand-configured install.
-if $LOAD_ONBOARD && [[ -d "$PLUGIN_SRC/addons/bench-manager" ]]; then
+# This ships the /bench-init, /bench-configure, /bench-override, /bench-slice,
+# /bench-revert, /bench-list, /bench-show, and /bench-status skills + their authoring
+# agents — the flow for tailoring Bench to a project. Opt out with --no-manager for a
+# hand-configured install.
+if $LOAD_MANAGER && [[ -d "$PLUGIN_SRC/addons/bench-manager" ]]; then
   PASSTHROUGH+=("--addon=$PLUGIN_SRC/addons/bench-manager")
 fi
 

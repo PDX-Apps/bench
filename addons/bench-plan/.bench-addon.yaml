@@ -1,14 +1,17 @@
 name: bench-plan
 version: 0.1.0
 description: |
-  Turn a ticket/PRD/feature description into a technical plan the implement
-  workflow can execute. Two phases: GATHER (read the source, follow code paths,
-  inspect schema + related patterns, map the affected surface) then PLAN (an
-  ordered, file-level technical plan with acceptance criteria). The gather phase
-  is the value — a plan grounded in the actual codebase, not guesswork.
+  A deep codebase researcher that turns a ticket/PRD/feature description into the
+  planning artifact you ask for — an implementation plan (default), a spec/design
+  doc, a PRD, an ADR, or a paste-ready Kanban ticket. Two phases: GATHER (read the
+  source, follow code paths, inspect schema + related patterns, map the affected
+  surface) then EMIT the chosen artifact. The gather is the value — grounded in the
+  actual codebase, not guesswork. Mirrors the spec→plan→tasks pipeline (Spec Kit /
+  Kiro): in-repo Markdown, testable acceptance criteria (Gherkin/EARS/prose).
+  Layout + notation captured in .bench/planning.yaml (the `planning` concern).
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/bench-plan
+    bench addon add bench-plan
 
 depends_on:
   bench: ">=0.8.0"

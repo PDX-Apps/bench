@@ -7,7 +7,7 @@ description: |
   for your own domains — so your proprietary code is generated as cleanly as core
   Laravel/Vue/React.
 
-  Ships bundled with Bench by default. Opt out via `bench build --no-onboard`.
+  Ships bundled with Bench by default. Opt out via `bench build --no-manager`.
 
 depends_on:
   bench: ">=0.8.0"

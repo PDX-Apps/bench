@@ -50,7 +50,7 @@ description: |                    # required — one-line summary
 
 depends_on:                       # optional
   bench: ">=0.8.0"                 #   minimum core version
-  addons: [bench-ci, bench-playwright]   # require other addons (auto-installed)
+  addons: [bench-ci, playwright]   # require other addons (auto-installed)
 
 # Optional metadata (informational only — not enforced by the loader)
 homepage: https://github.com/your-org/my-framework-kit
@@ -62,7 +62,7 @@ No declarative contribution lists — what the addon contributes is determined b
 
 ### Addon dependencies (`depends_on.addons`)
 
-An addon can **require other addons** instead of duplicating their content — e.g. `bench-quality` declares `depends_on.addons: [bench-ci, bench-playwright]` and delegates to their `ci` / `e2e` agents. At install/rebuild, the loader **resolves each dependency** (by bundled directory name *or* by manifest `name:`), pulls it in **transitively** (deps load before dependents), and de-dups. A missing dependency warns loudly. Dependencies are resolved at build time, not persisted — they follow the dependent automatically. For composition to work, the depended-on functionality should be exposed as a **Task-delegatable agent** (not only a skill).
+An addon can **require other addons** instead of duplicating their content — e.g. `bench-quality` declares `depends_on.addons: [bench-ci, playwright]` and delegates to their `ci` / `playwright` agents. At install/rebuild, the loader **resolves each dependency** (by bundled directory name *or* by manifest `name:`), pulls it in **transitively** (deps load before dependents), and de-dups. A missing dependency warns loudly. Dependencies are resolved at build time, not persisted — they follow the dependent automatically. For composition to work, the depended-on functionality should be exposed as a **Task-delegatable agent** (not only a skill).
 
 ---
 
@@ -153,7 +153,7 @@ Order matters — later addons win conflicts.
 
 Live under `addons/` at the bench source. Add by short name (`bench addon add <name>`) or path. Each addon's own `README.md` has the detail; each is a worked example of the addon spec.
 
-`bench-manager` is the only one **loaded by default** (opt out with `bench build --no-onboard`); everything else is opt-in.
+`bench-manager` is the only one **loaded by default** (opt out with `bench build --no-manager`); everything else is opt-in.
 
 ### Setup & workflow
 
@@ -161,7 +161,7 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 |-------|--------------|
 | `bench-manager` | The `/bench-*` toolkit — `/bench-init`, `/bench-configure`, `/bench-override`, `/bench-slice`, `/bench-list/show/status` + the authoring agents (default-loaded) |
 | `bench-plan` | Turn a ticket/PRD into a technical plan the `implement` workflow can execute (`/plan`) |
-| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `bench-ci` + `bench-playwright` |
+| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `bench-ci` + `playwright` |
 | `bench-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
 | `bench-tdd` | Test-first bug-fix loop (`/bug-fix`) |
 | `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` |
@@ -229,7 +229,7 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 
 | Addon | What it does |
 |-------|--------------|
-| `bench-playwright` | End-to-end tests as Playwright spec files (`/e2e`) |
+| `playwright` | End-to-end tests as Playwright spec files (`/playwright`) |
 | `bench-e2e` | Live Chrome-MCP click-through that exercises a flow and reports (no spec file) (`/e2e-run`) |
 
 ### Documentation

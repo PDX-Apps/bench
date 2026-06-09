@@ -47,7 +47,7 @@ Bench keeps the base generic and ships the popular opinionated choices as addons
 - **Styling:** `tailwind` · `unocss`
 - **UI libraries:** `primevue` · `vuetify` · `shadcn-vue` · `quasar`
 - **Data:** `pinia-colada` (Vue-native alternative to TanStack Query)
-- **E2E testing:** `bench-playwright` (the base ships Vitest unit/component tests)
+- **E2E testing:** `playwright` (the base ships Vitest unit/component tests)
 - **Meta-framework:** `nuxt`
 
 A project installs only the addons matching its stack; the agents then generate that flavour instead of the generic base.

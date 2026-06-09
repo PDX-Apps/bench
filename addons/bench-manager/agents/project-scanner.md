@@ -34,6 +34,7 @@ Bench's defaults: flat `app/`, framework-native scaffolding, thin controllers, f
 |------|------------------|------------------------------|
 | **Layout** | flat `app/` vs `Modules/{X}/` vs DDD vs monorepo; namespace roots | pattern overrides carry the `## Location` (note layout once) |
 | **Base classes** | controllers/requests/models extend a custom base | `/bench-override` pattern (append) |
+| **Rendering** | SPA (API + separate frontend) vs Blade vs Inertia vs Livewire — how pages are produced | the `rendering` concern (sets `.bench/rendering.yaml` → page-ownership addon) |
 | **Auth strategy** | Sanctum / Fortify / Breeze / Passport / custom wrapper | `/bench-override` auth pattern |
 | **Permissions** | `spatie/laravel-permission`, custom gates, policies-only | `/bench-override` policy/authz pattern |
 | **Test framework** | Pest vs PHPUnit; where tests live; `it()` vs `test()` | `/bench-override` (test pattern / runner) |

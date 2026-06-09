@@ -17,9 +17,9 @@ You build ONE Inertia page across both sides: the Laravel controller render and 
 
 ## Process
 
-1. Read the patterns for the project's frontend (vue or react). Inspect `resources/js/Pages/` for the project's structure + `createInertiaApp` resolve convention.
+1. Read the patterns for the project's frontend (vue or react). Inspect `<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/` for the project's structure + `createInertiaApp` resolve convention.
 2. **Laravel**: add/extend the controller method returning `Inertia::render('Dir/Page', [...props])` — pass API Resources/paginators, not raw models; defer expensive props; register the route.
-3. **Frontend**: create `resources/js/Pages/{Dir}/{Page}.{vue,tsx}` that reads the props; compose components; for collections add empty state + pagination links from the paginator meta.
+3. **Frontend**: create `<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/{Dir}/{Page}.{vue,tsx}` that reads the props; compose components; for collections add empty state + pagination links from the paginator meta.
 4. **Forms**: use `useForm` (post/put), surface `errors` (populated from the FormRequest on redirect-back), disable on `processing`.
 5. Don't introduce a client router or query library — navigation is `<Link>`/`router`, data is props.
 

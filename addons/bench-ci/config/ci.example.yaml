@@ -1,0 +1,32 @@
+# .bench/ci.yaml — the project's quality gate (read by the `ci` agent)
+#
+# An ORDERED list of steps. The agent runs them top-to-bottom, stops at the first
+# failure, and treats `fix: true` steps as auto-fixers (run first in spirit; they
+# may modify files). The project owns this list — one step or ten, standard tools
+# or a bespoke script. The agent runs exactly what's here; it never guesses,
+# substitutes, or reorders.
+#
+# Each step:
+#   name:  short label shown in the report (and matchable by `/ci --only=<name>`)
+#   run:   the exact shell command
+#   fix:   true for an auto-fixer (optional; default false)
+
+steps:
+  - name: format
+    run: "./vendor/bin/pint"          # auto-fix formatting; report the diff
+    fix: true
+
+  - name: static
+    run: "./vendor/bin/phpstan analyse"
+
+  - name: test
+    run: "php artisan test"           # or ./vendor/bin/phpunit, or "composer test", or a script
+
+  # Optional — only if the project has a frontend:
+  - name: frontend
+    run: "npm run lint && npm run type-check"
+
+# Minimal is fine — a whole gate can be a single step:
+# steps:
+#   - name: test
+#     run: "php artisan test"

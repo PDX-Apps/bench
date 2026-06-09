@@ -24,4 +24,4 @@ You generate tests. Read ONLY what you need.
 
 ## Rules
 
-- Behaviour not internals (no `wrapper.vm` private state); `data-testid` selectors; mock the boundary, not internals; e2e belongs to `bench-playwright`.
+- Behaviour not internals (no `wrapper.vm` private state); `data-testid` selectors; mock the boundary, not internals; e2e belongs to `playwright`.

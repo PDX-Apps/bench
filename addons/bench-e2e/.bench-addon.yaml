@@ -1,14 +1,16 @@
 name: bench-e2e
 version: 0.1.0
 description: |
-  Live browser click-through verification — drive a real Chrome via MCP to
-  *exercise* a user flow and report what happened (steps taken, failures,
-  console errors), WITHOUT writing any test file. For "click through the
-  checkout flow and tell me if it works" exploratory checks. Distinct from
-  bench-playwright, which WRITES .spec files; bench-e2e writes nothing.
+  Acceptance-criteria browser verification — drive a real browser via MCP
+  (Chrome MCP or Playwright MCP) to verify a ticket's acceptance criteria, then
+  report pass/fail per criterion with evidence (screenshots, console, network,
+  optional GIF), WITHOUT writing any test file. For "verify this ticket works in
+  the browser" checks. Distinct from playwright, which WRITES .spec files;
+  bench-e2e writes no code. Driver + capture settings live in .bench/e2e.yaml
+  (the `e2e` concern sets them up).
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/bench-e2e
+    bench addon add bench-e2e
 
 depends_on:
   bench: ">=0.8.0"

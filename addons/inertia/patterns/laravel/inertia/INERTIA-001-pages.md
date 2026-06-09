@@ -42,7 +42,7 @@ final class HandleInertiaRequests extends Middleware
 
 ## Conventions
 
-- **`Inertia::render('Dir/Page', [...])`** — the name maps to the page component (`resources/js/Pages/Dir/Page.{vue,tsx}`).
+- **`Inertia::render('Dir/Page', [...])`** — the name maps to the page component (`<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/Dir/Page.{vue,tsx}`).
 - **Props are the page's data** — pass API Resources, not raw models; paginate as usual (the paginator serializes with `links`/`meta`).
 - **`Inertia::defer(fn)`** for expensive props (loaded after first paint); **`Inertia::lazy`/closures** for props only sent on partial reloads.
 - **Shared props** (auth, flash, locale) via `HandleInertiaRequests::share()`; **`Inertia::once`** for static-ish data.

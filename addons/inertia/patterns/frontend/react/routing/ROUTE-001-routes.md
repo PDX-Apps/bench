@@ -23,7 +23,7 @@ export function Nav({ order }: { order: Order }) {
 
 ## Conventions
 
-- **Pages** live in `resources/js/Pages/{Dir}/{Page}.tsx`; the `Inertia::render('Orders/Index')` name maps here (via `createInertiaApp`'s `resolve`).
+- **Pages** live in `<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/{Dir}/{Page}.tsx`; the `Inertia::render('Orders/Index')` name maps here (via `createInertiaApp`'s `resolve`).
 - **Navigation**: `<Link href>` for clicks; `router.visit/get/post/...` programmatically — an XHR swaps the page component, no full reload.
 - **Partial reloads**: `only={['prop']}` / `except`. **Prefetch** with `prefetch`; `preserveScroll`/`preserveState` options where needed.
 - Route URLs come from the server (Ziggy's `route()` if installed) — no client route table.

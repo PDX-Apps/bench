@@ -1,13 +1,15 @@
 name: bench-ci
 version: 0.1.0
 description: |
-  A quality gate: detect and run the project's own formatter, static analysis,
-  and test suite (Pint/Prettier, PHPStan/Larastan/tsc, Pest/PHPUnit/Vitest),
-  auto-fixing formatting first, then reporting failures cleanly. No assumptions
-  about CI scripts — it discovers what the project actually has.
+  A quality gate that runs the project's OWN declared checks — an ordered list of
+  steps the project defines (format, static analysis, tests, or any bespoke
+  command), auto-fixing `fix:` steps first, then reporting failures cleanly with
+  an actionable diagnosis. The steps are declared once in .bench/ci.yaml (the `ci`
+  concern captures them at setup, pre-filled with a common baseline), so the
+  runner executes exactly what's defined rather than imposing a scope or guessing.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-ci
+    bench addon add bench-ci
 
 depends_on:
   bench: ">=0.8.0"

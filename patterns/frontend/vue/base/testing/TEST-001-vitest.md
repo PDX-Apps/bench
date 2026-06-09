@@ -1,6 +1,6 @@
 # Testing — Vitest (unit + component)
 
-Unit and component tests with **Vitest** + **`@vue/test-utils`**. This is the base testing layer. End-to-end (Playwright) ships as the `bench-playwright` addon.
+Unit and component tests with **Vitest** + **`@vue/test-utils`**. This is the base testing layer. End-to-end (Playwright) ships as the `playwright` addon.
 
 ## Component test
 
@@ -57,8 +57,8 @@ describe('useDisclosure', () => {
 - Don't assert on internal component state (`wrapper.vm.someRef`) — assert on output/emits.
 - Don't select by brittle class names or copy.
 - Don't hit the network — mock the HTTP boundary.
-- Don't put e2e flows here — that's `bench-playwright`.
+- Don't put e2e flows here — that's `playwright`.
 
 ## See also
 
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [COMPOSABLE-001](../composables/COMPOSABLE-001-conventions.md) · addon: `bench-playwright`
+- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [COMPOSABLE-001](../composables/COMPOSABLE-001-conventions.md) · addon: `playwright`

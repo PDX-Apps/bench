@@ -196,7 +196,7 @@ fi
 
 # ---------- Expand addon dependencies (depends_on.addons) ----------
 # An addon can REQUIRE other addons instead of duplicating their content (e.g. a
-# quality-pipeline addon depends on bench-ci + bench-playwright). We resolve each
+# quality-pipeline addon depends on bench-ci + playwright). We resolve each
 # addon's declared addon-deps (bundled name -> $PLUGIN_SRC/addons/NAME, or a path),
 # transitively, deps-first, de-duped. Missing deps warn loudly.
 addon_dep_names() {   # echo the depends_on.addons entries from a manifest
@@ -508,6 +508,18 @@ if (( ${#ADDONS[@]} > 0 )); then
       done < <(find "$addon/concerns" -maxdepth 1 -type f -name "*.md" -print0)
     fi
 
+    # Copy config/*.example.{yaml,yml} (flat) — canonical annotated schemas for the
+    # .bench/<name>.yaml configs that concerns write + agents read (<PLUGIN_ROOT>/config/).
+    if [[ -d "$addon/config" ]]; then
+      mkdir -p "$PLUGIN_ROOT/config"
+      while IFS= read -r -d '' f; do
+        dest="$PLUGIN_ROOT/config/$(basename "$f")"
+        cp "$f" "$dest"
+        echo "$dest" >> "$ADDON_RECORD"
+        copied=$((copied + 1))
+      done < <(find "$addon/config" -maxdepth 1 -type f \( -name "*.example.yaml" -o -name "*.example.yml" \) -print0)
+    fi
+
     echo "  $addon_name: copied $copied file(s) from $addon"
   done
 fi
@@ -590,6 +602,44 @@ for dir in "${SUBSTITUTE_TARGETS[@]}"; do
     done < <(find "$dir" -name "*.md" -print0)
   fi
 done
+
+# ---------- Resolve project variables: <!--bench:var:NAME;default:VALUE--> ----------
+# Addons embed project-tunable values (e.g. the UI components dir) as var placeholders
+# carrying an inline DEFAULT. A project overrides any of them in .bench/vars.yaml
+# (one `NAME: value` per line). Resolution: an override in vars.yaml wins; otherwise the
+# inline default is used — so addons work out of the box with no vars.yaml. One shared
+# name (e.g. ui_dir) is reused across addons; the value is set once, project-wide.
+VARS_FILE="$PROJECT_ROOT/.bench/vars.yaml"
+var_file_count=0
+_VAR_DIRS=("${SUBSTITUTE_TARGETS[@]}")
+[[ -d "$PLUGIN_ROOT/patterns-built" ]] && _VAR_DIRS+=("$PLUGIN_ROOT/patterns-built")
+for dir in "${_VAR_DIRS[@]}"; do
+  [[ -d "$dir" ]] || continue
+  while IFS= read -r -d '' f; do
+    case "$f" in */authoring/*) continue ;; esac   # meta-docs document the placeholder syntax; never resolve it
+    grep -q 'bench:var:' "$f" || continue
+    BENCH_VARS_FILE="$VARS_FILE" perl -i -pe '
+      BEGIN {
+        our %V;
+        my $vf = $ENV{BENCH_VARS_FILE};
+        if ($vf && -f $vf && open(my $fh, "<", $vf)) {
+          while (my $line = <$fh>) {
+            next if $line =~ /^\s*#/;
+            if ($line =~ /^\s*([A-Za-z0-9_]+)\s*:\s*(.*?)\s*$/) {
+              my ($k, $val) = ($1, $2);
+              $val =~ s/^["\x27]//; $val =~ s/["\x27]$//;
+              $V{$k} = $val;
+            }
+          }
+          close($fh);
+        }
+      }
+      s/<!--\s*bench:var:([A-Za-z0-9_]+)\s*;\s*default:(.*?)\s*-->/ exists $V{$1} ? $V{$1} : $2 /ge;
+    ' "$f"
+    var_file_count=$((var_file_count + 1))
+  done < <(find "$dir" -name "*.md" -print0)
+done
+echo "  Resolved project vars in $var_file_count file(s)."
 
 prune_count=0
 # Pruning derives names from the SOURCE group dir, not a hardcoded list — so adding

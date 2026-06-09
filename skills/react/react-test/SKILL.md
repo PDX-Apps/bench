@@ -1,5 +1,5 @@
 ---
-description: Generate Vitest + Testing Library tests (render, getByRole, userEvent, callback assertions). Use when the user wants to test a component, hook, or store, or add unit tests. (End-to-end → bench-playwright addon.)
+description: Generate Vitest + Testing Library tests (render, getByRole, userEvent, callback assertions). Use when the user wants to test a component, hook, or store, or add unit tests. (End-to-end → playwright addon.)
 argument-hint: [what to test]
 ---
 

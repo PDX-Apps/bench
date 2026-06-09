@@ -1,0 +1,33 @@
+# .bench/docs.yaml — the project's documentation map (read by the `docs-writer` agent)
+#
+# Written by the `docs` concern; the agent reads it to know which doc kinds this
+# project produces and where a new doc goes. Built-in types each have a pattern
+# (readme → DOC-001, user-guide → DOC-002, developer → DOC-003); custom types
+# carry an audience + optional template the writer matches.
+#
+# Out of scope here: API references (laravel-swagger / OpenAPI) and ADRs/plans (bench-plan).
+
+types:
+  - name: readme          # built-in → DOC-001 (lives at the documented unit's root)
+  - name: user-guide      # built-in → DOC-002 (end-user, what to click)
+    dir: docs/guides
+    audience: end users
+  - name: developer       # built-in → DOC-003 (how to use/extend a module; technical)
+    dir: docs/developer
+    audience: developers
+  # custom types — e.g. a marketing one-pager, shaped by a template:
+  - name: marketing
+    dir: docs/marketing
+    audience: marketing
+    template: docs/templates/one-pager.md   # only if you have one
+
+# Where a NEW doc goes — concrete rules the writer follows. Capture your real layout.
+# Single root example:
+placement: |
+  All docs live under a single root docs/ directory, organized by type.
+# Monorepo + modules example:
+# placement: |
+#   Global/cross-cutting docs → repo-root docs/.
+#   Package-scoped docs → that package's own docs/.
+#   Module-scoped docs → that module's own docs/.
+#   User guides → docs/guides/; developer guides → docs/developer/.

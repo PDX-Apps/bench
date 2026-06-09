@@ -20,4 +20,4 @@ You generate tests. Read ONLY what you need.
 - Test file + cases + run result.
 
 ## Rules
-- Behaviour not internals; query by role/label (testid last resort); `userEvent` not `fireEvent`; mock the boundary; e2e → `bench-playwright`.
+- Behaviour not internals; query by role/label (testid last resort); `userEvent` not `fireEvent`; mock the boundary; e2e → `playwright`.

@@ -1,6 +1,6 @@
 # Testing — Vitest + Testing Library
 
-Unit and component tests with **Vitest** + **`@testing-library/react`** + **`@testing-library/user-event`**. Test what the user sees and does. End-to-end (Playwright) ships as the `bench-playwright` addon.
+Unit and component tests with **Vitest** + **`@testing-library/react`** + **`@testing-library/user-event`**. Test what the user sees and does. End-to-end (Playwright) ships as the `playwright` addon.
 
 ## Component test
 
@@ -58,8 +58,8 @@ it('toggles', () => {
 - Don't assert on internal state or implementation details.
 - Don't query by brittle class names.
 - Don't hit the network — mock the HTTP boundary.
-- Don't put e2e flows here — that's `bench-playwright`.
+- Don't put e2e flows here — that's `playwright`.
 
 ## See also
 
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [HOOK-001](../hooks/HOOK-001-conventions.md) · addon: `bench-playwright`
+- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [HOOK-001](../hooks/HOOK-001-conventions.md) · addon: `playwright`

@@ -45,7 +45,7 @@ Like the Vue base, this is deliberately thin — frontend has few universal conv
 - **UI libraries:** `shadcn` · `mui` · `chakra` · `radix`
 - **Data:** (React Query ships in base)
 - **Routing:** `tanstack-router`
-- **E2E testing:** `bench-playwright` (the base ships Vitest + Testing Library)
+- **E2E testing:** `playwright` (the base ships Vitest + Testing Library)
 - **Meta-framework:** `nextjs` · `remix`
 
 A project installs only the addons matching its stack; the agents generate that flavour instead of the generic base.

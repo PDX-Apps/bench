@@ -17,7 +17,7 @@ The user's request: **$ARGUMENTS**
 Run the declared concerns at `<PLUGIN_ROOT>/concerns/*.md` (core + installed addons), sorted by `order`. For each:
 
 1. Read it; if `when:` is a shell test, run it and skip on failure.
-2. Run `detect:` (if present) for a suggested default.
+2. Run `detect:` (if present) for a suggested default — both the concern-level `detect:` and any **per-question `detect:`** (a question can carry its own, e.g. reading a value out of `components.json`). Use the detected value to pre-fill that question.
 3. **Ask its `questions`** with `AskUserQuestion` (bundle a concern's questions; pre-fill the detect/default). The user accepts or changes; skipping a concern is allowed.
 4. Delegate to `concern-runner` (Task) with `{ concern_file, answers, project_root: cwd, defer_rebuild: true }`.
 

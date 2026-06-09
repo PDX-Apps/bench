@@ -1,49 +1,64 @@
-# Live MCP run-through — conventions
+# Acceptance-criteria run-through — conventions
 
-How to *exercise* a user flow in a real browser via the Chrome MCP and report on it. This is **exploratory verification**, not test authoring — nothing is written to disk. (To author a reusable Playwright `.spec`, use bench-playwright's `/e2e`.)
+How to *verify a ticket's acceptance criteria* in a real browser via a browser MCP and report on it. This is **live verification**, not test authoring — no `.spec` is written to disk. (To author a reusable Playwright spec, use playwright's `/playwright`.)
 
 ## Preconditions
 
-- The **Chrome MCP (claude-in-chrome) must be connected**. Check `list_connected_browsers` first; if nothing is connected, stop and ask for it — the run can't proceed.
-- A concrete **start URL** (not just a route) and the **expected outcome** of the flow.
+- A **browser MCP must be connected**. For the Chrome driver, check `list_connected_browsers` first; if nothing is connected, stop and ask for it. For the Playwright driver, the Playwright MCP must be available.
+- The **acceptance criteria** for the ticket/flow (what "done" means), a concrete **start URL** (not just a route), and any inputs.
 
-## Capture before/after frames
+## Pre-steps — derive the run from the criteria
 
-- Take a baseline frame (`read_page`) right after navigating to the start URL.
-- After **each meaningful action** (click, type, submit), capture a fresh frame. The before/after pair is the evidence that the step did what was expected.
-- Report from what the frame actually shows — real on-page text and state — never from assumption.
+Before touching the browser, run the configured `pre_steps`. The default first step:
+
+- **Read the acceptance criteria** and turn each into a checkable step with an **expected outcome**. The criteria are the contract — the run exists to give every one a verdict.
+- Then any project pre-steps (seed a user, set a feature flag, choose an environment).
 
 ## Drive the flow
 
-- Locate elements with `find` / `read_page`, then act with `computer` (click, type). Prefer visible labels/roles over guessed coordinates.
+- Locate elements (`find` / `read_page`, or the Playwright driver's snapshot/locator), then act (`computer` click/type, or Playwright click/fill). Prefer visible labels/roles over guessed coordinates.
 - One step at a time; confirm the page reacted before moving on. No fixed sleeps — read the page to confirm readiness.
+- Take a baseline frame right after navigating, and a fresh frame after **each meaningful action** — the before/after pair is the evidence a step did what the criterion expects.
 
-## Check the console
+## Capture evidence
 
-- After each meaningful step, drain `read_console_messages` and record any **errors or warnings**. Console errors often explain a flow that "looks" fine but is broken underneath.
+Honor the project's capture settings:
+
+- **Screenshots** (when on) — capture one at each meaningful step; reference it in the report so a reviewer can see the state.
+- **Console** — after each meaningful step, drain `read_console_messages` and record any **errors/warnings**. Console errors often explain a flow that "looks" fine but is broken underneath.
+- **Network** (when on) — inspect `read_network_requests` for **failed / 4xx / 5xx** calls; a criterion can pass visually while a request silently failed.
+- **GIF** (when on) — assemble the run's frames into a GIF as a shareable record of the whole journey.
 
 ## Don't trigger native dialogs
 
 - Avoid actions that open native browser dialogs the MCP can't safely handle: file pickers, `window.confirm` / `alert` / `beforeunload`, and downloads.
 - If the flow would hit one, **stop at that boundary and report it** rather than forcing through it.
 
-## Report observed vs expected
+## Post-steps — curate the result
 
-For each step record: the action taken, what was **expected**, what was **observed**. Then an overall verdict:
+Run the configured `post_steps`. The default is the pass/fail-per-criterion report:
 
 ```
-Flow: {name}   Start: {url}
+Ticket/flow: {name}   Start: {url}   Driver: {chrome|playwright}
 
+Acceptance criteria:
+- [pass]    {criterion} — evidence: step 3, observed {y} (screenshot 3)
+- [fail]    {criterion} — expected {x}, observed {y} (screenshot 5)
+- [blocked] {criterion} — {why: element missing / dialog boundary / not reached}
+
+Steps:
 1. {action} → expected {x} / observed {y}  [ok | mismatch]
 2. ...
 
-Result: {reached expected outcome? where it broke}
 Console: {errors/warnings, or "clean"}
-Note: no file written. For a durable regression test, use bench-playwright's /e2e.
+Network: {failed / 4xx / 5xx calls, or "clean" / "not captured"}
+Artifacts: {GIF path; screenshot references}
+Note: no test file written. For a durable regression test, use playwright's /playwright.
 ```
 
 ## Conventions
 
-- **Verification only** — never write product or test files.
-- **Evidence over assertion** — cite real observed state from frames.
-- **Fail honestly** — if a step can't be completed (element missing, dialog boundary, MCP not connected), say so and where; don't fabricate a pass.
+- **Verify against the stated criteria** — every acceptance criterion gets a pass / fail / blocked verdict.
+- **Verification only** — never write product or test files. Screenshots and the GIF are evidence artifacts, not code.
+- **Evidence over assertion** — cite real observed state from frames, console, and network.
+- **Fail honestly** — if a step or criterion can't be reached (element missing, dialog boundary, MCP not connected), say so and where; don't fabricate a pass.

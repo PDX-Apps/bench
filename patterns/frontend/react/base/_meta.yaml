@@ -4,7 +4,7 @@
 # Vite, Vitest + Testing Library, TanStack Query (React Query), react-hook-form
 # + Zod. Styling/UI-library/router/meta-framework choices are project-specific
 # (detect-and-match) and ship as addons (tailwind, shadcn, mui,
-# chakra, radix, tanstack-router, bench-playwright,
+# chakra, radix, tanstack-router, playwright,
 # nextjs, remix).
 
 target:

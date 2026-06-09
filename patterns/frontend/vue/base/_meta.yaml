@@ -4,7 +4,7 @@
 # TanStack Query (Vue Query), Zod. Styling/UI-library/data-library/meta-framework
 # choices are project-specific (detect-and-match) and ship as addons
 # (tailwind, unocss, primevue, vuetify, shadcn-vue,
-# quasar, pinia-colada, bench-playwright, nuxt).
+# quasar, pinia-colada, playwright, nuxt).
 
 target:
   vue: "3.5.x"

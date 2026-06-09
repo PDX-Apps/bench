@@ -22,7 +22,7 @@ const goToOrder = (id) => router.visit(`/orders/${id}`)
 
 ## Conventions
 
-- **Pages** live in `resources/js/Pages/{Dir}/{Page}.vue`; the name in `Inertia::render('Orders/Index')` maps here (configured in `createInertiaApp`'s `resolve`).
+- **Pages** live in `<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/{Dir}/{Page}.vue`; the name in `Inertia::render('Orders/Index')` maps here (configured in `createInertiaApp`'s `resolve`).
 - **Navigation**: `<Link href>` for clicks; `router.visit/get/post/put/delete` programmatically. `<Link>` issues an XHR and swaps the page component — no full reload.
 - **Partial reloads**: `:only="['prop']"` / `:except` to re-fetch a subset of props.
 - **Prefetch** with `prefetch` on `<Link>`; **`preserveScroll`/`preserveState`** options where needed.

@@ -1,5 +1,5 @@
 ---
-description: Generate Vitest unit/component tests (@vue/test-utils, data-testid selectors, emitted-event assertions). Use when the user wants to test a component, composable, store, or add unit tests. (End-to-end → bench-playwright addon.)
+description: Generate Vitest unit/component tests (@vue/test-utils, data-testid selectors, emitted-event assertions). Use when the user wants to test a component, composable, store, or add unit tests. (End-to-end → playwright addon.)
 argument-hint: [what to test]
 ---
 
