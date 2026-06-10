@@ -12,11 +12,13 @@ You're the **/bench-init** skill. Tailor Bench to this project in two passes —
 
 The user's request: **$ARGUMENTS**
 
-## Pass 0 — Frontend sanity check (monorepo safety net)
+## Pass 0 — Understand the layout (read the README, don't guess)
 
-Run `<PLUGIN_ROOT>/bin/bench status` and read the active frontend. If it says **none** but the project actually has a Vue/React app, the initial `bench build` missed the framework (common in monorepos where the apps live under `apps/*` and the root `package.json` is just turbo/nx/pnpm orchestration). Scan for a real frontend app — root + `apps/*/package.json` + `packages/*/package.json` — and if one exists, **offer to fix it**, because the frontend is fixed at build time (a plain `rebuild` would just replay `none`):
+Before anything, ground yourself in how **this** repo is organized. The project's own **`README.md`** (and `docs/`) almost always documents the layout far better than any directory scan can infer — read them first. Pull out: where the Laravel app(s) live, which directories are frontend **apps** vs **shared packages**, what each app actually is (SPA / Electron / Capacitor / API), and where shared components/composables/types belong. This is your source of truth for routing generated code to the right place — prefer it over guessing from folder names or `package.json` heuristics. If the README doesn't cover it, fall back to inspecting `composer.json`/`package.json` across the workspace, and **ask the user** rather than assuming.
 
-> "Your build is backend-only, but `apps/web` is a Vue app — its skills/agents weren't generated. Re-run the build with Vue?"
+**Frontend safety net.** Run `<PLUGIN_ROOT>/bin/bench status` and read the active frontend. If it says **none** but the layout shows a Vue/React app, the initial `bench build` missed the framework — **offer to fix it**, because the frontend is fixed at build time (a plain `rebuild` just replays `none`):
+
+> "Your build is backend-only, but the README shows `apps/web` is a Vue SPA — its skills/agents weren't generated. Re-run the build with Vue?"
 
 On yes: `<PLUGIN_ROOT>/bin/bench build --frontend=vue --vue=<detected>` (or `react`). This is the one place bench-init runs `build` with flags rather than a plain `rebuild`. Then continue.
 
