@@ -1,5 +1,5 @@
 ---
-description: Verify, auto-fix, or configure PHP code quality with Preflight (format, lint, static analysis, tests). Use after changing PHP files and before reporting done, OR when the user wants to set up / adjust Preflight — choose steps, coverage gates, excluded paths, module scoping, or flags.
+description: Verify, auto-fix, or configure PHP code quality with Preflight (format, lint, static analysis, tests). Use when a unit of PHP work is complete — before committing or reporting it done (not after each file) — OR when the user wants to set up / adjust Preflight (steps, coverage gates, excluded paths, module scoping, flags).
 argument-hint: [run scope ("the files I changed" (default) | a path | "whole project") OR a config change]
 ---
 

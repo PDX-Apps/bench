@@ -70,6 +70,8 @@ Describe what you want; Bench routes it to the right worker(s):
 - **Frontend** — `/frontend <request>` routes to your Vue *or* React stack (fixed at build, no guessing).
 - `/help` lists everything available in this project.
 
+> **Want plain "build me X" to route through Bench automatically?** Paste [`examples/CLAUDE.md`](./examples/CLAUDE.md) into your project's `CLAUDE.md` — it tells Claude to default to the `/laravel` and `/frontend` routers for any build request, so "I need an endpoint" generates to your conventions without you typing a command. (Works in both the `standard` and `compact` profiles.)
+
 ### 3. Tailor to your conventions
 
 When generated code doesn't match how *your* team does it, teach Bench — no core edits. Both commands write to your committed `.bench/` folder; run `bench rebuild` afterward to re-resolve.

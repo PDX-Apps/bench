@@ -21,7 +21,7 @@ composer require --dev pdxapps/preflight
 vendor/bin/preflight install     # installs missing tools + scaffolds preflight.php
 ```
 
-Then, after changing PHP:
+Then, once a unit of PHP work is complete (before committing):
 
 ```
 /preflight                     # checks + fixes the files you changed

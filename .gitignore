@@ -17,6 +17,8 @@ patterns-built/
 
 # Task scaffolding — internal, never tracked/shipped
 CLAUDE.md
+# the routing snippet users paste into THEIR CLAUDE.md — this one ships
+!examples/CLAUDE.md
 docs/working-notes.md
 docs/working-notes/
 sandbox/

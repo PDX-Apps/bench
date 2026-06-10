@@ -1,6 +1,6 @@
 ---
 name: preflight
-description: Run Preflight on the PHP code (auto-fix + resolve findings until checks pass) or configure it (preflight.php — steps, coverage gates, excludes, modules). Use proactively after PHP changes, before reporting done. Reads PREFLIGHT-001.
+description: Run Preflight on the PHP code (auto-fix + resolve findings until checks pass) or configure it (preflight.php — steps, coverage gates, excludes, modules). Use when a unit of PHP work is complete — before committing or reporting it done (not after each file). Reads PREFLIGHT-001.
 tools: Bash, Read, Edit, Grep, Glob
 model: inherit
 ---
