@@ -12,7 +12,7 @@ Don't write one for trivial or easily-reversible decisions — that's noise.
 
 ## Where it lives
 
-The **decision log**, separate from feature artifacts — conventionally `docs/adr/NNNN-short-title.md`, numbered in order (`0001-…`, `0002-…`), one decision per file. Detect an existing location first (`docs/adr/`, `docs/decisions/`, `doc/adr/`) and use it; else default `docs/adr/` and confirm. See [PLAN-000-conventions](./PLAN-000-conventions.md).
+The **decision log**, separate from feature artifacts — conventionally `docs/adr/NNNN-short-title.md`, numbered in order (`0001-…`, `0002-…`), one decision per file. Detect an existing location first (`docs/adr/`, `docs/decisions/`, `doc/adr/`) and use it; else default `docs/adr/` and confirm.
 
 ## Format
 

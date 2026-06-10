@@ -42,7 +42,3 @@ public function index(): View
 
 - Don't run queries or business logic in the view. Don't N+1 — eager-load in the controller.
 - Don't repeat layout chrome per page — it lives in `<x-layout>`.
-
-## See also
-
-- [BLADE-001-components](BLADE-001-components.md) · [BLADE-002-layouts](BLADE-002-layouts.md) · [BLADE-003-forms](BLADE-003-forms.md)

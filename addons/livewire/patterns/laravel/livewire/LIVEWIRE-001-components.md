@@ -6,6 +6,8 @@ A Livewire component is a PHP class plus a Blade view that together render a pie
 
 Use a Livewire component when you want server-rendered interactivity (live search, inline edit, a wizard, a cart) without standing up a separate Vue/React frontend.
 
+> **Version:** this pattern targets **Livewire 3** (still the widely-deployed stable). **Livewire 4** is released and changes a few things — single-file components by default, and `wire:model` now only listens to events on the element itself (add `.deep` to capture child-element events, the old behavior). On a v4 project, check the docs for the new template/component conventions; the core attribute/property/action model below is unchanged.
+
 ## Structure
 
 **Scaffold:**
@@ -151,7 +153,7 @@ protected function rules(): array
 }
 ```
 
-When a form grows past a couple of fields, extract it into a **Form object** — see `<PLUGIN_ROOT>/patterns-built/laravel/livewire/LIVEWIRE-002-forms.md`.
+When a form grows past a couple of fields, extract it into a **Form object**.
 
 ## Lifecycle hooks
 
@@ -193,7 +195,7 @@ public function refreshList(int $id): void
 }
 ```
 
-Dispatch to a specific component with `->to(OtherComponent::class)`, or to the browser only with `->self()`.
+Dispatch to a specific component with `->to(OtherComponent::class)`, or restrict it to **only the component that fired it** with `->self()`. (To handle an event purely in the browser, listen with Alpine/`$wire.on(...)` rather than dispatching server-side.)
 
 ## Key Points
 

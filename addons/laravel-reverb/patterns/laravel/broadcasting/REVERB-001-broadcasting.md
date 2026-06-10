@@ -109,6 +109,48 @@ Prefer `ShouldBroadcast` in all production setups that have a queue worker
 running. `ShouldBroadcastNow` ties the WebSocket push to the HTTP request
 cycle and will block under load.
 
+### Only to others (skip the sender)
+
+When the user who triggered the event already updated their own UI optimistically, don't echo it back to them. Dispatch via the `broadcast()` helper with `->toOthers()`:
+
+```php
+broadcast(new MessageSent($message))->toOthers();   // every subscriber EXCEPT the current connection
+```
+
+(`toOthers()` is only on the `broadcast()` helper, not `Event::dispatch()`; it relies on the socket id Echo sends with each request.)
+
+### Conditional broadcasting
+
+Add `broadcastWhen()` to skip the broadcast unless a condition holds:
+
+```php
+public function broadcastWhen(): bool
+{
+    return $this->order->value > 100;
+}
+```
+
+### Model broadcasting (no event class)
+
+For plain model lifecycle changes, skip the hand-written event: add the `BroadcastsEvents` trait and a `broadcastOn(string $event)` method. Laravel auto-broadcasts `created`/`updated`/`deleted`/`trashed`/`restored`:
+
+```php
+use Illuminate\Database\Eloquent\BroadcastsEvents;
+
+class Post extends Model
+{
+    use BroadcastsEvents;
+
+    /** @return array<int, \Illuminate\Broadcasting\Channel|\Illuminate\Database\Eloquent\Model> */
+    public function broadcastOn(string $event): array
+    {
+        return [$this, $this->user];   // a Model resolves to its own PrivateChannel
+    }
+}
+```
+
+Client-side these arrive as `.PostUpdated` etc. on the model's channel (`App.Models.Post.{id}`).
+
 ### Client — Laravel Echo
 
 Install the Echo client and the Reverb driver:
@@ -160,6 +202,20 @@ Echo.join('rooms.' + roomId)
 > The leading `.` before the event name is required when you define
 > `broadcastAs()`. Without it Echo looks for the fully-qualified class name.
 
+#### Whispers (client-to-client, no server)
+
+For ephemeral signals like "user is typing", whisper directly between clients on a private/presence channel — it never touches the server or a queue:
+
+```js
+// sender
+Echo.private('chat.' + roomId).whisper('typing', { name: user.name });
+
+// receiver
+Echo.private('chat.' + roomId).listenForWhisper('typing', (e) => showTyping(e.name));
+```
+
+Whispers are client events — fine for transient UI hints, never for anything that must persist or be authorized server-side.
+
 #### Leaving a channel
 
 ```js
@@ -203,8 +259,10 @@ php artisan reverb:start --debug
 ```
 
 In production run Reverb as a long-lived daemon (Supervisor, systemd, etc.).
-It is a standalone server process — not a PHP-FPM worker. Horizontal scaling
-uses the `pulse` or Redis backend; see the Reverb docs for multi-server setup.
+It is a standalone server process — not a PHP-FPM worker. For **horizontal scaling**
+across multiple servers, set `REVERB_SCALING_ENABLED=true` — Reverb then uses **Redis**
+pub/sub to sync connections/channels between instances (put them behind a load balancer
+with sticky sessions). (Redis is the scaling backend; Pulse is unrelated monitoring.)
 
 ## Anti-Patterns
 

@@ -55,7 +55,3 @@ export default async function UserPage({ params }: { params: Promise<{ id: strin
 - **`params` and `searchParams` are Promises** in Next 15 — `await` them.
 - **Navigation**: `<Link href>` and `useRouter()` from `next/navigation`.
 - **Mutations**: Server Actions (`'use server'`) for forms/writes; `revalidatePath`/`revalidateTag` after.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (Next.js data fetching) · the base PAGE/LAYOUT concepts map to `page.tsx`/`layout.tsx`

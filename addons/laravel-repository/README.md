@@ -15,7 +15,7 @@ services, so this is opinionated — hence an addon, not core.
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-repository
+bench addon add laravel-repository
 bench rebuild
 ```
 

@@ -49,7 +49,3 @@ export function CreateOrder() {
 ## Don't
 
 - Don't hand-roll fetch + error state — `useForm` does it. Don't validate on the client only — the server FormRequest is the source of truth.
-
-## See also
-
-- [INERTIA-001-pages](INERTIA-001-pages.md) · core: `<PLUGIN_ROOT>/patterns-built/laravel/http/requests/REQUEST-001-form-requests.md`

@@ -239,7 +239,7 @@ class InvoiceDispatcher
 A service that **wraps a third party** (a `StripeClient`, an `S3Client`) is a boundary — put it
 behind a contract so it can be faked in tests and swapped later. A focused **internal** utility
 (`PricingCalculator`) is not a boundary; inject it directly, no interface. This is the
-boundary-default rule — full guidance in [CODE-003](../code/CODE-003-contracts.md).
+boundary-default rule.
 
 ```php
 // Boundary → define the contract in your domain terms…
@@ -260,7 +260,7 @@ final class StripeGateway implements PaymentGateway
     public function charge(string $customerId, int $amountCents): ChargeResult { /* Stripe SDK here */ }
 }
 
-// …callers type-hint the contract (bound in a provider — see PROVIDER-001).
+// …callers type-hint the contract (bound in a provider —).
 final class CapturePaymentAction
 {
     public function __construct(private PaymentGateway $gateway)
@@ -270,7 +270,7 @@ final class CapturePaymentAction
 ```
 
 When several backends implement that contract and the choice is config-driven, front them with a
-Manager ([SERVICE-004](./SERVICE-004-manager.md)).
+Manager.
 
 ## Usage
 

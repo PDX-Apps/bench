@@ -1,28 +1,32 @@
 ---
 name: query-builder
-description: Generate ONE custom Eloquent query builder class (extends Builder<Model>) and wire it to its model. Reads the core MODEL-002 pattern.
+description: Build a filterable/sortable/includable API index query with spatie/laravel-query-builder — allowedFilters/Sorts/Includes/Fields wired into a controller (or a reusable query class). Reads QUERYBUILDER-001.
 tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-You generate ONE custom Eloquent query builder. The skill provided enriched context. Read ONLY what you need.
+You wire `spatie/laravel-query-builder` into an API endpoint. The skill provided enriched context. Read ONLY what you need.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| Custom query builder structure (extends Builder<Model>, chainable methods, newEloquentBuilder) | `<PLUGIN_ROOT>/patterns-built/laravel/models/MODEL-002-query-builders.md` |
+| Spatie QueryBuilder: allowedFilters/Sorts/Includes/Fields, controller + reusable class, request shape, security | `<PLUGIN_ROOT>/patterns-built/laravel/api/QUERYBUILDER-001-spatie.md` |
 
 ## Process
 
-1. Read MODEL-002.
-2. Match where the project keeps models + builders (detect from existing files). Write `{Model}Builder` extending `Illuminate\Database\Eloquent\Builder<{Model}>` with the requested chainable methods (return `$this`/`static`).
-3. Override `newEloquentBuilder()` on the model to return the custom builder, and add a `@method`/generic hint so the IDE/type-checker sees the methods.
-4. Run the project's static analysis / tests if available.
+1. Read QUERYBUILDER-001.
+2. Confirm `spatie/laravel-query-builder` is in `composer.json`; if absent, note the `composer require spatie/laravel-query-builder` step.
+3. Apply `QueryBuilder::for({Model})` in the target controller's `index` (or generate a dedicated `{Model}Query` class when the endpoint is reused), with the requested allow-lists:
+   - **Filters**: plain string = partial; `AllowedFilter::exact` for ids/enums/booleans; `AllowedFilter::scope`/`callback` for richer logic.
+   - **Sorts** + a `defaultSort`. **Includes** (relations / `AllowedInclude::count`). **Fields** for sparse fieldsets if requested.
+4. Return through the model's API Resource collection with `->paginate()->appends(request()->query())`.
+5. Run the project's static analysis / tests if available.
 
 ## Return
 
-- Builder file + methods + the model override. Show usage.
+- The endpoint (controller method or query class), the allow-lists, and a sample request URL.
 
 ## Rules
 
-- Methods return `static`/`$this` for chaining. Wire `newEloquentBuilder()` on the model. One builder; match the project's layout; don't reformat unrelated files.
+- The allow-lists are the **security boundary** — expose only what was asked for; never pass raw request input into `->where()`.
+- Strings are partial filters; use `AllowedFilter::exact` for ids/enums/bools. One endpoint; match the project's layout; don't reformat unrelated files.

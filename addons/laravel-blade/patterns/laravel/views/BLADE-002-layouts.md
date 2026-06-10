@@ -47,7 +47,3 @@ A layout as a **component** (the modern approach) — not `@extends`. The page n
 
 - Don't mix the component-layout approach with legacy `@extends`/`@section` in the same project — pick one (prefer components).
 - Don't hard-code asset paths — use `@vite`.
-
-## See also
-
-- [BLADE-001-components](BLADE-001-components.md) · [BLADE-004-pages](BLADE-004-pages.md)

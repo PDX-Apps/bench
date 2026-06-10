@@ -6,7 +6,7 @@ Reusable reactive logic extracted from components. The primary way to share stat
 
 - Logic used by 2+ components (or one complex component you want to test in isolation).
 - Anything stateful + reactive: a toggle, a debounced value, a resize observer, a form helper.
-- **Server state is NOT a plain composable** — use a query composable ([QUERY-001](../data/QUERY-001-tanstack-query.md)).
+- **Server state is NOT a plain composable** — use a query composable.
 - **Pure, non-reactive helpers** (`formatDate`, `slugify`) are `utils/`, not composables.
 
 ## Shape — `use*` prefix, return a typed object
@@ -48,10 +48,6 @@ const { isOpen, open, close } = useDisclosure()
 
 ## Don't
 
-- Don't put server-state caching here — that's [QUERY-001](../data/QUERY-001-tanstack-query.md).
+- Don't put server-state caching here — handle it in a query composable/hook instead.
 - Don't return a giant mutable object; expose intent (functions) over raw state where it matters.
 - Don't create a composable for a pure function — that's a util.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) · [STORE-001](../state/STORE-001-pinia-stores.md) · [COMPONENT-001](../components/COMPONENT-001-conventions.md)

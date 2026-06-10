@@ -97,7 +97,7 @@ Out of the box: **4 routers** (`/bench`, `/laravel`, `/frontend`, `/help`) + **2
 
 ## Addons
 
-Addons are opt-in plugins that extend — or *replace* — what core ships: adding commands, agents, and patterns, or swapping a default (the data layer, the router, the styling system) for an alternative. They layer on the same way as your own overrides (see [Layering](./docs/layering.md)), and can declare `depends_on.addons` so installing one pulls in what it needs (e.g. `bench-quality` pulls `bench-ci` + `playwright` and delegates to their agents instead of duplicating them).
+Addons are opt-in plugins that extend — or *replace* — what core ships: adding commands, agents, and patterns, or swapping a default (the data layer, the router, the styling system) for an alternative. They layer on the same way as your own overrides (see [Layering](./docs/layering.md)), and can declare `depends_on.addons` so installing one pulls in what it needs (e.g. `livewire` pulls in `laravel-blade` to inherit its page/layout/route ownership).
 
 ```bash
 bench addon add tailwind     # by bundled name

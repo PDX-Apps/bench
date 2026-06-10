@@ -71,6 +71,41 @@ const { mutate: createUser, asyncStatus } = useCreateUser()
 createUser(payload)
 ```
 
+## Optimistic update — snapshot → write → rollback
+
+For instant feedback, update the cache in `onMutate`, roll back in `onError`, reconcile in `onSettled`:
+
+```ts
+export function useRenameOrder() {
+  const cache = useQueryCache()
+  return useMutation({
+    mutation: (o: { id: string; reference: string }) => http.patch<Order>(`/orders/${o.id}`, o),
+    onMutate(o) {
+      const previous = cache.getQueryData<Order>(['orders', o.id])
+      cache.cancelQueries({ key: ['orders', o.id] })          // stop in-flight refetches
+      cache.setQueryData(['orders', o.id], { ...previous, ...o } as Order)
+      return { previous }                                      // context → onError/onSettled
+    },
+    onError: (_err, o, { previous }) => cache.setQueryData(['orders', o.id], previous),  // rollback
+    onSettled: (_d, _e, o) => cache.invalidateQueries({ key: ['orders', o.id] }),
+  })
+}
+```
+
+## Dependent / disabled queries
+
+Gate a query on a prerequisite with `enabled` (a getter so it stays reactive):
+
+```ts
+export function useOrderInvoice(orderId: MaybeRefOrGetter<string | undefined>) {
+  return useQuery({
+    key: () => ['orders', toValue(orderId), 'invoice'],
+    query: () => http.get(`/orders/${toValue(orderId)}/invoice`),
+    enabled: () => !!toValue(orderId),     // doesn't run until the id exists
+  })
+}
+```
+
 ## Conventions
 
 - **One composable per query/mutation** (`use{Resource}`) + a typed **key factory**.
@@ -85,7 +120,3 @@ createUser(payload)
 - Don't cache server data in a plain Pinia store, or write a `*Service` class layer.
 - Don't fetch in `onMounted` with manual refs when Pinia Colada is present.
 - Don't inline keys in components — use the key factory.
-
-## See also
-
-- [STORE-001](../state/STORE-001-pinia-stores.md) (client state) · [TYPE-001](../types/TYPE-001-types.md)

@@ -54,7 +54,3 @@ export function Button({ variant = 'primary', ...props }: ButtonProps) {
 
 - Don't introduce a styling dependency the project doesn't use — recommend the matching addon.
 - Don't hard-code colors/spacing — use tokens (CSS vars, or the project's Tailwind/theme config).
-
-## See also
-
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `tailwind`, `shadcn`, `mui`, `chakra`

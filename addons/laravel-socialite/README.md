@@ -10,7 +10,7 @@ Laravel **Socialite** OAuth social login — "sign in with Google/GitHub", mappi
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-socialite
+bench addon add laravel-socialite
 bench rebuild
 ```
 

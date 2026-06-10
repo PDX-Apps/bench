@@ -11,4 +11,4 @@ This project organizes code by **module** (`nwidart/laravel-modules`), not a fla
 - Bind/register the service in the module's `{Module}ServiceProvider`, not the global `app/Providers`.
 - A service may depend on **another module's** public services or events, but not reach into its internal classes — keep modules loosely coupled.
 
-Full structure + the artifact path/namespace table: `<PLUGIN_ROOT>/patterns-built/laravel/modules/MODULE-001-structure.md`.
+Generate inside the relevant module (`Modules/{Module}/...`) with the `Modules\{Module}\...` namespace.

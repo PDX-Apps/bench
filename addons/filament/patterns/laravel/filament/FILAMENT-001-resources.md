@@ -2,9 +2,9 @@
 
 ## Pattern
 
-A **Filament Resource** is the full CRUD interface for an Eloquent model inside a Filament admin panel. One resource class declares two schemas — a **form** (used on create + edit) and a **table** (the list view) — plus its **pages** and any **relation managers**. Filament renders the panel UI (list / create / edit / view) from these declarations; you write PHP, not Blade or JavaScript.
+A **Filament Resource** is the full CRUD interface for an Eloquent model inside a Filament admin panel. One resource class declares two schemas — a **form** (create + edit) and a **table** (the list view) — plus its **pages** and any **relation managers**. Filament renders the panel UI from these declarations; you write PHP, not Blade or JavaScript.
 
-Reach for a resource whenever you need a back-office screen to manage records of a model.
+> **Filament 4** (current) is assumed here. Key differences from v3: `form()` receives a `Filament\Schemas\Schema` (not `Forms\Form`) and returns it via `->components()` (not `->schema()`); actions live in a unified `Filament\Actions\*` namespace; table actions are `->recordActions()` / `->toolbarActions()` (were `->actions()` / `->bulkActions()`). On a v3 project, use `Forms\Form` + `->schema()` + `Tables\Actions\*` + `->actions()`/`->bulkActions()` instead.
 
 ## Structure
 
@@ -12,43 +12,49 @@ Reach for a resource whenever you need a back-office screen to manage records of
 ```bash
 php artisan make:filament-resource Order
 # common flags:
-php artisan make:filament-resource Order --generate   # infer form+table from the schema
-php artisan make:filament-resource Order --view        # add a read-only View page
+php artisan make:filament-resource Order --generate       # infer form+table from the schema
+php artisan make:filament-resource Order --view           # add a read-only View page
 php artisan make:filament-resource Order --soft-deletes
 ```
 
-This generates `app/Filament/Resources/OrderResource.php` plus a `OrderResource/Pages/` directory (List/Create/Edit). Match wherever the project's panel keeps resources (a panel can set a custom namespace).
+This generates `app/Filament/Resources/Orders/OrderResource.php`, its `Pages/` dir (List/Create/Edit), and — by default in v4 — separate **schema classes** under `Orders/Schemas/OrderForm.php` and `Orders/Tables/OrdersTable.php` (keeping the resource class thin). You can also define `form()`/`table()` inline as shown below. Match wherever the project's panel keeps resources (a panel can set a custom namespace).
 
-**Resource skeleton:**
+**Resource skeleton (inline form + table):**
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\Orders;
 
-use App\Filament\Resources\OrderResource\Pages;
+use App\Filament\Resources\Orders\Pages;
 use App\Models\Order;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('reference')
+        return $schema->components([
+            TextInput::make('reference')
                 ->required()
                 ->maxLength(255),
 
-            Forms\Components\Select::make('status')
+            Select::make('status')
                 ->options([
                     'pending' => 'Pending',
                     'paid' => 'Paid',
@@ -56,7 +62,7 @@ class OrderResource extends Resource
                 ])
                 ->required(),
 
-            Forms\Components\TextInput::make('total')
+            TextInput::make('total')
                 ->numeric()
                 ->prefix('$')
                 ->required(),
@@ -67,35 +73,28 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('reference')
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('status')
-                    ->badge(),
-
-                Tables\Columns\TextColumn::make('total')
-                    ->money('usd')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('reference')->searchable(),
+                TextColumn::make('status')->badge(),
+                TextColumn::make('total')->money('usd')->sortable(),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
                         'paid' => 'Paid',
                         'cancelled' => 'Cancelled',
                     ]),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -118,11 +117,11 @@ class OrderResource extends Resource
 }
 ```
 
-The form-component and table-column/action vocabulary is covered in depth in `<PLUGIN_ROOT>/patterns-built/laravel/filament/FILAMENT-002-forms-tables.md`.
+The form-component and table-column/action vocabulary is covered in the forms-and-tables vocabulary.
 
 ## Form schema
 
-`form()` returns a schema of field components. Common ones:
+`form()` returns a `Schema` whose `->components([...])` holds field components. Common ones (import each from `Filament\Forms\Components\*`):
 
 - `TextInput::make('name')->required()->maxLength(255)` — `->email()`, `->numeric()`, `->password()`, `->prefix()/->suffix()`.
 - `Select::make('status')->options([...])` — `->relationship('author', 'name')` to pick a related record; `->searchable()`, `->preload()`.
@@ -131,16 +130,16 @@ The form-component and table-column/action vocabulary is covered in depth in `<P
 - `Toggle::make('is_active')`, `Checkbox`, `Radio`.
 - `FileUpload::make('attachment')`.
 
-Group with layout components — `Section::make('Details')->schema([...])`, `Grid::make(2)->schema([...])`, `Fieldset`, `Tabs`. See FILAMENT-002.
+Group with layout components from `Filament\Schemas\Components\*` — `Section::make('Details')->schema([...])`, `Grid::make(2)->schema([...])`, `Fieldset`, `Tabs`.
 
 ## Table
 
-`table()` declares columns, filters, row actions, and bulk actions:
+`table()` declares columns, filters, and actions:
 
-- **Columns:** `TextColumn`, `IconColumn`, `ImageColumn`, `ToggleColumn`, `SelectColumn`. Chain `->searchable()`, `->sortable()`, `->badge()`, `->money('usd')`, `->dateTime()`, `->toggleable()`.
-- **Filters:** `SelectFilter::make('status')->options([...])`, `TernaryFilter`, `Filter::make('verified')->query(fn (Builder $q) => $q->whereNotNull('verified_at'))`.
-- **Actions** (per-row): `EditAction`, `ViewAction`, `DeleteAction`, or custom `Action::make(...)`.
-- **Bulk actions:** wrap in `BulkActionGroup::make([...])`; e.g. `DeleteBulkAction`.
+- **Columns** (`Filament\Tables\Columns\*`): `TextColumn`, `IconColumn`, `ImageColumn`, `ToggleColumn`, `SelectColumn`. Chain `->searchable()`, `->sortable()`, `->badge()`, `->money('usd')`, `->dateTime()`, `->toggleable()`.
+- **Filters** (`Filament\Tables\Filters\*`): `SelectFilter::make('status')->options([...])`, `TernaryFilter`, `Filter::make('verified')->query(fn (Builder $q) => $q->whereNotNull('verified_at'))`.
+- **Record actions** (per-row, `Filament\Actions\*`): `EditAction`, `ViewAction`, `DeleteAction`, or custom `Action::make(...)` — passed to `->recordActions([...])`.
+- **Toolbar / bulk actions:** `->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])])`.
 
 ## Relation managers
 
@@ -159,8 +158,8 @@ A resource defers to the model's **policy** automatically — `viewAny`, `view`,
 ## Key Points
 
 - One resource = a model's form + table + pages (+ relation managers); scaffold with `make:filament-resource`.
-- `form()` returns a field-component schema (used by create + edit).
-- `table()` declares columns + filters + row/bulk actions for the list view.
+- `form(Schema $schema): Schema` returns `->components([...])`; v4 generates separate `Schemas/`/`Tables/` classes by default.
+- `table()` declares columns + filters + `->recordActions()` + `->toolbarActions()`.
 - `getPages()` wires List/Create/Edit (+ View) routes; `getRelations()` registers relation managers.
 - Authorization comes from the model's **policy** automatically.
 - `--generate` infers the form + table from the migration/schema as a starting point.

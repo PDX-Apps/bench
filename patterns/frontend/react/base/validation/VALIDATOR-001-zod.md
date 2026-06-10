@@ -21,7 +21,7 @@ export const updateUserSchema = createUserSchema.partial()
 
 ## Use it
 
-- **Forms** — pass to react-hook-form via `zodResolver(createUserSchema)` ([COMPONENT-002](../components/COMPONENT-002-forms.md)). Messages surface as `errors.field.message`.
+- **Forms** — pass to react-hook-form via `zodResolver(createUserSchema)`. Messages surface as `errors.field.message`.
 - **API responses** — `schema.parse(data)` in the query fetcher to fail loudly on shape drift.
 - **Compose** — `.partial()`, `.pick()`, `.extend()`, `.merge()` instead of hand-writing variants.
 
@@ -37,7 +37,3 @@ export const updateUserSchema = createUserSchema.partial()
 - Don't hand-write a TS type that mirrors a schema — use `z.infer`.
 - Don't validate the same thing twice — compose from one schema.
 - Don't skip validating API responses if the backend shape can drift.
-
-## See also
-
-- [TYPE-001](../types/TYPE-001-types.md) · [COMPONENT-002](../components/COMPONENT-002-forms.md)

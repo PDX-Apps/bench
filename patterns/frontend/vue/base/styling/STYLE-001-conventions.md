@@ -66,7 +66,3 @@ defineProps<{ variant?: 'primary' | 'ghost' }>()
 - Don't introduce a styling dependency (Tailwind, a UI lib) the project doesn't already use — recommend the matching addon instead.
 - Don't hard-code colors/spacing — use tokens (CSS vars, or the project's Tailwind/theme config).
 - Don't scatter inline styles for static rules.
-
-## See also
-
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · addons: `tailwind`, `unocss`, `primevue`, `vuetify`, `shadcn-vue`, `quasar`

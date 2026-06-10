@@ -8,7 +8,7 @@ description: |
   JOB pattern.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-horizon
+    bench addon add laravel-horizon
 
 depends_on:
   bench: ">=0.8.0"

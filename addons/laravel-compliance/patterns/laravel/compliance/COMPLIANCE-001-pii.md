@@ -12,7 +12,7 @@ For every model, tag each attribute:
 |-------|----------|----------|
 | **Secret** | passwords, API tokens, 2FA secrets, recovery codes | hash or encrypt; never logged; never returned in any response |
 | **PII** | name, email, phone, address, DOB, government IDs, IP | encrypt at rest if regulated; `$hidden` unless explicitly needed; redact in logs |
-| **Sensitive** | financial figures, health notes, location history | encrypt if regulated; access-controlled; audit reads (see COMPLIANCE-002) |
+| **Sensitive** | financial figures, health notes, location history | encrypt if regulated; access-controlled; audit reads |
 | **Public** | public id, status, created_at | no special handling |
 
 Record the classification near the model (a `// PII:` comment block or a dedicated doc) so reviewers and the `/compliance-check` agent can see intent.
@@ -82,4 +82,3 @@ Log::info('Order placed', [
 - Encrypt regulated PII + secrets at rest via casts; secrets are hashed, not reversibly encrypted.
 - `$hidden` is the safety net; API Resources are the deliberate output boundary.
 - Logs, exceptions, and error trackers are the most common leak — redact there explicitly.
-- Pair this with COMPLIANCE-002 (audit who reads/writes sensitive data) and COMPLIANCE-003 (how long you keep it).

@@ -1,6 +1,6 @@
 # Testing — Playwright (end-to-end)
 
-End-to-end tests that drive a real browser through user flows. Complements the unit/component tests ([TEST-001]) — use e2e for critical paths (auth, checkout, the core journey), not for every component.
+End-to-end tests that drive a real browser through user flows. Complements the unit/component tests — use e2e for critical paths (auth, checkout, the core journey), not for every component.
 
 ## A flow test
 
@@ -72,7 +72,3 @@ Reach for these when the project wants them; don't add ceremony a small suite do
 - Don't e2e-test what a component test already covers — e2e is for cross-page journeys.
 - Don't use brittle CSS/text selectors or fixed `waitForTimeout`.
 - Don't share mutable state between tests.
-
-## See also
-
-- [TEST-001] (unit/component) · [playwright.dev](https://playwright.dev)

@@ -4,5 +4,5 @@ Generate Vue data-fetching composables with **[Pinia Colada](https://pinia-colad
 ## Install
 ```bash
 npm install @pinia/colada
-bench addon add /path/to/bench/addons/pinia-colada && bench rebuild
+bench addon add pinia-colada && bench rebuild
 ```

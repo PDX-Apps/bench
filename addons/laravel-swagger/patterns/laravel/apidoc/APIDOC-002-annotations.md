@@ -1,4 +1,6 @@
-# CODE-002-swagger
+# APIDOC-002 — OpenAPI annotations (l5-swagger / swagger-php)
+
+> For most Laravel APIs prefer **Scramble** — it infers the spec with no annotations. Use this annotation approach only for contract-first authoring or hand-tuned control inference can't derive.
 
 ## Pattern
 
@@ -24,7 +26,7 @@ Use OpenAPI (Swagger) annotations to generate API documentation automatically fr
 
 ### Models
 
-All Eloquent models MUST have OpenAPI schema annotations:
+Document the models your API returns with `#[OA\Schema]`:
 
 ```php
 use OpenApi\Attributes as OA;
@@ -56,7 +58,7 @@ class Order extends Model
 
 ### Form Requests
 
-All Form Requests MUST have request body annotations:
+Document a Form Request body with `#[OA\Schema]`:
 
 ```php
 use OpenApi\Attributes as OA;
@@ -93,7 +95,7 @@ class CreateOrderRequest extends FormRequest
 
 ### API Resources
 
-All API Resources MUST have response schema annotations:
+Document an API Resource response shape with `#[OA\Schema]`:
 
 ```php
 use OpenApi\Attributes as OA;
@@ -142,7 +144,7 @@ class OrderCollection extends ResourceCollection
 
 ### Controllers
 
-All controller methods MUST have operation annotations:
+Document a controller action with an operation attribute:
 
 ```php
 use OpenApi\Attributes as OA;
@@ -150,8 +152,8 @@ use OpenApi\Attributes as OA;
 class OrderController extends Controller
 {
     #[OA\Get(
-        path: '/api/households',
-        summary: 'List all households',
+        path: '/api/orders',
+        summary: 'List all orders',
         tags: ['Orders'],
         parameters: [
             new OA\Parameter(
@@ -176,8 +178,8 @@ class OrderController extends Controller
     }
 
     #[OA\Post(
-        path: '/api/households',
-        summary: 'Create a new household',
+        path: '/api/orders',
+        summary: 'Create a new order',
         tags: ['Orders'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -203,8 +205,8 @@ class OrderController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/households/{id}',
-        summary: 'Get a household by ID',
+        path: '/api/orders/{id}',
+        summary: 'Get a order by ID',
         tags: ['Orders'],
         parameters: [
             new OA\Parameter(
@@ -225,14 +227,14 @@ class OrderController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function show(Order $household)
+    public function show(Order $order)
     {
         // ...
     }
 
     #[OA\Put(
-        path: '/api/households/{id}',
-        summary: 'Update a household',
+        path: '/api/orders/{id}',
+        summary: 'Update a order',
         tags: ['Orders'],
         parameters: [
             new OA\Parameter(
@@ -258,14 +260,14 @@ class OrderController extends Controller
             new OA\Response(response: 422, description: 'Validation failed'),
         ]
     )]
-    public function update(UpdateOrderRequest $request, Order $household)
+    public function update(UpdateOrderRequest $request, Order $order)
     {
         // ...
     }
 
     #[OA\Delete(
-        path: '/api/households/{id}',
-        summary: 'Delete a household',
+        path: '/api/orders/{id}',
+        summary: 'Delete a order',
         tags: ['Orders'],
         parameters: [
             new OA\Parameter(
@@ -282,7 +284,7 @@ class OrderController extends Controller
             new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
-    public function destroy(Order $household)
+    public function destroy(Order $order)
     {
         // ...
     }
@@ -306,8 +308,8 @@ use OpenApi\Attributes as OA;
 
 #[OA\Info(
     version: '1.0.0',
-    title: 'Budget Finder API',
-    description: 'API documentation for Budget Finder application'
+    title: 'Example API',
+    description: 'API documentation for Example application'
 )]
 #[OA\Server(
     url: 'http://localhost',

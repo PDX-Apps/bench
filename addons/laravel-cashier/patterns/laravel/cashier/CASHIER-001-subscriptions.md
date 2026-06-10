@@ -1,9 +1,7 @@
 # CASHIER-001 — Subscriptions (Laravel Cashier / Stripe)
 
 How to make a model billable and run the core subscription lifecycle:
-create, trial, swap, status checks, cancel/resume. Pairs with
-[CASHIER-002](<PLUGIN_ROOT>/patterns-built/laravel/cashier/CASHIER-002-invoices-webhooks.md)
-for invoices, single charges, and webhooks.
+create, trial, swap, status checks, cancel/resume.
 
 > Cashier speaks Stripe **Prices** (`price_xxx`), not legacy "plans". Method
 > names use `Price` (`subscribedToPrice`, `onPrice`), and `newSubscription()`
@@ -12,7 +10,7 @@ for invoices, single charges, and webhooks.
 ## Install
 
 ```bash
-composer require laravel/stripe
+composer require laravel/cashier
 php artisan vendor:publish --tag="cashier-migrations"
 php artisan migrate
 ```
@@ -133,4 +131,4 @@ if ($customer->hasIncompletePayment('default')) {
 - Keep price ids and trial lengths in `config/billing.php`, not inline.
 - Gate features off `subscribed()` / `subscribedToPrice()`, not Stripe API reads.
 - Collect payment methods with Stripe.js (`pm_xxx`); never accept raw card data.
-- Webhooks (not the create call) are the source of truth for renewals — see CASHIER-002.
+- Webhooks (not the create call) are the source of truth for renewals.

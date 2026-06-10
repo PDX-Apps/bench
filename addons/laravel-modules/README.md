@@ -18,7 +18,7 @@ This is the **inverse of bench's default**, which de-modularizes generated code 
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-modules
+bench addon add laravel-modules
 bench rebuild
 ```
 

@@ -4,7 +4,7 @@
 
 A **Form object** extracts a component's form state, validation rules, and persistence logic into a dedicated class (`extends Livewire\Form`). It keeps the component lean, makes the form reusable across create/edit components, and groups related fields under one `$form` property. Reach for a Form object once a form has more than a field or two.
 
-This builds on the component conventions in `<PLUGIN_ROOT>/patterns-built/laravel/livewire/LIVEWIRE-001-components.md`.
+This builds on the class-based component conventions.
 
 ## Structure
 

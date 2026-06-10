@@ -1,14 +1,16 @@
 name: laravel-ai
 version: 0.1.0
 description: |
-  Build AI features with the official laravel/ai SDK — class-based Agents
-  (instructions, attributes, structured output, conversation memory, streaming,
-  queueing, middleware), Tools (function calling), and embeddings + vector
-  similarity search (RAG). Ships /ai-agent and /ai-tool commands + agents + the
-  AI-001/002/003 patterns.
+  Build AI features with the official laravel/ai SDK (v0.x, built on Prism) —
+  class-based Agents (instructions, attributes, structured output, conversation
+  memory, streaming, queueing, middleware, attachments), Tools (function calling,
+  provider tools, MCP, sub-agents), and RAG (embeddings + vector similarity search
+  + reranking). Ships an /ai delegator + /ai-agent, /ai-tool, /ai-rag commands +
+  their agents + the AI-001..005 patterns (agents, tools, embeddings, multi-modal,
+  testing with fakes).
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-ai
+    bench addon add laravel-ai
 
 depends_on:
   bench: ">=0.8.0"

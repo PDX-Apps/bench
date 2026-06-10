@@ -4,7 +4,7 @@ A **layout** is the persistent shell around pages — header, nav, footer, slots
 
 ## The core idea
 
-A layout is just a component with a `<router-view />` (or a `<slot />`) where page content renders. Wire it as a **parent route** so it stays mounted while children change (see [ROUTE-001](./ROUTE-001-routes.md)).
+A layout is just a component with a `<router-view />` (or a `<slot />`) where page content renders. Wire it as a **parent route** so it stays mounted while children change.
 
 ```vue
 <!-- layouts/AppLayout.vue -->
@@ -66,13 +66,9 @@ const layout = computed(() => (route.meta.layout === 'guest' ? GuestLayout : App
 - **`{Name}Layout.vue`** in `layouts/`. One responsibility: structure + persistent chrome, no page logic.
 - **`<RouterView />`** (parent-route style) or **`<slot />`** (dynamic style) marks where the page goes.
 - **Named slots** (`header-actions`, `breadcrumbs`) let pages inject into the shell.
-- Layout = structure only. Theme/spacing come from your styling system ([STYLE-001](../styling/STYLE-001-conventions.md)); if the project uses a UI library, its layout primitives (e.g. a drawer/app-bar) replace the hand-rolled shell — match them.
+- Layout = structure only. Theme/spacing come from your styling system; if the project uses a UI library, its layout primitives (e.g. a drawer/app-bar) replace the hand-rolled shell — match them.
 
 ## Don't
 
 - Don't put data fetching or business logic in a layout — it's chrome.
 - Don't re-mount the layout on every navigation (that's what parent-route nesting avoids).
-
-## See also
-
-- [ROUTE-001](./ROUTE-001-routes.md) · [PAGE-001](./PAGE-001-pages.md) · [STYLE-001](../styling/STYLE-001-conventions.md)

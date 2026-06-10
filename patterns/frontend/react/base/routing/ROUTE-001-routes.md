@@ -60,7 +60,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 
 - **Data router** (`createBrowserRouter` + `RouterProvider`) — the modern default over `<BrowserRouter><Routes>`.
 - **Lazy-load pages** (`lazy(() => import(...))` or route `lazy`) for code splitting.
-- **Layout routes** = a parent route with `element: <Layout />` rendering `<Outlet />` (see [LAYOUT-001](./LAYOUT-001-layouts.md)).
+- **Layout routes** = a parent route with `element: <Layout />` rendering `<Outlet />`.
 - **Read params with `useParams()`** in the page; navigate with `useNavigate()` / `<Link>` / `<NavLink>` — no hard-coded literal paths scattered around (centralize path builders if the app is large).
 - **Auth** via a wrapper component (or a `loader` redirect in data-router style), not ad-hoc checks in pages.
 
@@ -69,7 +69,3 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
 - Don't eagerly import every page (kills splitting).
 - Don't use `<BrowserRouter>` + `<Routes>` for new data-driven apps unless the project already does.
 - Don't put auth logic inside each page.
-
-## See also
-
-- [PAGE-001](./PAGE-001-pages.md) · [LAYOUT-001](./LAYOUT-001-layouts.md)

@@ -6,7 +6,7 @@ Custom hooks extract reusable stateful logic from components — React's primary
 
 - Logic used by 2+ components, or one complex component you want to test in isolation.
 - Anything stateful: a toggle, a debounced value, an event subscription, a media query.
-- **Server state is NOT a plain hook** — use a query hook ([QUERY-001](../data/QUERY-001-tanstack-query.md)).
+- **Server state is NOT a plain hook** — use a query hook.
 - **Pure, non-reactive helpers** (`formatDate`) are `utils/`, not hooks.
 
 ## Shape — `use*`, return a typed tuple or object
@@ -37,10 +37,6 @@ export function useDisclosure(initial = false) {
 
 ## Don't
 
-- Don't put server-state caching here — that's [QUERY-001](../data/QUERY-001-tanstack-query.md).
+- Don't put server-state caching here — handle it in a query composable/hook instead.
 - Don't call hooks conditionally, in loops, or outside React functions.
 - Don't create a hook for a pure function — that's a util.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) · [STORE-001](../state/STORE-001-zustand.md) · [COMPONENT-001](../components/COMPONENT-001-conventions.md)

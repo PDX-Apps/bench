@@ -31,3 +31,7 @@ Task tool, `subagent_type: "socialite"`, pass the blob.
 
 ## Step 5: Synthesize
 Report the controller + routes + provider config; show the login URL (`/auth/{provider}/redirect`) and note any migration the user still needs to run.
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-socialite** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-socialite" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

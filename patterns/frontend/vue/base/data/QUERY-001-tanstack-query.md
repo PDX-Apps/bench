@@ -86,7 +86,3 @@ createUser(payload, { onSuccess: () => router.push('/users') })
 - Don't cache server data in a Pinia store, or write a `*Service` class layer — the query cache handles it.
 - Don't fetch in `onMounted` with manual `ref`s when a query library is present.
 - Don't put `queryKey` strings inline in components — use the key factory.
-
-## See also
-
-- [STORE-001](../state/STORE-001-pinia-stores.md) (client state) · [TYPE-001](../types/TYPE-001-types.md) · [VALIDATOR-001](../validation/VALIDATOR-001-zod.md)

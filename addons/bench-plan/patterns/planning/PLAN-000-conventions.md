@@ -1,6 +1,6 @@
 # Planning artifacts — shared conventions
 
-bench-plan produces one of several artifact types from the same deep codebase gather. These conventions are shared across all of them (implementation plan, spec/design doc, PRD, ADR, ticket). The per-type patterns (`PLAN-001…005`) describe each artifact's structure; this file describes what's common.
+bench-plan produces one of several artifact types from the same deep codebase gather. These conventions are shared across all of them (implementation plan, spec/design doc, PRD, ADR, ticket). The per-type patterns describe each artifact's structure; this file describes what's common.
 
 ## Where artifacts live
 

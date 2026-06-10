@@ -82,7 +82,3 @@ createUser(payload, { onSuccess: () => navigate('/users') })
 - Don't cache server data in a Zustand store, or write a `*Service` class layer.
 - Don't fetch in `useEffect` with manual `useState` when React Query is present.
 - Don't inline `queryKey` strings in components — use the key factory.
-
-## See also
-
-- [STORE-001](../state/STORE-001-zustand.md) (client state) · [TYPE-001](../types/TYPE-001-types.md) · [VALIDATOR-001](../validation/VALIDATOR-001-zod.md)

@@ -5,7 +5,7 @@ Global/shared **client state** with Zustand — a hook-based store, minimal boil
 ## When
 
 - State shared across unrelated components: session/user, UI preferences (theme, sidebar), a cross-page wizard.
-- **Not for server data** — cached API data belongs in query hooks ([QUERY-001](../data/QUERY-001-tanstack-query.md)), not a Zustand store.
+- **Not for server data** — cached API data belongs in query hooks, not a Zustand store.
 
 ## Shape — typed `create` with selectors
 
@@ -48,7 +48,3 @@ const setUser = useSessionStore((s) => s.setUser)
 - Don't cache server responses here — that's a query's job (caching, invalidation, refetch).
 - Don't subscribe to the whole store object; select narrowly.
 - Don't put one mega-store for everything.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (server state) · [HOOK-001](../hooks/HOOK-001-conventions.md)

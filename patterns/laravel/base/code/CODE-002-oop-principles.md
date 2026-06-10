@@ -47,14 +47,12 @@ providers** — the framework edge. Keep them out of Actions/Services so the dom
 
 Where a class talks to a third party, the clock, randomness, or another module, depend on a
 **contract**, not the concrete — so the boundary can be faked in tests and swapped later. Inside a
-module, depending on concretes is correct. Full guidance + the "don't over-abstract" line:
-[CODE-003](./CODE-003-contracts.md).
+module, depending on concretes is correct.
 
 ## 3. Keep classes small and single-purpose
 
 One class, one reason to change. A class accreting unrelated methods (`OrderService` that creates,
-emails, and reports) should split into focused pieces — see [SERVICE-003](../services/SERVICE-003-when-to-use.md)
-and [SERVICE-002](../services/SERVICE-002-domain-services.md). Small classes are easier to name,
+emails, and reports) should split into focused pieces. Small classes are easier to name,
 test, and hold in your head.
 
 ## 4. Prefer immutability — `readonly`, value objects, immutable DTOs
@@ -94,7 +92,7 @@ final readonly class CreateOrderData
 ```
 
 Immutability also matters for long-lived workers (Octane): shared instances holding mutable state
-leak across requests — see [PROVIDER-001](../providers/PROVIDER-001-structure.md).
+leak across requests —.
 
 ## 5. Encapsulate — protect invariants, don't expose internals
 
@@ -135,8 +133,8 @@ behavior. A three-level domain inheritance chain is usually a sign a collaborato
 - **Inject** collaborators in domain code (Actions/Services); facades/helpers stay at the framework
   edge (controllers, commands, providers)
 - **Depend on abstractions at boundaries** only — contracts where swap/test payoff exists, concretes
-  internally ([CODE-003](./CODE-003-contracts.md))
-- **One class, one reason to change** — split accreting classes ([SERVICE-003](../services/SERVICE-003-when-to-use.md))
+  internally
+- **One class, one reason to change** — split accreting classes
 - **Prefer immutability** — `readonly` DTOs/value objects; model domain values as objects, not bare
   primitives; immutable state is Octane-safe
 - **Encapsulate invariants** — the object owns its valid transitions; avoid anemic field-setting at

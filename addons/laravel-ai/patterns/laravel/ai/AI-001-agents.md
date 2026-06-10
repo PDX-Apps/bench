@@ -226,11 +226,9 @@ use Laravel\Ai\Responses\AgentResponse;
 
 Wrap every prompt/response (e.g., logging, redaction, rate limiting):
 
-**File location:** `app/Ai/Middleware/`
+**File location:** `app/Ai/Middleware/` (a plain class implementing the middleware `handle`):
 
 ```php
-// php artisan make:agent-middleware LogPrompts
-
 namespace App\Ai\Middleware;
 
 use Closure;
@@ -304,8 +302,6 @@ Prefer named classes for anything reused, anything tested, anything with non-tri
 - Use `RemembersConversations` for multi-turn (creates DB tables for history)
 - Stream for UI-facing agents, queue for long-running ones
 - Middleware for cross-cutting concerns (logging, redaction)
-- See `AI-002-tools` for giving agents capabilities beyond text
-- See `AI-003-embeddings` for embeddings + vector search (RAG)
 
 ## When to Use
 

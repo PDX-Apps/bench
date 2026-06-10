@@ -15,3 +15,7 @@ Task tool, `subagent_type: "inertia-page"`, passing the page name(s) + the data 
 
 ## Step 3: Report
 Summarize: the controller methods + `Inertia::render` calls, the page components created (paths), props passed, and any shared/deferred props or routes added.
+
+## Not covered by a pattern?
+
+If the request needs a **inertia** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "inertia" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

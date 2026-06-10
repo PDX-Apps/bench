@@ -3,5 +3,5 @@ Build Vue UIs with [Quasar](https://quasar.dev). Appends component + theming con
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/quasar && bench rebuild
+bench addon add quasar && bench rebuild
 ```

@@ -11,7 +11,7 @@ Token-based authentication using Laravel Sanctum for SPAs, mobile apps, and exte
 - Third-party API integrations
 - Service-to-service calls
 
-For server-rendered web apps with session cookies, see AUTH-001-web.
+For server-rendered web apps with session cookies.
 
 ## Setup
 
@@ -47,7 +47,7 @@ Inside the controller:
 - `$request->user()` — current authenticated user (the Sanctum guard resolves it from the token)
 - `Auth::guard('sanctum')->user()` — explicit guard reference
 
-For passing the user OUT of HTTP context (into an Action, Job, etc.), see ACTION-001-structure: the controller passes `$request->user()` into the action's `execute(User $user, ...)`.
+For passing the user OUT of HTTP context (into an Action, Job, etc.): the controller passes `$request->user()` into the action's `execute(User $user, ...)`.
 
 ## Token abilities (optional)
 

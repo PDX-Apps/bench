@@ -1,6 +1,6 @@
 # React Component — forms
 
-Forms with **react-hook-form** + **Zod** (via `@hookform/resolvers/zod`) — the standard modern React combo. The Zod schema ([VALIDATOR-001](../validation/VALIDATOR-001-zod.md)) is the single source of truth for validation + the form type.
+Forms with **react-hook-form** + **Zod** (via `@hookform/resolvers/zod`) — the standard modern React combo. The Zod schema is the single source of truth for validation + the form type.
 
 ## Shape
 
@@ -58,7 +58,3 @@ export function UserForm({ defaultValues, submitting, onSubmit }: UserFormProps)
 - Don't duplicate validation in the component — derive from the Zod schema.
 - Don't fetch or mutate inside the form.
 - Don't reach for another form lib if the project already uses react-hook-form (or match the project's if different).
-
-## See also
-
-- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md) · [COMPONENT-001](./COMPONENT-001-conventions.md)

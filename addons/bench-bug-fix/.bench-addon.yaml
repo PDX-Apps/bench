@@ -1,0 +1,16 @@
+name: bench-bug-fix
+version: 0.1.0
+description: |
+  A disciplined bug-fix loop: trace the root cause, write a test that fails
+  because of the bug, apply the smallest fix, and verify it passes — reverting
+  any change that doesn't, so failed attempts never accumulate into regressions.
+  Ships a /bug-fix command routed to a Laravel, Vue, or React worker that follows
+  the project's own test conventions (from the testing patterns).
+
+  Opt-in addon — install per-project with:
+    bench addon add bench-bug-fix
+
+depends_on:
+  bench: ">=0.8.0"
+
+license: MIT

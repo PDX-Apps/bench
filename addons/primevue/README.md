@@ -3,5 +3,5 @@ Build Vue UIs with [PrimeVue](https://primevue.org). Appends component + theming
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/primevue && bench rebuild
+bench addon add primevue && bench rebuild
 ```

@@ -1,0 +1,3 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+livewire:
+  base_url: "https://livewire.laravel.com/docs"

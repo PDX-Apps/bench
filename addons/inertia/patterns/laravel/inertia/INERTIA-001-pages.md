@@ -33,8 +33,8 @@ final class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'auth'  => ['user' => $request->user()],
             'flash' => ['status' => fn () => $request->session()->get('status')],
-            // resolved once, remembered client-side across visits:
-            'countries' => Inertia::once(fn () => Country::all()),
+            // expensive static data — cache it server-side (Inertia has no per-client "once"):
+            'countries' => fn () => Cache::rememberForever('countries', fn () => Country::all()),
         ]);
     }
 }
@@ -44,15 +44,11 @@ final class HandleInertiaRequests extends Middleware
 
 - **`Inertia::render('Dir/Page', [...])`** — the name maps to the page component (`<!--bench:var:inertia_pages_dir;default:resources/js/Pages-->/Dir/Page.{vue,tsx}`).
 - **Props are the page's data** — pass API Resources, not raw models; paginate as usual (the paginator serializes with `links`/`meta`).
-- **`Inertia::defer(fn)`** for expensive props (loaded after first paint); **`Inertia::lazy`/closures** for props only sent on partial reloads.
-- **Shared props** (auth, flash, locale) via `HandleInertiaRequests::share()`; **`Inertia::once`** for static-ish data.
+- **`Inertia::defer(fn)`** for expensive props (loaded in a follow-up request after first paint); **`Inertia::optional(fn)`** (v2 — replaces the deprecated `lazy`) for props sent only when explicitly requested on a partial reload; **`Inertia::always(...)`** for props that must be present on every (even partial) reload.
+- **Shared props** (auth, flash, locale) via `HandleInertiaRequests::share()`; cache expensive static-ish shared data server-side (`Cache::remember`) — Inertia has no per-client "once".
 - **Redirects** after mutations (`return to_route('orders.show', $order)`) — Inertia follows them; validation errors come back as `errors` automatically.
 - Routes are normal Laravel routes (web middleware) — there is **no API layer** for page data.
 
 ## Don't
 
 - Don't return JSON for page data — that's what props are for. Don't pass raw Eloquent models (use Resources). Don't build a separate API for what a page already receives as props.
-
-## See also
-
-- [INERTIA-002-forms](INERTIA-002-forms.md) · core: `<PLUGIN_ROOT>/patterns-built/laravel/http/resources/RESOURCE-001-api-resources.md`

@@ -32,3 +32,7 @@ Hand the blob to the `permission` agent (Task). It reads `PERMISSION-002-spatie`
 - ❌ Writing files yourself — delegate to the agent.
 - ❌ Inventing permission names not in the project's captured set.
 - ❌ Scaffolding raw role-string checks where a permission is the stable unit.
+
+## Not covered by a pattern?
+
+If the request needs a **spatie-permission** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "spatie-permission" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

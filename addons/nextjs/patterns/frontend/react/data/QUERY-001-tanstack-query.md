@@ -50,13 +50,28 @@ export async function createUser(formData: FormData) {
 
 For interactive client components that fetch (search-as-you-type, infinite scroll), use **TanStack Query** inside a `'use client'` component with a `QueryClientProvider` in a client boundary — same API as the base pattern.
 
+## Route handlers — when you need a real HTTP endpoint
+
+For webhooks, third-party callbacks, or non-form JSON APIs, add a **Route Handler** (`app/api/<name>/route.ts`) exporting HTTP-verb functions:
+
+```ts
+// app/api/orders/route.ts
+import { NextResponse } from 'next/server'
+
+export async function GET() {
+  return NextResponse.json(await getOrders())
+}
+export async function POST(request: Request) {
+  const body = await request.json()
+  return NextResponse.json(await createOrder(body), { status: 201 })
+}
+```
+
+Prefer Server Components for reads and Server Actions for form writes; reach for route handlers when something **external** calls you.
+
 ## Conventions
 
 - **Prefer server fetching** + caching over client queries; pass server data down as props.
 - **`server-only`** guards server fetchers; secrets never reach the client.
 - **Mutations = Server Actions** + `revalidatePath`/`revalidateTag`; avoid client round-trips for writes.
 - Don't wrap the whole app in TanStack Query — reserve it for true client-interactive data.
-
-## See also
-
-- [ROUTE-001](../routing/ROUTE-001-routes.md)

@@ -7,7 +7,7 @@ description: |
   for reactivity.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-blade
+    bench addon add laravel-blade
 
 depends_on:
   bench: ">=0.8.0"

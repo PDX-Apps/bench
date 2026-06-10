@@ -19,7 +19,7 @@ The `laravel-ai` addon already references the standard PII rules; this addon is 
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-compliance
+bench addon add laravel-compliance
 bench rebuild
 ```
 

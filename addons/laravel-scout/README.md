@@ -10,7 +10,7 @@ Laravel **Scout** full-text search — the `Searchable` trait, `toSearchableArra
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-scout
+bench addon add laravel-scout
 bench rebuild
 ```
 

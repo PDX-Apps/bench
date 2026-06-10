@@ -8,7 +8,7 @@ description: |
   core `permissions` concern, which captures the project's actual role/permission names.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/spatie-permission
+    bench addon add spatie-permission
 
 depends_on:
   bench: ">=0.8.0"

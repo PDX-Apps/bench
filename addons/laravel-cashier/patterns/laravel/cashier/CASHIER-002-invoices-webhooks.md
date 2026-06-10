@@ -1,9 +1,6 @@
 # CASHIER-002 — Invoices, Single Charges & Webhooks (Laravel Cashier / Stripe)
 
 Invoicing, one-off charges, and securely reacting to Stripe webhooks.
-Pairs with
-[CASHIER-001](<PLUGIN_ROOT>/patterns-built/laravel/cashier/CASHIER-001-subscriptions.md)
-(the Billable model + subscription lifecycle).
 
 ## Single charges
 

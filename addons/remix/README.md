@@ -4,5 +4,5 @@ Build with **[Remix / React Router v7](https://remix.run)** (framework mode) —
 ## Install
 ```bash
 npx create-react-router@latest   # or add to an existing app
-bench addon add /path/to/bench/addons/remix && bench rebuild
+bench addon add remix && bench rebuild
 ```

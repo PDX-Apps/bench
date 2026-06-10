@@ -38,3 +38,7 @@ Task tool, `subagent_type: "broadcast"`, pass the blob.
 ## Step 5: Synthesize
 
 Report the event + channel wired, the payload shape, the Echo client listener snippet, and the follow-up checklist (env keys, `reverb:start`, queue worker).
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-reverb** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-reverb" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

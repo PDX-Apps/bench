@@ -7,7 +7,7 @@ description: |
   Ships a /scout command + agent and the SCOUT-001 pattern.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-scout
+    bench addon add laravel-scout
 
 depends_on:
   bench: ">=0.8.0"

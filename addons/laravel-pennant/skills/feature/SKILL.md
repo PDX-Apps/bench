@@ -38,3 +38,7 @@ Task tool, `subagent_type: "feature"`, pass the blob.
 ## Step 5: Synthesize
 
 Report the feature definition path, scope, call sites wired, and any follow-ups (migration, registration, purge reminder).
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-pennant** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-pennant" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

@@ -73,7 +73,7 @@ router.beforeEach((to) => {
 - **Lazy-load every page** with `() => import(...)` for route-level code splitting.
 - **`name` on each route** + named navigation (`router.push({ name: 'user-detail', params: { id } })`) — never hard-code path strings in components.
 - **`props: true`** to pass route params as props (testable pages, no `useRoute()` coupling).
-- **Layouts as parent routes** with `<router-view>` (see [LAYOUT-001](./LAYOUT-001-layouts.md)) — the common, framework-native approach. (A `meta.layout` + dynamic-layout component is an alternative; match the project.)
+- **Layouts as parent routes** with `<router-view>` — the common, framework-native approach. (A `meta.layout` + dynamic-layout component is an alternative; match the project.)
 - **Type `RouteMeta`** via module augmentation so guards and `to.meta` are type-checked.
 - If the project uses **file-based routing** (`unplugin-vue-router` / Nuxt), match that instead of a manual array.
 
@@ -82,7 +82,3 @@ router.beforeEach((to) => {
 - Don't import page components eagerly (kills code-splitting).
 - Don't scatter literal path strings — use route `name`s.
 - Don't put auth logic in components — use a `beforeEach` guard + `meta`.
-
-## See also
-
-- [PAGE-001](./PAGE-001-pages.md) · [LAYOUT-001](./LAYOUT-001-layouts.md)

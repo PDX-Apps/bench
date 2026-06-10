@@ -1,6 +1,6 @@
 # PERMISSION-002-spatie
 
-**spatie/laravel-permission** — the concrete implementation of the authorization model documented in [PERMISSION-001-model](PERMISSION-001-model.md). Roles and permissions live in the database; the authenticatable model carries the `HasRoles` trait; checks go through `can()` / `hasRole()`, Blade `@can`, and route middleware.
+**spatie/laravel-permission** — the concrete implementation of the authorization model (roles carry permissions, checked at the boundary). Roles and permissions live in the database; the authenticatable model carries the `HasRoles` trait; checks go through `can()` / `hasRole()`, Blade `@can`, and route middleware.
 
 ## Pattern
 

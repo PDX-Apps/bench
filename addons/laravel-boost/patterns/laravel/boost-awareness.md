@@ -15,23 +15,22 @@ mentions Boost is installed.
 
 All Boost tools follow the naming convention `mcp__laravel-boost__<tool>`:
 
+These are the tools the current Boost MCP server exposes (`Boost::discoverTools()`). It's a focused set — for anything not listed (routes, artisan commands, config/env values), use **`tinker`**, which runs arbitrary PHP in the app context.
+
 | Tool | Use it for | Prefer over |
 |------|-----------|-------------|
-| `application-info` | Stack snapshot — Laravel version, PHP version, env | reading composer.json + .env |
+| `application-info` | Stack snapshot — Laravel/PHP versions, installed packages, models, env | reading composer.json + .env |
 | `database-schema` | Current DB schema (tables, columns, types) | reading migration files (which only show migration order, not current state) |
 | `database-query` | Run a read-only SELECT against the project's DB | hand-writing Tinker for "what's in this table" |
 | `database-connections` | List configured DB connections | grepping `config/database.php` |
-| `tinker` | Execute PHP / Eloquent in the Laravel context | scaffolding throwaway artisan commands |
-| `list-routes` | Current route table with names, middleware, controllers | `php artisan route:list` + parsing |
-| `list-artisan-commands` | Available artisan commands (incl. custom) | reading `app/Console/Commands/` directory |
-| `get-config` | Resolved config value at a given dotted key | reading config files (which don't reflect env-var overrides) |
-| `list-available-config-keys` | All addressable config keys | guessing |
-| `list-available-env-vars` | Env vars the app reads | grepping for `env(` |
+| `tinker` | Execute PHP / Eloquent in the Laravel context — also the way to inspect routes (`app('router')->getRoutes()`), config (`config('x')`), and env | scaffolding throwaway artisan commands |
 | `read-log-entries` | Recent log lines from `storage/logs/` | tailing files |
 | `last-error` | Most recent exception with stack trace | hunting through logs |
 | `browser-logs` | Browser console logs (if a browser session is hooked up) | n/a |
 | `search-docs` | Semantic search of Laravel docs (and ecosystem packages) | guessing API surface from training data |
 | `get-absolute-url` | Resolve a named route or relative path to a full URL | hand-building URLs |
+
+Boost also ships MCP **prompts** (e.g. `UpgradeLaravelV13`, `UpgradeLivewireV4`, `UpgradeInertiaV3`, `LaravelCodeSimplifier`) and can install reusable **skills** (`boost:install --skills`).
 
 ## When to use which
 
@@ -39,16 +38,18 @@ All Boost tools follow the naming convention `mcp__laravel-boost__<tool>`:
 `database-schema` to see what already exists. Don't infer from migration filenames
 or model `$casts` arrays — those drift from reality.
 
-**Route inspection**: before scaffolding a controller, call `list-routes` to confirm
-the route doesn't already exist and to see the project's actual middleware/naming
-convention.
+**Route inspection**: before scaffolding a controller, check the route doesn't already
+exist and see the project's actual middleware/naming — via `tinker`
+(`app('router')->getRoutes()`) or `php artisan route:list` (Boost has no dedicated
+route tool).
 
 **Data exploration**: when the user asks "are there any users with X?" or "what's
 in the settings table?" — `database-query` (read-only) or `tinker` (full power)
 beats writing a one-shot artisan command.
 
-**Config / env discovery**: never guess what's in `.env` from `.env.example`.
-`list-available-env-vars` + `get-config` give the real values the app reads.
+**Config / env discovery**: never guess what's in `.env` from `.env.example`. Use
+`tinker` to read the real resolved values the app uses (`config('services.stripe.key')`,
+`env('APP_ENV')`) rather than reading config files (which don't reflect env overrides).
 
 **Library / API research**: `search-docs` is semantic and version-aware. Use it
 before any "I think Laravel does X" claim. Especially valuable for ecosystem
@@ -77,8 +78,3 @@ shortcut to the root cause vs. reading logs by hand.
   could have side effects beyond what the user asked for.
 - `last-error` and `read-log-entries` may surface user data. Don't paste raw
   results into commits, issues, or shared chats without scrubbing.
-
-## See also
-
-- Laravel Boost on GitHub: https://github.com/laravel/boost
-- This addon's `/boost-install` skill — handles the install + MCP registration.

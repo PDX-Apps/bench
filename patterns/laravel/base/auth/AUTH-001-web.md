@@ -5,7 +5,7 @@
 Session-based authentication via Laravel's default `web` guard. This is the standard Laravel setup — `routes/web.php` carries the application's routes (including blade views AND JSON endpoints when `Route::resource` is used), and authenticated requests carry a session cookie + CSRF token.
 
 This is the default for most Laravel projects. Two common variants exist (captured for a project via the `auth` concern — `/bench-configure auth`):
-- **SPA / API-only**: `routes/api.php` only; no web routes. Use Sanctum (AUTH-002) for auth.
+- **SPA / API-only**: `routes/api.php` only; no web routes. Use Sanctum for auth.
 - **Web for everything (including API)**: web.php carries both view-returning controllers AND JSON endpoints, all session-authed.
 
 ## Config
@@ -79,10 +79,10 @@ Inside an HTTP request:
 - `Auth::user()` — same, via facade
 - `Auth::id()` — current user ID
 
-For passing the user OUT of HTTP context (into an Action, Job, etc.), see ACTION-001-structure: the controller passes `$request->user()` into the action's `execute(User $user, ...)`.
+For passing the user OUT of HTTP context (into an Action, Job, etc.): the controller passes `$request->user()` into the action's `execute(User $user, ...)`.
 
 ## When to use
 
 - The project's primary frontend is server-rendered (blade) or hybrid
 - Sessions + CSRF are acceptable (typical browser-driven app)
-- Mobile / SPA / 3rd-party API consumers will use Sanctum (AUTH-002) on top of this
+- Mobile / SPA / 3rd-party API consumers will use Sanctum on top of this

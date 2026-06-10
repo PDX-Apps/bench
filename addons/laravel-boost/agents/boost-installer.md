@@ -163,8 +163,8 @@ Laravel Boost is installed at `{relative-laravel-root}`. Agents should prefer
 Boost MCP tools over filesystem/grep when the data is structured:
 
 - `mcp__laravel-boost__database-schema` — current schema (vs. reading migrations)
-- `mcp__laravel-boost__list-routes` — current route table (vs. parsing route files)
-- `mcp__laravel-boost__tinker` — Laravel-context PHP execution
+- `mcp__laravel-boost__database-query` — read-only SELECT against the DB
+- `mcp__laravel-boost__tinker` — Laravel-context PHP execution (routes, config, env)
 - `mcp__laravel-boost__search-docs` — semantic Laravel docs search
 - `mcp__laravel-boost__last-error` — most recent exception with stack trace
 

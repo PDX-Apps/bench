@@ -3,7 +3,7 @@
 ## Pattern
 
 Decision guide for choosing between Actions, Services, or neither — plus when a capability has
-several interchangeable implementations (→ a Manager, [SERVICE-004](./SERVICE-004-manager.md)).
+several interchangeable implementations (→ a driver-based Manager).
 
 ## Decision Tree
 
@@ -180,8 +180,8 @@ class OnboardUserAction
 
 When the same capability has **2+ implementations chosen at runtime** (payment gateways,
 notification channels, export formats), don't scatter a `match` across call sites — use a
-driver-based **Manager** ([SERVICE-004](./SERVICE-004-manager.md)) with each driver behind a shared
-contract ([CODE-003](../code/CODE-003-contracts.md)).
+driver-based **Manager** with each driver behind a shared
+contract.
 
 ```php
 // One capability, several backends, selected by config:
@@ -264,4 +264,4 @@ $user = User::findOrFail($id);
 **Manager (Interchangeable Implementations):**
 - One capability with 2+ runtime-selected backends (gateways, channels, formats)
 - Each driver behind a shared contract; selection driven by config
-- See [SERVICE-004](./SERVICE-004-manager.md) — not for a single implementation
+- Reach for a driver-based Manager — not for a single implementation

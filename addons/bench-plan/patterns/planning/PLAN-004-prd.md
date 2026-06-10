@@ -1,8 +1,8 @@
 # PRD (Product Requirements Document) — format
 
-The **what & why** of a feature, from the user/business view — *no implementation*. It defines the problem, who it's for, what success looks like, and the testable acceptance criteria. Use it to capture intent before any technical design. The *how* comes later in a spec (PLAN-003); the ordered build in a plan (PLAN-001).
+The **what & why** of a feature, from the user/business view — *no implementation*. It defines the problem, who it's for, what success looks like, and the testable acceptance criteria. Use it to capture intent before any technical design. The *how* comes later in a spec; the ordered build in a plan.
 
-A bench-plan PRD is still **grounded** — the gather checks the codebase so the PRD reflects what exists today (current behavior, real entities, what's already built) rather than inventing context. Shared conventions in [PLAN-000-conventions](./PLAN-000-conventions.md). Lives at `{artifact_dir}/NNN-feature-slug/prd.md`.
+A bench-plan PRD is still **grounded** — the gather checks the codebase so the PRD reflects what exists today (current behavior, real entities, what's already built) rather than inventing context. Lives at `{artifact_dir}/NNN-feature-slug/prd.md`.
 
 ```markdown
 # PRD: {Feature name}
@@ -27,7 +27,7 @@ has them (e.g. existing `Role` values).}
 {What the feature must do, as numbered requirements — each one observable.}
 
 ## Acceptance criteria
-{Testable criteria in the project's notation (default Gherkin — PLAN-000). These
+{Testable criteria in the project's notation (default Gherkin). These
 become the test contract and can seed the ticket.}
 
 ## Success metrics
@@ -39,7 +39,7 @@ become the test contract and can seed the ticket.}
 
 ## Conventions
 
-- **No implementation.** A PRD says *what* and *why*, never *how* — if you're naming classes or designing schema, that's a spec.
-- **Acceptance criteria are the bridge** — testable (PLAN-000 notation), so they flow straight into a ticket or a plan's test strategy.
+- **No implementation.** A PRD says *what* and *why*, never *how* — if you're naming classes or designing schema, write a spec.
+- **Acceptance criteria are the bridge** — testable, so they flow straight into a ticket or a plan's test strategy.
 - **Grounded, not speculative** — anchor the problem and users in what the codebase actually is today; mark anything you couldn't confirm as an open question.
 - **One feature per PRD.** Epics get decomposed into per-feature PRDs.

@@ -50,7 +50,3 @@ export default function Root() {
 - **`useLoaderData<typeof loader>()`** for typed route data; **`<Form method="post">`** + `action` for mutations (progressive enhancement, no manual fetch).
 - **Navigation**: `<Link to>` / `<NavLink>` / `useNavigate`; **errors** via `ErrorBoundary` export; redirects via `throw redirect('/login')` in a loader/action.
 - Server-only modules end in `.server.ts` so they're tree-shaken out of the client bundle.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (loaders/actions are the data layer)

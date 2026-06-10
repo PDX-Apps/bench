@@ -3,7 +3,7 @@ name: boost-install
 description: |
   Use this skill when the user wants to install Laravel Boost (laravel/boost)
   in a Laravel project — the MCP server that gives AI agents direct Laravel
-  tooling like database-schema, tinker, list-routes, and search-docs. Triggers
+  tooling like database-schema, tinker, database-query, and search-docs. Triggers
   on "/boost-install", "install laravel boost", "set up boost mcp", "add the
   laravel mcp server", "give claude database access for this project".
   Walks through composer install + php artisan boost:install + verifies MCP
@@ -81,9 +81,13 @@ Once Boost is installed and the MCP server is registered:
 
 - **Restart Claude Code** so the MCP server connects (one-time).
 - The next worker agent invocation will have access to `mcp__laravel-boost__*`
-  tools (database-schema, tinker, list-routes, search-docs, etc.).
+  tools (database-schema, tinker, database-query, search-docs, etc.).
 - If `--no-claude-md` was NOT passed, the project's `CLAUDE.md` now mentions
   Boost so future agents prefer Boost tools over filesystem grepping.
 
 See `patterns-built/laravel/boost-awareness.md` for full guidance on when to
 use which Boost tool.
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-boost** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-boost" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

@@ -8,7 +8,7 @@ description: |
   service + provider patterns.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-octane
+    bench addon add laravel-octane
 
 depends_on:
   bench: ">=0.8.0"

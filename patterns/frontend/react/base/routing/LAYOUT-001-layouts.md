@@ -30,7 +30,7 @@ export function AppLayout() {
 }
 ```
 
-Wire it as a parent route (see [ROUTE-001](./ROUTE-001-routes.md)):
+Wire it as a parent route:
 
 ```tsx
 { element: <AppLayout />, children: [ { index: true, element: <HomePage /> } ] }
@@ -44,13 +44,9 @@ Most apps need an authenticated **app** shell and a minimal **guest/auth** shell
 
 - **`{Name}Layout.tsx`** in `layouts/`; renders `<Outlet />` where pages go. Structure + persistent chrome only — no page logic or data fetching.
 - **`<NavLink>`** for nav (active styling), `<Link>` otherwise.
-- Layout = structure; theme/spacing come from the styling system ([STYLE-001](../styling/STYLE-001-conventions.md)). If the project uses a UI library, use its layout primitives (AppBar/Drawer) and match them.
+- Layout = structure; theme/spacing come from the styling system. If the project uses a UI library, use its layout primitives (AppBar/Drawer) and match them.
 
 ## Don't
 
 - Don't fetch data or hold business logic in a layout.
 - Don't duplicate the shell in every page — use a layout route + `<Outlet />`.
-
-## See also
-
-- [ROUTE-001](./ROUTE-001-routes.md) · [PAGE-001](./PAGE-001-pages.md) · [STYLE-001](../styling/STYLE-001-conventions.md)

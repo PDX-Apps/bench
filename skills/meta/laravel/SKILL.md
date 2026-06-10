@@ -20,6 +20,7 @@ The request: **$ARGUMENTS**
 
 - Operation type unclear (CRUD vs invokable vs grouped) → ask one question.
 - An endpoint needs a model that doesn't exist → include the `model` agent first, or flag it.
+- The request targets a capability with **no agent in the table** (a third-party package's feature, or an advanced nuance of an installed package) → delegate to the `doc-lookup` agent (Task tool, `{ topic, package }`); it fetches the current docs and can persist a pattern.
 - Otherwise pick a sane default and proceed.
 
 ## Step 3: Delegate (Task tool, one agent per artifact)

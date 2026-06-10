@@ -46,6 +46,8 @@ return [
             'balance'             => 'auto',     // 'auto' | 'simple' | false
             'autoScalingStrategy' => 'time',     // 'time' | 'size'
             'maxProcesses'        => 1,
+            'maxTime'             => 0,          // recycle a worker after N seconds (0 = unlimited)
+            'maxJobs'             => 0,          // recycle a worker after N jobs (0 = unlimited)
             'memory'              => 128,
             'tries'               => 1,
             'timeout'             => 60,
@@ -118,7 +120,7 @@ public function tags(): array
 
 Monitor a tag from the dashboard, or via the API (`POST /horizon/api/monitoring {"tag": "tenant:7"}`). Hide noisy jobs/tags from the completed list with `silenced` / `silenced_tags` in config.
 
-> Job retry/timeout/queue conventions (attributes, `Queue::route()`, idempotency) live in the core JOB pattern. HORIZON-001 covers only the Horizon-specific layer.
+> Job retry/timeout/queue conventions (attributes, `Queue::route()`, idempotency) are separate; this pattern covers only the Horizon-specific layer.
 
 ## Metrics
 
@@ -163,6 +165,16 @@ protected function gate(): void
 ```
 
 The published `viewHorizon` gate applies via Horizon's auth middleware in every non-`local` environment.
+
+For token- or IP-based access (e.g. no logged-in user), replace the gate with a custom callback in a service provider's `boot()`:
+
+```php
+use Laravel\Horizon\Horizon;
+
+Horizon::auth(fn ($request) => app()->environment('local') || $request->user()?->isAdmin());
+```
+
+`worker recycling` (`maxTime`/`maxJobs` above) caps how long a worker runs before restarting — use it to bound memory leaks in long-lived workers.
 
 ## Key Points
 

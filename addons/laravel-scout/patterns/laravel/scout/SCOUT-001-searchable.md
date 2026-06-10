@@ -111,8 +111,12 @@ public function toSearchableArray(): array
 
 ```php
 Order::search('widget')->get();
-Order::search('widget')->where('status', 'completed')->get();
+Order::search('widget')->where('status', 'completed')->get();   // equality
+Order::search('widget')->where('total', '>=', 100)->get();      // comparison (=, !=, <, >, <=, >=) — Scout 11+
+Order::search('widget')->whereIn('status', ['paid', 'shipped'])->get();
+Order::search('widget')->whereNotIn('status', ['cancelled'])->get();
 Order::search('widget')->orderByDesc('created_at')->paginate(15);
+Order::search('')->get();        // empty query = match all (then filter with where)
 ```
 
 In a controller:
@@ -136,6 +140,8 @@ only. `where()` is exact-match filtering, not SQL — the engine handles it.
 ```bash
 php artisan scout:import "App\Models\Order"
 php artisan scout:import "App\Models\Order" --fresh
+php artisan scout:import "App\Models\Order" --chunk=200
+php artisan scout:queue-import "App\Models\Order"   # async, via the queue
 php artisan scout:flush  "App\Models\Order"
 ```
 
@@ -147,8 +153,9 @@ Declare filterable/sortable attributes in `config/scout.php`, then sync:
 'meilisearch' => [
     'index-settings' => [
         'orders_index' => [
-            'filterableAttributes' => ['status', 'customer_id'],
-            'sortableAttributes'   => ['created_at'],
+            'filterableAttributes' => ['status', 'customer_id'],   // needed for where()
+            'sortableAttributes'   => ['created_at'],              // needed for orderBy()
+            'searchableAttributes' => ['reference', 'notes'],      // which fields full-text search hits
         ],
     ],
 ],

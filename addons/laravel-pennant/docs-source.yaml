@@ -1,0 +1,8 @@
+# Docs source for the doc-lookup agent. The build concatenates every installed
+# addon's docs-source.yaml into <PLUGIN_ROOT>/config/docs-sources.yaml under a
+# `sources:` root. The top-level key MUST be this addon's name. All fields optional;
+# declare at least one source. first_party Laravel packages prefer boost search-docs.
+laravel-pennant:
+  first_party: true
+  boost_topic: pennant
+  base_url: "https://laravel.com/docs/pennant"

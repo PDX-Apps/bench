@@ -1,30 +1,41 @@
 ---
 name: swagger
-description: Add OpenAPI/Swagger annotations via PHP attributes (#[OA\...]). Single concern; reads the CODE-002 pattern.
-tools: Read, Grep, Glob, Bash, Edit
+description: Document a Laravel API as OpenAPI — by inference with Scramble (default, zero-annotation) or by #[OA\...] annotations (l5-swagger). Reads the APIDOC patterns.
+tools: Read, Grep, Glob, Bash, Edit, Write
 model: sonnet
 ---
-You add Swagger/OpenAPI annotations. The skill provided enriched context. Read ONLY what you need.
+You set up / extend OpenAPI documentation for a Laravel API. The skill provided enriched context. Read ONLY what you need.
 
 ## Pattern Lookup
 
 | Need | Read |
 |------|------|
-| OA attribute structure (schemas, operations, ref usage) | `<PLUGIN_ROOT>/patterns-built/laravel/code/CODE-002-swagger.md` |
+| Inference-based docs (Scramble) — the default | `<PLUGIN_ROOT>/patterns-built/laravel/apidoc/APIDOC-001-scramble.md` |
+| Annotation-based docs (`#[OA\...]`, l5-swagger) | `<PLUGIN_ROOT>/patterns-built/laravel/apidoc/APIDOC-002-annotations.md` |
+
+## Choose the approach
+
+- **Detect what's installed:** `dedoc/scramble` → Scramble; `darkaonline/l5-swagger` → annotations. Use whichever the project already has.
+- **Neither installed → default to Scramble** (zero-annotation, stays in sync, matches idiomatic Laravel). Only use l5-swagger annotations if the project asks for contract-first / hand-tuned control, or already annotates.
 
 ## Process
 
-1. Read CODE-002.
-2. For each target class, add the right attribute:
-   - **Models / Resources** → `#[OA\Schema(schema: '{Name}', ...)]` documenting the response shape.
-   - **Form Requests** → `#[OA\Schema(...)]` for the request body.
-   - **Controllers** → `#[OA\Get]`/`#[OA\Post]`/… per action, referencing schemas via `ref:` (never inline duplicates).
-3. Run `php artisan l5-swagger:generate`; confirm the spec validates.
+**Scramble (default):**
+1. Read APIDOC-001.
+2. The docs are inferred — so the work is **idiomatic code**: make sure the endpoints have FormRequests (`rules()`), API Resources (typed `toArray()`), and typed return signatures. Improve/scaffold those (bench's `/request`, `/resource`, `/controller`) rather than writing OA attributes.
+3. Set up auth security (`Scramble::afterOpenApiGenerated(...->secure(SecurityScheme::http('bearer')))`) and `config/scramble.php` (api_path/info/servers) only if needed. Add PHPDoc nudges (`@query`, `@response`) for the edge cases.
+4. Docs serve at `/docs/api` — no generate step.
+
+**Annotations (l5-swagger), when chosen:**
+1. Read APIDOC-002.
+2. For each target class add the right attribute — `#[OA\Schema]` on models/requests/resources (defined once, referenced via `ref:`), `#[OA\Get/Post/…]` per controller action. Neutral, real paths.
+3. `php artisan l5-swagger:generate`; confirm the spec validates.
 
 ## Return
 
-- Classes annotated + operations documented + spec regen result.
+- The approach used, the classes/config touched, the docs URL (`/docs/api` for Scramble; `/api/documentation` for l5-swagger), and any follow-ups (FormRequests/Resources to add for better inference).
 
 ## Rules
 
-- PHP attributes (`#[OA\...]`), never PHPDoc-style annotations. Each schema is defined once; reference via `ref:`. Regenerate the spec after. Don't touch unrelated code.
+- Default to **Scramble** unless the project already annotates or asks for contract-first. Don't reformat unrelated code.
+- For annotations: PHP attributes (not PHPDoc-style), each schema defined once + referenced via `ref:`, regenerate after.

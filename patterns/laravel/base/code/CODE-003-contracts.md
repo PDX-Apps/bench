@@ -6,7 +6,7 @@ A **contract** is an interface that names a capability — `PaymentGateway`, `Cl
 `HtmlSanitizer` — so callers depend on *what* a thing does, not *which* class does it. Extract a
 contract at the **boundaries** of your application; depend on the concrete everywhere else.
 
-This is the practical form of "depend on abstractions" (see [CODE-002](./CODE-002-oop-principles.md)).
+This is the practical form of "depend on abstractions".
 The goal is swap-ability where swap-ability has a payoff — not an interface for every class.
 
 ## Extract a contract when the class is a boundary
@@ -16,7 +16,7 @@ Default to a contract when the class sits on one of these seams:
 | Boundary | Why a contract earns its place | Example |
 |----------|-------------------------------|---------|
 | **External-service facade** | Isolates a third party so it can be faked in tests and swapped if you change vendors | `PaymentGateway`, `EmailProvider`, `SearchIndex` |
-| **Interchangeable strategies** | Two+ implementations chosen at runtime — pairs with a Manager ([SERVICE-004](../services/SERVICE-004-manager.md)) | `PaymentGateway` (stripe/paddle), `ExportFormat` (csv/xlsx) |
+| **Interchangeable strategies** | Two+ implementations chosen at runtime — pairs with a Manager | `PaymentGateway` (stripe/paddle), `ExportFormat` (csv/xlsx) |
 | **A module's public surface** | The one entry point other modules call; the internals stay private behind it | `Billing`, `Inventory` facade contracts |
 | **Non-deterministic dependency** | Lets a test inject a fixed value instead of real time/randomness/IO | `Clock`, `RandomTokenGenerator`, `Filesystem` |
 
@@ -80,7 +80,7 @@ final class SystemClock implements Clock
 ## Bind, then type-hint the contract
 
 Bind interface → implementation in a service provider; callers type-hint the contract and the
-container injects the bound concrete (see [PROVIDER-001](../providers/PROVIDER-001-structure.md)):
+container injects the bound concrete:
 
 ```php
 // Provider
@@ -158,6 +158,6 @@ interface PaymentGateway
 - **Do not** extract for single-implementation internals or speculative "might need it later" cases
   — add the interface when the second impl or the test-double need actually arrives
 - Contracts live in `app/Contracts/`; the contract speaks your **domain**, never leaks vendor types
-- Bind interface → implementation in a provider ([PROVIDER-001](../providers/PROVIDER-001-structure.md)); callers type-hint the contract
-- Interchangeable drivers behind one contract → reach for a Manager ([SERVICE-004](../services/SERVICE-004-manager.md))
+- Bind interface → implementation in a provider; callers type-hint the contract
+- Interchangeable drivers behind one contract → reach for a Manager
 - The concrete payoff is testability: inject a fake implementation instead of the real boundary

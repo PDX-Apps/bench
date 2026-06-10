@@ -31,7 +31,3 @@ const goToOrder = (id) => router.visit(`/orders/${id}`)
 ## Don't
 
 - Don't add `vue-router` — Inertia owns navigation. Don't build a client route map; the server defines routes.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (page data = props) · addon laravel side: `<PLUGIN_ROOT>/patterns-built/laravel/inertia/INERTIA-001-pages.md`

@@ -59,7 +59,3 @@ it('toggles', () => {
 - Don't query by brittle class names.
 - Don't hit the network — mock the HTTP boundary.
 - Don't put e2e flows here — that's `playwright`.
-
-## See also
-
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [HOOK-001](../hooks/HOOK-001-conventions.md) · addon: `playwright`

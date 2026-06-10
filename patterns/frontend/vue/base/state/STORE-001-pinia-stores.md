@@ -5,7 +5,7 @@ Global/shared **client state** with Pinia. Use the **setup-store** syntax (the m
 ## When
 
 - State shared across unrelated components: the current user/session, UI preferences (theme, sidebar), a cross-page wizard.
-- **Not for server data** — cached API data belongs in query composables ([QUERY-001](../data/QUERY-001-tanstack-query.md)), not a hand-rolled store. Use Pinia for *client* state.
+- **Not for server data** — cached API data belongs in query composables, not a hand-rolled store. Use Pinia for *client* state.
 
 ## Shape — setup store
 
@@ -56,7 +56,3 @@ session.setUser(loaded)                                 // call actions directly
 - Don't use the options-store form (`{ state, getters, actions }`) for new stores unless the project already does — match the project, but setup stores are the base default.
 - Don't cache server responses in a store — that's a query's job (caching, invalidation, refetch).
 - Don't mutate state outside actions.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (server state) · [COMPOSABLE-001](../composables/COMPOSABLE-001-conventions.md)

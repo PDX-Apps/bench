@@ -53,7 +53,3 @@ Edit form — spoof the method:
 
 - Don't skip `@csrf`. Don't echo `old()` without it being escaped (it is, via `{{ }}`).
 - Don't put validation logic in the view — that's the FormRequest's job; the view only displays `@error` messages.
-
-## See also
-
-- [BLADE-001-components](BLADE-001-components.md) · core: `<PLUGIN_ROOT>/patterns-built/laravel/http/requests/REQUEST-001-form-requests.md`

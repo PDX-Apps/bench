@@ -37,6 +37,8 @@ This project's frontend is **`<BENCH_FRONTEND>`** — chosen at `bench build` (`
 
 For a multi-artifact feature, spawn agents in dependency order (**validators/types → data (query) → store → components → page → route → i18n → tests**) and wait for each. Brief each agent with the artifact + the feature context; tell it to detect and match the project's layout, styling, and data library.
 
+If the request needs a capability **no agent covers** (a specific UI-library component or an advanced framework feature), delegate to the `doc-lookup` agent (Task tool, `{ topic, package }`) to fetch it from the library's current docs before generating.
+
 ## Step 4: Report
 
 Summarize at the feature level: artifacts created (paths), routes/screens now available, test status, follow-ups. Don't dump the agents' raw output.

@@ -2,7 +2,7 @@
 
 How to design and write a project-local skill (slash command) under `./.bench/skills/`. Used by the `skill-author` agent.
 
-A **skill** is a slash-command surface in Claude Code. In Bench a skill is a **thin router** (~30–40 lines): it parses the user's request, resolves any ambiguity, builds a structured context blob, and **delegates the actual generation to a paired agent** via the `Task` tool. Skills coordinate; agents do the work. **A skill is almost always paired with an agent** — see [RESEARCH-agents.md](./RESEARCH-agents.md) for the worker side.
+A **skill** is a slash-command surface in Claude Code. In Bench a skill is a **thin router** (~30–40 lines): it parses the user's request, resolves any ambiguity, builds a structured context blob, and **delegates the actual generation to a paired agent** via the `Task` tool. Skills coordinate; agents do the work. **A skill is almost always paired with an agent** — for the worker side.
 
 Apply [METHODOLOGY-layered-scan.md](./METHODOLOGY-layered-scan.md), plus the skill lens below. For overriding a *bundled* skill, also read [CONTRIBUTION-MODES.md](./CONTRIBUTION-MODES.md).
 

@@ -27,3 +27,7 @@ Task tool, `subagent_type: "ai-agent"`, pass the blob.
 
 ## Step 4: Synthesize
 Report the agent class + how to invoke it (`(new {Name})->prompt(...)`); flag PII/compliance notes; suggest `/ai-tool` for capabilities.
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-ai** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-ai" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

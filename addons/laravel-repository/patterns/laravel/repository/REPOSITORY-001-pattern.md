@@ -114,7 +114,7 @@ final class RepositoryServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
     }
 }
 ```
@@ -174,11 +174,4 @@ final class CancelOrder
 - Keep one repository per aggregate/model; don't build a generic "do everything" base
   repository that leaks Eloquent back through `query()`.
 - For reusable chainable query scopes on the model itself, a custom Eloquent query builder
-  is a lighter alternative — see the core `MODEL-002-query-builders` pattern.
-
-## Related
-
-- `<PLUGIN_ROOT>/patterns-built/laravel/providers/PROVIDER-001-structure.md` — where the
-  interface→implementation binding is registered.
-- `<PLUGIN_ROOT>/patterns-built/laravel/services/SERVICE-002-domain-services.md` — services
-  consume repositories via the interface.
+  is a lighter alternative on the model.

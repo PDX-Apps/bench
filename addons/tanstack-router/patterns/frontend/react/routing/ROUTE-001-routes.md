@@ -66,9 +66,36 @@ export function AppLayout() {
 import { useParams } from '@tanstack/react-router'
 export default function UserDetailPage() {
   const { userId } = useParams({ from: '/users/$userId' }) // fully typed
-  // ... query + four states (see QUERY-001 / PAGE-001)
+  // ... query + four states
 }
 ```
+
+## Loaders + typed search params
+
+A route can **load data before it renders** and **validate `?search` params** into a typed object — the headline type-safety feature:
+
+```tsx
+import { z } from 'zod'
+
+const ordersSearch = z.object({ page: z.number().catch(1), status: z.enum(['open', 'paid']).optional() })
+
+const ordersRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: 'orders',
+  validateSearch: ordersSearch,                          // ?page=2&status=open → typed + defaulted
+  loaderDeps: ({ search }) => ({ page: search.page }),   // re-run the loader when page changes
+  loader: ({ deps }) => fetchOrders(deps.page),          // runs before the component renders
+  component: OrdersPage,
+})
+
+function OrdersPage() {
+  const orders = ordersRoute.useLoaderData()             // typed from the loader's return
+  const { page, status } = ordersRoute.useSearch()       // typed from validateSearch
+  // typed nav: <Link to="/orders" search={(prev) => ({ ...prev, page: prev.page + 1 })}>Next</Link>
+}
+```
+
+Pick **loaders** for route-critical data (router shows pending/error UI, dedupes, preloads on intent) and TanStack Query for client-interactive data layered on top.
 
 ## Conventions
 
@@ -85,7 +112,3 @@ export default function UserDetailPage() {
 - Don't hand-build path strings — use typed `to`/`params`.
 - Don't put auth checks inside each page — use `beforeLoad`.
 - Don't eagerly import pages.
-
-## See also
-
-- [PAGE-001](./PAGE-001-pages.md) · [LAYOUT-001](./LAYOUT-001-layouts.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md)

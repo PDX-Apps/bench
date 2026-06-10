@@ -1,10 +1,10 @@
 # Vue Component — conventions
 
-How to write a single-file component in this project. Covers naming, anatomy, props/emits, `v-model`, slots. Styling is project-specific — see [STYLE-001](../styling/STYLE-001-conventions.md); the example here uses scoped CSS as the zero-dependency default.
+How to write a single-file component in this project. Covers naming, anatomy, props/emits, `v-model`, slots. Styling is project-specific —; the example here uses scoped CSS as the zero-dependency default.
 
 ## When
 
-Any reusable piece of UI. Page-level route components are [PAGE-001](../routing/PAGE-001-pages.md); they follow the same anatomy.
+Any reusable piece of UI. Page-level route components follow the same anatomy.
 
 ## Naming + location
 
@@ -69,14 +69,10 @@ const fullName = computed(() => `${props.user.firstName} ${props.user.lastName}`
 - **Emits are typed and past-tense-ish nouns/verbs** (`edit`, `delete`, `submit`); list them in `defineEmits`.
 - **Slots** for composition; provide a default via `<slot>` fallback content; pass scoped slot props where the parent needs context.
 - **Accessibility**: real `<button>`/`<a>` (not `<div @click>`), `aria-*` on icon-only controls, labels on inputs.
-- **Keep components presentational** — data fetching lives in composables/queries ([QUERY-001](../data/QUERY-001-tanstack-query.md)), not inline in components.
+- **Keep components presentational** — data fetching lives in composables/queries, not inline in components.
 
 ## Don't
 
 - Don't use the Options API or `export default {}` — `<script setup>` only.
 - Don't mutate props, reach into a parent, or use a global event bus.
-- Don't hard-code a styling system — match the project's (Tailwind classes, a UI lib's components, or scoped CSS). See [STYLE-001](../styling/STYLE-001-conventions.md).
-
-## See also
-
-- [COMPONENT-002-forms.md](./COMPONENT-002-forms.md) · [STYLE-001](../styling/STYLE-001-conventions.md) · [COMPOSABLE-001](../composables/COMPOSABLE-001-conventions.md)
+- Don't hard-code a styling system — match the project's (Tailwind classes, a UI lib's components, or scoped CSS)

@@ -1,16 +1,18 @@
 name: laravel-swagger
 version: 0.1.0
 description: |
-  Generate OpenAPI/Swagger documentation from PHP attributes (#[OA\...]) using
-  darkaonline/l5-swagger. Adds a /swagger command + agent that annotate Models,
-  Form Requests, API Resources, and Controllers, and a CODE-002 pattern for the
-  attribute conventions (schemas defined once, controllers reference via ref).
+  Document a Laravel API as OpenAPI/Swagger — two approaches: Scramble
+  (dedoc/scramble, the modern default — infers the spec from FormRequests, API
+  Resources, and typed returns with zero annotations) or l5-swagger
+  (darkaonline/l5-swagger — hand-written #[OA\...] PHP attributes). Adds a /swagger
+  command + agent that picks the installed approach (defaulting to Scramble) and
+  the APIDOC-001 (Scramble) / APIDOC-002 (annotations) patterns.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-swagger
+    bench addon add laravel-swagger
 
 depends_on:
   bench: ">=0.8.0"
 
-homepage: https://github.com/DarkaOnLine/L5-Swagger
+homepage: https://scramble.dedoc.co
 license: MIT

@@ -12,5 +12,5 @@ Your app uses Inertia (Laravel + a Vue/React frontend) instead of a separate API
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/inertia && bench rebuild
+bench addon add inertia && bench rebuild
 ```

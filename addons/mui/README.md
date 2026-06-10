@@ -3,5 +3,5 @@ Build React UIs with [MUI (Material UI)](https://mui.com). Appends component + t
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/mui && bench rebuild
+bench addon add mui && bench rebuild
 ```

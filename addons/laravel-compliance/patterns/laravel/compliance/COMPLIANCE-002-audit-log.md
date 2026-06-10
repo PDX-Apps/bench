@@ -8,8 +8,8 @@ Record an **append-only audit trail** of sensitive actions: *who* did *what*, to
 
 - Authentication events: login, logout, failed login, password change, 2FA enrol/disable.
 - Reads of sensitive data (where regulation requires read-logging, e.g. health/financial records).
-- Create/update/delete of records classified Secret/PII/Sensitive in COMPLIANCE-001.
-- Permission/role changes, exports, and "right to be forgotten" deletions (COMPLIANCE-003).
+- Create/update/delete of records classified Secret/PII/Sensitive.
+- Permission/role changes, exports, and "right to be forgotten" deletions.
 
 ## Schema
 
@@ -62,7 +62,7 @@ final class AuditLogger
 ## Protecting the trail
 
 - Block updates/deletes at the model: throw from `updating`/`deleting` events, or grant the app DB user INSERT/SELECT only on `audit_logs`.
-- Retain audit logs per your legal retention window — they often outlive the records they describe (coordinate with COMPLIANCE-003 so a "forget me" purge anonymizes the actor reference but keeps the audit row).
+- Retain audit logs per your legal retention window — they often outlive the records they describe.
 - Never expose raw audit logs through a normal API resource; gate behind an admin policy and a dedicated read model.
 
 ## Key Points

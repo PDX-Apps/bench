@@ -9,7 +9,7 @@ The user's request: **$ARGUMENTS**
 
 ## Step 1: Parse
 - Which model owns billing (e.g. Customer, User, Team)?
-- What flow(s): make billable · create subscription · trial · swap plan · cancel/resume · status checks · single charge · invoices · webhooks.
+- What flow(s): make billable · create subscription · trial · swap plan · cancel/resume · status checks · single charge · Stripe Checkout (hosted) · billing portal · invoices · webhooks.
 
 ## Step 2: Resolve
 - No billing model named → ask which model owns subscriptions; suggest `/model` if it doesn't exist yet.
@@ -29,3 +29,7 @@ Task tool, `subagent_type: "cashier"`, pass the blob.
 
 ## Step 5: Synthesize
 Report the Billable wiring + the subscription/charge/webhook flows added; show usage (`$customer->newSubscription(...)`, status checks) and note any `.env`/config the user must set.
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-cashier** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-cashier" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

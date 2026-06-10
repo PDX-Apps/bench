@@ -1,6 +1,6 @@
 # Authorization model — permissions & roles
 
-The project's **authorization model**: who can do what, and where that decision lives. This is distinct from [POLICY-001/002](../policies/POLICY-001-resource-policies.md) (how to *write* policy classes) — this documents **what the policies/gates actually check**.
+The project's **authorization model**: who can do what, and where that decision lives. This is distinct from *writing* the policy classes — this documents **what the policies/gates actually check**.
 
 ## The question this answers
 
@@ -8,7 +8,7 @@ The project's **authorization model**: who can do what, and where that decision 
 
 ## Bench default (no roles package)
 
-- **Per-action authorization** via `#[Authorize]` on controller actions (see [CONTROLLER-001](../http/controllers/CONTROLLER-001-resource.md)), backed by **Policy** classes ([POLICY-001/002](../policies/POLICY-001-resource-policies.md)) for resource-owned authz.
+- **Per-action authorization** via `#[Authorize]` on controller actions, backed by **Policy** classes for resource-owned authz.
 - **Gates** for non-resource, app-wide abilities (`Gate::define('manage-billing', …)`).
 - Coarse role distinctions via a `role` enum/column on the user, checked inside policies/gates — never inline in controllers.
 
@@ -32,9 +32,5 @@ A project's `.bench/` override of this file (written by the `permissions` concer
 ## Don't
 
 - Don't scatter raw role checks (`if ($user->role === 'admin')`) across controllers/views — centralize in policies/gates/the model.
-- Don't conflate the **model** (this file — *what* is checked) with **writing a policy** ([POLICY-001] — *how*).
+- Don't conflate the **model** (this file — *what* is checked) with **writing a policy** (*how*).
 - Don't invent permission names ad hoc — use the project's established ones.
-
-## See also
-
-- [POLICY-001/002](../policies/POLICY-001-resource-policies.md) (writing policies) · [CONTROLLER-001](../http/controllers/CONTROLLER-001-resource.md) (`#[Authorize]` placement) · the `permissions` concern (captures the project's model into `.bench/`)

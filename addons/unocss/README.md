@@ -4,5 +4,5 @@ Generate Vue/React components styled with **UnoCSS** (atomic, on-demand). Append
 ## Install
 ```bash
 npm install -D unocss
-bench addon add /path/to/bench/addons/unocss && bench rebuild
+bench addon add unocss && bench rebuild
 ```

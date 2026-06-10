@@ -2,7 +2,7 @@
 
 ## Pattern
 
-Tools give an AI Agent (AI-001) the ability to **do** things — query the database, call an API, search a vector store, hand off to another agent. The model decides when to call a tool; the tool's class executes it.
+Tools give an AI Agent the ability to **do** things — query the database, call an API, search a vector store, hand off to another agent. The model decides when to call a tool; the tool's class executes it.
 
 ## Structure
 
@@ -48,7 +48,7 @@ class RandomNumberGenerator implements Tool
 }
 ```
 
-**Attach to agent (see AI-001):**
+**Attach to agent:**
 ```php
 class SalesCoach implements Agent, HasTools
 {
@@ -110,7 +110,6 @@ public function tools(): iterable
 }
 ```
 
-See `AI-003-embeddings` for the embedding generation + vector schema setup.
 
 ### Provider Tools (native AI provider features)
 
@@ -235,7 +234,7 @@ For testing agent-tool interaction (did the agent call the right tool with the r
 - Inject runtime context (user, request) via constructor
 - Validate parameters defensively
 - Return strings — the LLM consumes them as text
-- Use `SimilaritySearch` for RAG (see AI-003)
+- Use `SimilaritySearch` for RAG
 - Use `CanActAsTool` to compose agents
 - Cap tool-call loops with `#[MaxSteps]` on the parent agent
 - Tools are testable as plain PHP classes

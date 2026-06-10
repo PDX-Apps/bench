@@ -40,7 +40,3 @@ const { data: user, pending, error } = await useFetch(`/api/users/${route.params
 - **Navigation**: `<NuxtLink to>` and `navigateTo()`; never hard-code router setup (Nuxt owns it).
 - **Guards**: route `middleware` (`middleware/auth.ts` + `definePageMeta({ middleware })`).
 - **Auto-imports**: `useRoute`, `useFetch`, components, composables are auto-imported — don't add manual imports for them.
-
-## See also
-
-- [QUERY-001](../data/QUERY-001-tanstack-query.md) (Nuxt data fetching)

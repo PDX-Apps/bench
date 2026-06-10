@@ -34,7 +34,3 @@ export function UsersHeader({ total }: { total: number }) {
 
 - Don't hard-require i18n in a project that doesn't use it — plain strings + suggest react-i18next.
 - Don't concatenate display strings; use interpolation/plurals.
-
-## See also
-
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md)

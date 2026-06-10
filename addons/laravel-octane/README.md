@@ -10,6 +10,6 @@ Safety guidance for running a Laravel app under **Octane** (FrankenPHP, Swoole, 
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-octane
+bench addon add laravel-octane
 bench rebuild
 ```

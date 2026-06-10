@@ -46,7 +46,3 @@ export default function NewUser() {
 - **`<Form>` + action** for mutations (works without JS); after an action, affected loaders **revalidate automatically** — no manual cache invalidation.
 - **Pending UI**: `useNavigation()` / `useFetcher()` for optimistic + in-flight states.
 - **`.server.ts`** for server-only modules. Reach for a client query lib only for genuinely client-driven data outside the route data flow.
-
-## See also
-
-- [ROUTE-001](../routing/ROUTE-001-routes.md)

@@ -12,13 +12,14 @@ You wire Laravel Cashier (Stripe billing) into the project. The skill provided e
 |------|------|
 | Billable trait, create/trial/swap/cancel subscriptions, status checks | `<PLUGIN_ROOT>/patterns-built/laravel/cashier/CASHIER-001-subscriptions.md` |
 | Invoices, single charges, secure webhook handling | `<PLUGIN_ROOT>/patterns-built/laravel/cashier/CASHIER-002-invoices-webhooks.md` |
+| Stripe Checkout (hosted page) + Billing Portal (self-service) | `<PLUGIN_ROOT>/patterns-built/laravel/cashier/CASHIER-003-checkout-portal.md` |
 
 ## Process
 
 1. Read the pattern(s) the request needs.
-2. Confirm Cashier is installed (composer require laravel/stripe + published migrations). If not, surface the install steps rather than guessing.
+2. Confirm Cashier is installed (composer require laravel/cashier + published migrations). If not, surface the install steps rather than guessing.
 3. Add the `Billable` trait to the billing model. Match where the project keeps models.
-4. Implement only the requested flows (subscription create/trial/swap/cancel, status checks, charges, invoices, webhooks). Keep Stripe price ids in `config/billing.php`; use placeholder ids if config is absent and tell the user.
+4. Implement only the requested flows (subscription create/trial/swap/cancel, status checks, charges, invoices, **Checkout / billing portal**, webhooks). Keep Stripe price ids in `config/billing.php`; use placeholder ids if config is absent and tell the user.
 5. For webhooks: rely on Cashier's built-in route + signature verification; add an event listener only for events Cashier doesn't handle.
 6. Run the project's static analysis / tests if available.
 

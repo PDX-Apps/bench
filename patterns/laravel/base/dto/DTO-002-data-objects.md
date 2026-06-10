@@ -2,7 +2,7 @@
 
 ## Pattern
 
-Data Objects are mutable typed structures for persisted JSON-column state (settings, preferences, configuration). Unlike DTOs (immutable readonly classes for ephemeral data — see DTO-001), Data Objects are replaced wholesale rather than mutated in place. The class shape is similar; the lifecycle differs.
+Data Objects are mutable typed structures for persisted JSON-column state (settings, preferences, configuration). Unlike DTOs (immutable readonly classes for ephemeral data —), Data Objects are replaced wholesale rather than mutated in place. The class shape is similar; the lifecycle differs.
 
 ## Structure
 

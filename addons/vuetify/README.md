@@ -3,5 +3,5 @@ Build Vue UIs with [Vuetify](https://vuetifyjs.com). Appends component + theming
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/vuetify && bench rebuild
+bench addon add vuetify && bench rebuild
 ```

@@ -1,5 +1,5 @@
 ---
-description: Generate a Filament 3 admin-panel Resource (form schema + table) for a model. Use when the user mentions Filament, an admin panel / back-office CRUD, a Filament resource, a Filament form or table, filters, or a relation manager.
+description: Generate a Filament 4 admin-panel Resource (form schema + table) for a model. Use when the user mentions Filament, an admin panel / back-office CRUD, a Filament resource, a Filament form or table, filters, or a relation manager.
 argument-hint: [model + the fields/columns/filters you want]
 ---
 
@@ -32,3 +32,7 @@ Task tool, `subagent_type: "filament-resource"`, pass the blob.
 
 ## Step 5: Synthesize
 Report the resource (form + table), pages, any relation managers, and remind to confirm a model policy gates access.
+
+## Not covered by a pattern?
+
+If the request needs a **filament** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "filament" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

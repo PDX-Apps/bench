@@ -3,7 +3,7 @@ version: 0.1.0
 description: |
   Makes Bench agents aware of Laravel Boost (laravel/boost), an MCP server that
   gives AI assistants direct Laravel tooling: database-schema, database-query,
-  tinker, list-routes, list-artisan-commands, search-docs, application-info,
+  tinker, database-query, search-docs, application-info, last-error,
   and more.
 
   Ships two things:
@@ -14,7 +14,7 @@ description: |
        each step.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-boost
+    bench addon add laravel-boost
 
 depends_on:
   bench: ">=0.8.0"

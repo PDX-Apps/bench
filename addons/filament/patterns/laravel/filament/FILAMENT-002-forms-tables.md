@@ -2,24 +2,26 @@
 
 ## Pattern
 
-This is the component vocabulary a Filament Resource (`<PLUGIN_ROOT>/patterns-built/laravel/filament/FILAMENT-001-resources.md`) draws on — **form components**, **layout**, **table columns**, **filters**, and **actions** — in depth. The same vocabulary is reused everywhere: resources, relation managers, action modal forms, custom Livewire pages.
+This is the component vocabulary a Filament Resource draws on — **form components**, **layout**, **table columns**, **filters**, and **actions** — in depth. The same vocabulary is reused everywhere: resources, relation managers, action modal forms, custom Livewire pages.
+
+> **Filament 4 namespaces** (assumed here): form components `Filament\Forms\Components\*`; layout components `Filament\Schemas\Components\*` (`Section`, `Grid`, `Tabs`); reactivity utilities `Filament\Schemas\Components\Utilities\{Get, Set}`; table columns `Filament\Tables\Columns\*`; filters `Filament\Tables\Filters\*`; **all actions** (record/bulk/header) `Filament\Actions\*`. Table actions are `->recordActions()` / `->toolbarActions()`. (On a v3 project these are `Forms\Components\*`, `Tables\Actions\*`, `->actions()`/`->bulkActions()`.)
 
 ## Form components
 
 ```php
-use Filament\Forms;
+// v4: import each component, e.g. use Filament\Forms\Components\TextInput;
 
-Forms\Components\TextInput::make('reference')
+TextInput::make('reference')
     ->required()
     ->maxLength(255)
     ->unique(ignoreRecord: true);        // ignore current row on edit
 
-Forms\Components\TextInput::make('total')
+TextInput::make('total')
     ->numeric()
     ->minValue(0)
     ->prefix('$');
 
-Forms\Components\Select::make('status')
+Select::make('status')
     ->options([
         'pending' => 'Pending',
         'paid' => 'Paid',
@@ -28,18 +30,18 @@ Forms\Components\Select::make('status')
     ->default('pending')
     ->required();
 
-Forms\Components\Select::make('product_id')
+Select::make('product_id')
     ->relationship('product', 'name')    // BelongsTo: option list from related model
     ->searchable()
     ->preload()
     ->required();
 
-Forms\Components\Textarea::make('notes')->rows(4)->maxLength(1000);
-Forms\Components\RichEditor::make('description');
-Forms\Components\DateTimePicker::make('shipped_at');
-Forms\Components\Toggle::make('is_priority');
+Textarea::make('notes')->rows(4)->maxLength(1000);
+RichEditor::make('description');
+DateTimePicker::make('shipped_at');
+Toggle::make('is_priority');
 
-Forms\Components\FileUpload::make('attachment')
+FileUpload::make('attachment')
     ->disk('public')
     ->directory('invoices')
     ->acceptedFileTypes(['application/pdf'])
@@ -49,51 +51,51 @@ Forms\Components\FileUpload::make('attachment')
 ### Reactivity + conditional fields
 
 ```php
-Forms\Components\Select::make('type')
+Select::make('type')
     ->options(['physical' => 'Physical', 'digital' => 'Digital'])
     ->live();                            // re-render dependent fields on change
 
-Forms\Components\TextInput::make('weight')
+TextInput::make('weight')
     ->numeric()
-    ->visible(fn (Forms\Get $get) => $get('type') === 'physical');
+    ->visible(fn (Get $get) => $get('type') === 'physical');
 ```
 
-Use `->live()` to make a field trigger re-evaluation, and `Forms\Get`/`Forms\Set` closures (`->visible()`, `->disabled()`, `->afterStateUpdated()`) to react.
+Use `->live()` to make a field trigger re-evaluation, and `Get`/`Set` closures (`->visible()`, `->disabled()`, `->afterStateUpdated()`) to react.
 
 ## Layout components
 
 Wrap fields for structure — these don't map to data, they organize the form:
 
 ```php
-use Filament\Forms;
+// v4: import each component, e.g. use Filament\Forms\Components\TextInput;
 
-Forms\Components\Section::make('Order details')
+Section::make('Order details')
     ->description('Reference + status')
     ->schema([
-        Forms\Components\TextInput::make('reference'),
-        Forms\Components\Select::make('status')->options([/* ... */]),
+        TextInput::make('reference'),
+        Select::make('status')->options([/* ... */]),
     ])
     ->columns(2);
 
-Forms\Components\Grid::make(3)->schema([/* fields */]);
+Grid::make(3)->schema([/* fields */]);
 
-Forms\Components\Tabs::make('Tabs')->tabs([
-    Forms\Components\Tabs\Tab::make('General')->schema([/* ... */]),
-    Forms\Components\Tabs\Tab::make('Shipping')->schema([/* ... */]),
+Tabs::make('Tabs')->tabs([
+    Tabs\Tab::make('General')->schema([/* ... */]),
+    Tabs\Tab::make('Shipping')->schema([/* ... */]),
 ]);
 ```
 
 ## Table columns
 
 ```php
-use Filament\Tables;
+// v4: use Filament\Tables\Columns\TextColumn; filters Filament\Tables\Filters\*; actions Filament\Actions\*
 
-Tables\Columns\TextColumn::make('reference')
+TextColumn::make('reference')
     ->searchable()
     ->sortable()
     ->copyable();
 
-Tables\Columns\TextColumn::make('status')
+TextColumn::make('status')
     ->badge()
     ->color(fn (string $state) => match ($state) {
         'paid' => 'success',
@@ -101,16 +103,16 @@ Tables\Columns\TextColumn::make('status')
         default => 'warning',
     });
 
-Tables\Columns\TextColumn::make('total')->money('usd')->sortable();
-Tables\Columns\TextColumn::make('product.name')->label('Product');   // dot-notation across a relation
-Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()
+TextColumn::make('total')->money('usd')->sortable();
+TextColumn::make('product.name')->label('Product');   // dot-notation across a relation
+TextColumn::make('created_at')->dateTime()->sortable()
     ->toggleable(isToggledHiddenByDefault: true);
 
-Tables\Columns\IconColumn::make('is_priority')->boolean();
-Tables\Columns\ImageColumn::make('thumbnail')->circular();
+IconColumn::make('is_priority')->boolean();
+ImageColumn::make('thumbnail')->circular();
 
-Tables\Columns\ToggleColumn::make('is_active');    // editable inline
-Tables\Columns\SelectColumn::make('status')        // editable inline
+ToggleColumn::make('is_active');    // editable inline
+SelectColumn::make('status')        // editable inline
     ->options(['pending' => 'Pending', 'paid' => 'Paid'])
     ->rules(['required']);
 ```
@@ -120,19 +122,19 @@ Tables\Columns\SelectColumn::make('status')        // editable inline
 ## Filters
 
 ```php
-use Filament\Tables;
+// v4: use Filament\Tables\Columns\TextColumn; filters Filament\Tables\Filters\*; actions Filament\Actions\*
 use Illuminate\Database\Eloquent\Builder;
 
-Tables\Filters\SelectFilter::make('status')
+SelectFilter::make('status')
     ->options(['pending' => 'Pending', 'paid' => 'Paid', 'cancelled' => 'Cancelled'])
     ->multiple();
 
-Tables\Filters\SelectFilter::make('product')
+SelectFilter::make('product')
     ->relationship('product', 'name');
 
-Tables\Filters\TernaryFilter::make('is_priority');
+TernaryFilter::make('is_priority');
 
-Tables\Filters\Filter::make('high_value')
+Filter::make('high_value')
     ->query(fn (Builder $query): Builder => $query->where('total', '>=', 1000));
 ```
 
@@ -141,15 +143,15 @@ Tables\Filters\Filter::make('high_value')
 Per-row actions, header actions, and bulk actions all share the same `Action` base:
 
 ```php
-use Filament\Tables;
+// v4: use Filament\Tables\Columns\TextColumn; filters Filament\Tables\Filters\*; actions Filament\Actions\*
 
 // Per-row
-->actions([
-    Tables\Actions\ViewAction::make(),
-    Tables\Actions\EditAction::make(),
-    Tables\Actions\DeleteAction::make(),
+->recordActions([
+    ViewAction::make(),
+    EditAction::make(),
+    DeleteAction::make(),
 
-    Tables\Actions\Action::make('markPaid')
+    Action::make('markPaid')
         ->icon('heroicon-o-banknotes')
         ->requiresConfirmation()
         ->visible(fn ($record) => $record->status !== 'paid')
@@ -157,11 +159,11 @@ use Filament\Tables;
 ])
 
 // Bulk
-->bulkActions([
-    Tables\Actions\BulkActionGroup::make([
-        Tables\Actions\DeleteBulkAction::make(),
+->toolbarActions([
+    BulkActionGroup::make([
+        DeleteBulkAction::make(),
 
-        Tables\Actions\BulkAction::make('markPaid')
+        BulkAction::make('markPaid')
             ->requiresConfirmation()
             ->action(fn ($records) => $records->each->markPaid()),
     ]),
@@ -174,7 +176,7 @@ A custom `Action` can collect input via its own modal form — `->form([TextInpu
 
 - Form fields: `TextInput`, `Select` (`->relationship()` for related records), `Textarea`/`RichEditor`, `DateTimePicker`, `Toggle`, `FileUpload` — validate with `->required()`, `->maxLength()`, `->unique(ignoreRecord: true)`, `->rules([...])`.
 - Layout (`Section`, `Grid`, `Tabs`) organizes fields and doesn't map to data.
-- Reactivity: `->live()` + `Forms\Get`/`Set` closures (`->visible()`, `->afterStateUpdated()`).
+- Reactivity: `->live()` + `Get`/`Set` closures (`->visible()`, `->afterStateUpdated()`).
 - Columns: `TextColumn`/`IconColumn`/`ImageColumn`/`ToggleColumn`/`SelectColumn`; `->searchable()`, `->sortable()`, `->badge()`, `->money()`, `->dateTime()`, dot-notation for relations.
 - Filters: `SelectFilter`, `TernaryFilter`, custom `Filter` with a `->query()` closure.
 - Actions share one base; `EditAction`/`DeleteAction` prebuilt, custom `Action` with modal `->form()` + `->action()`; bulk actions wrap in `BulkActionGroup`.

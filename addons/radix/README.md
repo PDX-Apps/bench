@@ -3,5 +3,5 @@ Build React UIs with [Radix UI (Primitives)](https://www.radix-ui.com/primitives
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/radix && bench rebuild
+bench addon add radix && bench rebuild
 ```

@@ -22,3 +22,7 @@ The user's request: **$ARGUMENTS**
 Task tool, `subagent_type: "playwright"`, pass the blob.
 ## Step 5: Synthesize
 Report the spec (+ any page object / config) and how to run (`npx playwright test`).
+
+## Not covered by a pattern?
+
+If the request needs a **playwright** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "playwright" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

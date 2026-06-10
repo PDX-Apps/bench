@@ -16,7 +16,7 @@ config-driven default.
 
 | Reach for a Manager when… | Use something simpler when… |
 |---------------------------|------------------------------|
-| 2+ interchangeable implementations of one capability | A single implementation (just bind the contract — see [CODE-003](../code/CODE-003-contracts.md)) |
+| 2+ interchangeable implementations of one capability | A single implementation (just bind the contract —) |
 | The choice is config- or runtime-driven (`config('billing.gateway')`) | The choice is a fixed `match` on a value passed in (a small factory is enough) |
 | Drivers are resolved lazily and reused | You build the object once at a call site |
 | You want callers to stay unaware of which driver is active | Callers legitimately need a specific implementation |
@@ -87,7 +87,7 @@ instance.
 ## Binding + usage
 
 Bind the Manager as a singleton. Optionally alias the contract to the default driver so callers can
-type-hint the capability directly (see [PROVIDER-001](../providers/PROVIDER-001-structure.md)):
+type-hint the capability directly:
 
 ```php
 public function register(): void
@@ -169,7 +169,7 @@ chooses which.
 - Use for **2+ interchangeable implementations** of one capability, selected by config/runtime
 - Extend `Illuminate\Support\Manager`; implement `getDefaultDriver()` (read from config) + one
   `create{Studly}Driver()` per backend returning the **contract** type
-- Every driver implements a shared contract (see [CODE-003](../code/CODE-003-contracts.md)); callers depend on the contract
+- Every driver implements a shared contract; callers depend on the contract
 - Bind the Manager as a `singleton`; optionally alias the contract to `->driver()` for callers
   that don't care which backend is active
 - `driver('name')` selects explicitly; the unqualified Manager forwards to the default driver;

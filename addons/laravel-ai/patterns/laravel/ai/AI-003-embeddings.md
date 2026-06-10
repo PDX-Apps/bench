@@ -116,7 +116,7 @@ public function execute(CreateDocumentData $data): Document
 }
 ```
 
-For large or batch ingestion, queue it (see JOB-001):
+For large or batch ingestion, queue it:
 
 ```php
 class GenerateEmbeddingsJob implements ShouldQueue
@@ -210,7 +210,7 @@ Reranking is more accurate than pure vector similarity but adds another API call
 
 ## RAG Pattern: Vector Search as Agent Tool
 
-The most common use of embeddings is RAG (retrieval-augmented generation). Wire a vector search as a tool on an AI Agent (see AI-002):
+The most common use of embeddings is RAG (retrieval-augmented generation). Wire a vector search as a tool on an AI Agent:
 
 ```php
 use Laravel\Ai\Tools\SimilaritySearch;
@@ -277,7 +277,7 @@ Use the same model for storing AND querying — embeddings from different models
 - Cast as `'array'` on the model
 - Query with `->whereVectorSimilarTo('embedding', $query)`
 - ALWAYS scope user-owned queries with `WHERE user_id = ...`
-- Use `SimilaritySearch::usingModel(...)` as an agent tool for RAG (see AI-002)
+- Use `SimilaritySearch::usingModel(...)` as an agent tool for RAG
 - Use reranking for two-stage retrieval when quality matters
 - Generate + query with the SAME embedding model
 

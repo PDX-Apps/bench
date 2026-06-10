@@ -1,10 +1,10 @@
 # React Component — conventions
 
-How to write a component in this project: function components + hooks + TypeScript. Styling is project-specific — see [STYLE-001](../styling/STYLE-001-conventions.md); the example uses CSS Modules as the zero-config default.
+How to write a component in this project: function components + hooks + TypeScript. Styling is project-specific —; the example uses CSS Modules as the zero-config default.
 
 ## When
 
-Any reusable piece of UI. Route-level components are [PAGE-001](../routing/PAGE-001-pages.md); same anatomy.
+Any reusable piece of UI. Route-level components follow the same anatomy.
 
 ## Naming + location
 
@@ -47,19 +47,15 @@ export function UserCard({ user, dense = false, onEdit }: UserCardProps) {
 
 - **Function components**, named export, **typed props interface** (`{Name}Props`). Destructure props with defaults in the signature.
 - **Callbacks as props** (`onEdit`, `onSubmit`) — past/imperative names; type them. No event bus.
-- **Hooks at the top level**, never conditional. Extract reusable logic into custom hooks ([HOOK-001](../hooks/HOOK-001-conventions.md)).
+- **Hooks at the top level**, never conditional. Extract reusable logic into custom hooks.
 - **Composition via `children`** + render props/slots-as-props where a parent needs context.
 - **Keys** on lists are stable ids, never the array index.
 - **Accessibility**: real `<button>`/`<a>`, `aria-*` on icon-only controls, labels on inputs.
-- **Presentational** — data fetching lives in query hooks ([QUERY-001](../data/QUERY-001-tanstack-query.md)), not inside the component body with `useEffect`.
+- **Presentational** — data fetching lives in query hooks, not inside the component body with `useEffect`.
 
 ## Don't
 
 - Don't use class components or default exports for components (named exports aid refactors/imports — match the project if it differs).
 - Don't call hooks conditionally or in loops.
-- Don't hard-code a styling system — match the project's (Tailwind, CSS Modules, a UI lib). See [STYLE-001](../styling/STYLE-001-conventions.md).
+- Don't hard-code a styling system — match the project's (Tailwind, CSS Modules, a UI lib)
 - Don't use array index as `key`; don't fetch with raw `useEffect` when a query lib is present.
-
-## See also
-
-- [COMPONENT-002-forms.md](./COMPONENT-002-forms.md) · [HOOK-001](../hooks/HOOK-001-conventions.md) · [STYLE-001](../styling/STYLE-001-conventions.md)

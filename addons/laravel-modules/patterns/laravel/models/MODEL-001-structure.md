@@ -11,4 +11,4 @@ This project organizes code by **module** (`nwidart/laravel-modules`), not a fla
 - **Namespace:** `Modules\{Module}\Models`
 - Reference related artifacts via their module namespaces (`Modules\{Module}\Database\Factories\...`).
 
-Full structure + the artifact path/namespace table: `<PLUGIN_ROOT>/patterns-built/laravel/modules/MODULE-001-structure.md`.
+Generate inside the relevant module (`Modules/{Module}/...`) with the `Modules\{Module}\...` namespace.

@@ -1,0 +1,3 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+laravel-swagger:
+  base_url: "https://scramble.dedoc.co"

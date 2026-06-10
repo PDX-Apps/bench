@@ -1,18 +1,23 @@
 # spatie-query-builder
 
-Generate custom Eloquent **query builder classes** (`extends Builder<Model>`) — reusable, chainable query logic extracted out of controllers and models.
+Build **filterable / sortable / includable API queries** from request parameters with [`spatie/laravel-query-builder`](https://spatie.be/docs/laravel-query-builder) — turn `?filter[status]=open&sort=-created_at&include=customer` into a safe Eloquent query, where the allow-lists are the security boundary.
 
 ## What it ships
 
-- **`/query-builder`** skill + **`query-builder`** agent — generate a `{Model}Builder` with chainable scope methods and wire `newEloquentBuilder()` on the model.
-
-It reads the **core** `MODEL-002-query-builders` pattern, so there's no new pattern to maintain — the addon just adds the dedicated command.
+- **`/query-builder`** skill + **`query-builder`** agent — wire `QueryBuilder::for({Model})` into a controller's `index` (or a reusable `{Model}Query` class) with the `allowedFilters` / `allowedSorts` / `allowedIncludes` / `allowedFields` you specify.
+- **`QUERYBUILDER-001-spatie`** pattern — the full conventions: filter kinds (exact/partial/scope/callback), default sorts, includes + counts, sparse fieldsets, the reusable-class form, and the security model.
 
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-query-builder
+bench addon add spatie-query-builder
 bench rebuild
 ```
 
-Then `/query-builder Order with paid(), overdue(), forUser($id)`.
+Then, e.g.:
+
+```
+/query-builder Order index: filter status (exact) + reference (partial), sort created_at/total default -created_at, include customer + lines
+```
+
+> Not to be confused with a custom Eloquent **builder** class (`newEloquentBuilder`) — that's a different, core-Laravel concept covered by the core model patterns. This addon is specifically Spatie's request-driven query package.

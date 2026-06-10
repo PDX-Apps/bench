@@ -124,6 +124,27 @@ One user may sign in with several providers, or link a social account to an exis
 
 Only auto-merge on email when the provider asserts the email is verified — otherwise treat a matching email as a new account to avoid account-takeover.
 
+## Refreshing tokens (offline access)
+
+If you act on the provider's API later (not just log the user in), the access token expires. Request offline access and persist `token` + `refreshToken` + an expiry, then refresh when stale:
+
+```php
+// Ask the provider for a refresh token (Google needs access_type=offline, often prompt=consent):
+Socialite::driver('google')->with(['access_type' => 'offline', 'prompt' => 'consent'])->redirect();
+
+// Later, when the stored token is near/after expiry:
+if ($account->token_expires_at?->isPast()) {
+    $fresh = Socialite::driver('google')->refreshToken($account->refresh_token);
+    $account->update([
+        'token'            => $fresh->token,
+        'refresh_token'    => $fresh->refreshToken ?? $account->refresh_token,
+        'token_expires_at' => now()->addSeconds($fresh->expiresIn),
+    ]);
+}
+```
+
+Many providers (e.g. GitHub) don't expire tokens or don't issue refresh tokens at all — only store/refresh when the provider actually returns a `refreshToken`. Skip this entirely for pure social *login*.
+
 ## Stateless API usage
 
 The session-based flow relies on the OAuth `state` parameter for CSRF protection. For SPAs / token APIs with no session, use stateless mode — but then **you** must carry CSRF protection another way (e.g. a signed `state` you generate and verify):

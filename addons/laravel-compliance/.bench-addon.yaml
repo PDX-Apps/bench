@@ -8,7 +8,7 @@ description: |
   feature against them and reports gaps.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-compliance
+    bench addon add laravel-compliance
 
 depends_on:
   bench: ">=0.8.0"

@@ -4,5 +4,5 @@ Build with **[Nuxt](https://nuxt.com)** — file-based routing, SSR-aware `useFe
 ## Install
 ```bash
 npx nuxi@latest init   # or add to an existing app
-bench addon add /path/to/bench/addons/nuxt && bench rebuild
+bench addon add nuxt && bench rebuild
 ```

@@ -4,5 +4,5 @@ Build React UIs with **[shadcn/ui](https://ui.shadcn.com)** — copy-paste compo
 ## Install
 ```bash
 npx shadcn@latest init
-bench addon add /path/to/bench/addons/shadcn && bench rebuild
+bench addon add shadcn && bench rebuild
 ```

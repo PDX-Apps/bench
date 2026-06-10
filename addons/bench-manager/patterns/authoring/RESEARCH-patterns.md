@@ -58,7 +58,7 @@ If 9/10 hit, it's a convention. If 5/10, it's a transition — ask the user whic
 
 ### Step 4 — Compare against Bench core's pattern, then pick a contribution mode
 
-If Bench core ships a pattern for this artifact, read it first (find it under `patterns-built/laravel/...` in the install). Then choose **how** the project's convention layers onto it (see [CONTRIBUTION-MODES.md](./CONTRIBUTION-MODES.md)):
+If Bench core ships a pattern for this artifact, read it first (find it under `patterns-built/laravel/...` in the install). Then choose **how** the project's convention layers onto it:
 
 - **The project ADDS a convention on top** (e.g. "also extend `BaseController`", "we add a caching note") → **`append`** (or **`anchor`** for a precise spot). The body is ONLY the addition — the base stays. This is the common case and it survives Bench upgrades.
 - **The project FUNDAMENTALLY diverges** (structure contradicts the base) → **`replace`**: a full fork describing it from scratch.
@@ -81,7 +81,7 @@ Project-local patterns live at:
 .bench/patterns/{group}/{name}.md
 ```
 
-Where `{group}` matches Bench's pattern grouping (e.g., `laravel`, `frontend/vue`, `frontend/react`). The build pipeline merges these over the base **by the `mode:` in frontmatter** (see [CONTRIBUTION-MODES.md](./CONTRIBUTION-MODES.md)).
+Where `{group}` matches Bench's pattern grouping (e.g., `laravel`, `frontend/vue`, `frontend/react`). The build pipeline merges these over the base **by the `mode:` in frontmatter**.
 
 ### Common case — `append` (add a convention on top of the base)
 

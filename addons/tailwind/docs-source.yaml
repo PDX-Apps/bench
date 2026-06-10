@@ -1,0 +1,3 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+tailwind:
+  base_url: "https://tailwindcss.com/docs"

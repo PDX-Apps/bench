@@ -1,15 +1,15 @@
 name: spatie-query-builder
 version: 0.1.0
 description: |
-  Generate custom Eloquent query builder classes (extends Builder<Model>) to
-  extract reusable, chainable query logic out of controllers and models. Ships a
-  /query-builder command + agent; they read the core MODEL-002 query-builder
-  pattern (no new pattern needed).
+  Build filterable/sortable/includable API queries from request parameters with
+  spatie/laravel-query-builder (QueryBuilder::for + allowedFilters/Sorts/Includes/
+  Fields). Ships a /query-builder command + agent and the QUERYBUILDER-001 pattern.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-query-builder
+    bench addon add spatie-query-builder
 
 depends_on:
   bench: ">=0.8.0"
 
+homepage: https://spatie.be/docs/laravel-query-builder
 license: MIT

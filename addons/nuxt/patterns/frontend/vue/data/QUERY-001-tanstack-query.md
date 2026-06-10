@@ -17,7 +17,7 @@ const { data: users, pending, error, refresh } = await useFetch<User[]>('/api/us
 Reactive params refetch automatically:
 
 ```ts
-const id = useroute().params.id
+const id = useRoute().params.id
 const { data: user } = await useFetch(() => `/api/users/${id}`)
 ```
 
@@ -41,13 +41,19 @@ async function createUser(payload: CreateUserPayload) {
 }
 ```
 
+## Shared SSR-safe state — `useState`
+
+For state that must survive SSR→client hydration and be shared across components, use Nuxt's **`useState`** (keyed, SSR-safe) — not a module-level `ref`, which leaks between requests on the server:
+
+```ts
+const cart = useState<CartItem[]>("cart", () => [])
+```
+
+Use Pinia for larger client stores; `useState` for small cross-component values.
+
 ## Conventions
 
 - **`useFetch`/`useAsyncData`** for page/component data (SSR + dedup + caching); **`$fetch`** for mutations and event handlers.
 - **Reactive URL** as a function (`() => \`/api/users/${id}\``) so it refetches when inputs change.
 - **`server/api/`** holds server-only logic + secrets — the browser never sees them.
 - Don't add TanStack Query on top — Nuxt's composables are the data layer. (Pinia Colada has a Nuxt module if you want a richer client cache.)
-
-## See also
-
-- [ROUTE-001](../routing/ROUTE-001-routes.md) · [STORE-001](../state/STORE-001-pinia-stores.md)

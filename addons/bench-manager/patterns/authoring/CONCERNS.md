@@ -45,7 +45,7 @@ Be explicit: one bullet per affected pattern, with the mode and the content to w
 - **`output`:**
   - `overrides` → write `.bench/patterns/...` overrides (by mode: append/replace) to the affected patterns. `.bench/` is auto-discovered (no manifest needed); rebuild materializes them.
   - `config:.bench/<file>.yaml` → write a structured config that the owning addon's agent reads (e.g. `ci` → `.bench/ci.yaml`, no detection at run time). **Ship a canonical annotated schema** alongside it at `addons/<addon>/config/<file>.example.yaml`; the build copies it to `<PLUGIN_ROOT>/config/`, so the concern's `Apply` can say "match `<PLUGIN_ROOT>/config/<file>.example.yaml`" and the agent can read it as the schema. See [Config schemas](#config-schemas).
-  - `vars` → merge each answer into the shared `.bench/vars.yaml` as `{question_id}: {value}` (see [Build-time variables](#build-time-variables)).
+  - `vars` → merge each answer into the shared `.bench/vars.yaml` as `{question_id}: {value}`.
 - **The Apply body is the runner's instructions** — be concrete (which override file, which mode, exact content). The `concern-runner` follows it.
 
 ## Config schemas

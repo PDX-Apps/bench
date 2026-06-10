@@ -17,3 +17,7 @@ Task tool with the chosen `subagent_type`, passing the artifact + feature contex
 
 ## Report
 Summarize the views/components created (paths), the routes they're reached by, and any follow-ups (controllers to wire, assets to add).
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-blade** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-blade" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

@@ -43,7 +43,3 @@ export type UpdateUserPayload = Partial<CreateUserPayload>
 
 - Don't keep a hand-written type and a Zod schema in sync manually — derive one from the other.
 - Don't bake server-wrapper shapes into every entity — unwrap in the HTTP client.
-
-## See also
-
-- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md)

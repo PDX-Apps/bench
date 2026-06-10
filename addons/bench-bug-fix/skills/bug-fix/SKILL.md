@@ -1,9 +1,9 @@
 ---
-description: Diagnose and fix a bug test-first (reproduce with a failing test, fix, verify). Use when something is broken, throwing, or behaving incorrectly — "fix the bug where…", "X is returning the wrong…", "this throws when…".
+description: Diagnose and fix a bug, proven by a test. Trace the root cause, write a test that fails because of the bug, fix it, verify. Use when something is broken, throwing, or behaving incorrectly — "fix the bug where…", "X is returning the wrong…", "this throws when…".
 argument-hint: [describe the bug — symptom, where, how to trigger]
 ---
 
-You're the **/bug-fix** skill. Route the bug to the right worker, which fixes it test-first. You don't fix it yourself.
+You're the **/bug-fix** skill. Route the bug to the right worker, which traces the root cause, proves it with a test, fixes it minimally, and verifies. You don't fix it yourself.
 
 The user's request: **$ARGUMENTS**
 

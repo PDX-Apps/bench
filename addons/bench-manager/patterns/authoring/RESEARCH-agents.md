@@ -2,7 +2,7 @@
 
 How to design and write a project-local worker agent under `./.bench/agents/`. Used by the `agent-author` agent.
 
-A **worker agent** is the subagent a skill invokes (via `Task`) to do the actual generation. It runs in isolated context, reads only the patterns it needs, scaffolds files, runs the project's verification, and returns a summary. Worker agents are paired 1:1 with a skill — this lens covers the agent side; see [RESEARCH-skills.md](./RESEARCH-skills.md) for the front.
+A **worker agent** is the subagent a skill invokes (via `Task`) to do the actual generation. It runs in isolated context, reads only the patterns it needs, scaffolds files, runs the project's verification, and returns a summary. Worker agents are paired 1:1 with a skill — this lens covers the agent side; for the front.
 
 Apply [METHODOLOGY-layered-scan.md](./METHODOLOGY-layered-scan.md), plus the agent lens below.
 

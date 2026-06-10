@@ -1,0 +1,5 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+laravel-ai:
+  first_party: true
+  boost_topic: ai
+  base_url: "https://laravel.com/docs/ai"

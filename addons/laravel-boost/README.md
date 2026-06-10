@@ -1,6 +1,6 @@
 # laravel-boost
 
-Makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) — an MCP server that gives AI assistants direct access to Laravel internals (database schema, tinker, routes, artisan commands, semantic docs search, and more).
+Makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) — an MCP server that gives AI assistants direct access to Laravel internals (database schema, read-only queries, tinker, logs/last-error, semantic docs search, and more).
 
 **Status:** opt-in bundled addon. Install with `bench addon add laravel-boost`.
 
@@ -14,7 +14,7 @@ Makes Bench agents aware of [laravel/boost](https://github.com/laravel/boost) �
 
 Without Boost, agents working on a Laravel project read migrations to guess at the current schema, parse `php artisan route:list` output to find routes, and grep config files instead of seeing resolved values. All of that drifts from reality — migrations show order of changes (not current state), `.env` overrides config files, custom artisan commands need discovery.
 
-With Boost installed, agents have structured MCP tools that return current state of the running app: `database-schema`, `list-routes`, `get-config`, `tinker`, `last-error`, `search-docs`, and others. This addon does two things:
+With Boost installed, agents have structured MCP tools that return current state of the running app: `database-schema`, `database-query`, `tinker`, `last-error`, `search-docs`, and others. This addon does two things:
 
 1. Ships an **awareness pattern** that tells worker agents which Boost tool to prefer over which filesystem/artisan equivalent
 2. Ships a **`/boost-install` slash command** that walks through installing Boost in your project with explicit permission at each state-modifying step
@@ -85,16 +85,14 @@ The awareness pattern is automatically discoverable by any Laravel worker agent.
 | `database-schema` | Current DB schema (tables, columns, types) | reading migration files |
 | `database-query` | Read-only SELECT against the project DB | hand-writing Tinker for "what's in this table" |
 | `database-connections` | List configured DB connections | grepping `config/database.php` |
-| `tinker` | Execute PHP / Eloquent in Laravel context | scaffolding throwaway artisan commands |
-| `list-routes` | Current route table with names, middleware, controllers | `php artisan route:list` + parsing |
-| `list-artisan-commands` | Available artisan commands (incl. custom) | reading `app/Console/Commands/` |
-| `get-config` | Resolved config value at a dotted key | reading config files (won't reflect env overrides) |
-| `list-available-config-keys` | All addressable config keys | guessing |
-| `list-available-env-vars` | Env vars the app reads | grepping for `env(` |
+| `tinker` | Execute PHP / Eloquent in Laravel context (also routes/config/env) | scaffolding throwaway artisan commands |
 | `read-log-entries` | Recent log lines from `storage/logs/` | tailing files |
 | `last-error` | Most recent exception with stack trace | hunting through logs |
+| `browser-logs` | Browser console logs (if hooked up) | n/a |
 | `search-docs` | Semantic search of Laravel docs (+ ecosystem packages) | guessing API surface from training data |
 | `get-absolute-url` | Resolve named route or relative path to full URL | hand-building URLs |
+
+(That's the full current tool set — Boost has no dedicated routes/config/env tools; use `tinker` for those.)
 
 Full details in [`patterns/laravel/boost-awareness.md`](./patterns/laravel/boost-awareness.md).
 

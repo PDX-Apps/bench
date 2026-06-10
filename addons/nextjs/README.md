@@ -4,5 +4,5 @@ Build with **[Next.js](https://nextjs.org) App Router** — async Server Compone
 ## Install
 ```bash
 npx create-next-app@latest   # or add to an existing app
-bench addon add /path/to/bench/addons/nextjs && bench rebuild
+bench addon add nextjs && bench rebuild
 ```

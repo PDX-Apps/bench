@@ -1,10 +1,10 @@
 # Vue Component — forms
 
-Form components: bind fields, validate with [Zod](../validation/VALIDATOR-001-zod.md), emit a typed payload on valid submit. The base stays library-light (plain refs + Zod); if the project uses **vee-validate** or a UI library's form system, match that instead.
+Form components: bind fields, validate with Zod, emit a typed payload on valid submit. The base stays library-light (plain refs + Zod); if the project uses **vee-validate** or a UI library's form system, match that instead.
 
 ## When
 
-Any create/edit form. Pair with a Zod schema ([VALIDATOR-001](../validation/VALIDATOR-001-zod.md)) and, for persistence, a mutation ([QUERY-001](../data/QUERY-001-tanstack-query.md)).
+Any create/edit form. Pair with a Zod schema and, for persistence, a mutation.
 
 ## Shape — refs + Zod, emit on valid submit
 
@@ -56,7 +56,7 @@ function onSubmit() {
 
 ## Conventions
 
-- **Validate with the Zod schema** (`safeParse`) — one schema is the source of truth for both the form and the API payload type (`z.infer`). See [VALIDATOR-001](../validation/VALIDATOR-001-zod.md).
+- **Validate with the Zod schema** (`safeParse`) — one schema is the source of truth for both the form and the API payload type (`z.infer`)
 - **The form component doesn't persist** — it emits the validated payload; the parent (a page or a mutation composable) calls the API. Keeps the form reusable for create *and* edit.
 - **`submitting` prop** disables the button during the parent's async submit; don't manage server state inside the form.
 - **Accessibility**: `<label>` wrapping each input (or `for`/`id`), `aria-invalid`, `role="alert"` on messages, `novalidate` + `@submit.prevent`.
@@ -66,7 +66,3 @@ function onSubmit() {
 - Don't duplicate validation rules in the template — derive everything from the Zod schema.
 - Don't fetch or mutate inside the form component.
 - Don't reach for a form library unless the project already uses one (then match it).
-
-## See also
-
-- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md) · [COMPONENT-001](./COMPONENT-001-conventions.md)

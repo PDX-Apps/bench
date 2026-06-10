@@ -4,8 +4,33 @@ mode: append
 
 ## shadcn-vue theming (this project uses shadcn-vue)
 
-Styling is **Tailwind + the shadcn token system**. Theme via the CSS variables in `assets/index.css` (`--background`, `--foreground`, `--primary`, `--radius`, …); components read them through Tailwind (`bg-background`, `text-primary`).
+Styling is **Tailwind + the shadcn token system**. Theme through the CSS variables in the global stylesheet (`assets/index.css`), read by components via semantic Tailwind utilities — not raw colors.
 
-- Use semantic token utilities (`bg-card`, `text-muted-foreground`, `border-input`) — not raw colors.
-- Dark mode: the `.dark` class overrides the same CSS variables; toggle it on `<html>`.
-- Merge/override classes with `cn()` (clsx + tailwind-merge); never string-concat conditional classes.
+### The token variables
+
+```css
+:root {
+  --background: …; --foreground: …;
+  --primary: …; --primary-foreground: …;
+  --muted: …; --muted-foreground: …;
+  --accent: …; --destructive: …;
+  --border: …; --input: …; --ring: …;
+  --radius: 0.5rem;
+}
+.dark { --background: …; --foreground: …; /* same names, dark values */ }
+```
+
+Components read them through utilities: `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `border-input`, `ring-ring`. Use these semantic utilities — never raw `bg-zinc-900` — so light/dark and re-theming stay centralized. (Newer setups define the variables with `oklch()` and wire them via Tailwind v4's `@theme inline`; older ones map them in `tailwind.config` — match the project.)
+
+### Conventions
+
+- **`components.json`** holds the project's choices (`style`, `baseColor`, `cssVariables`, aliases) and drives the CLI — don't fight it.
+- **Dark mode**: the `.dark` class overrides the same variables; toggle it on `<html>` (e.g. via `@vueuse/core` `useColorMode` or VueUse's dark composable).
+- **Re-theme** by editing the CSS variables (or applying a registry theme), not by overriding component internals.
+- Merge/override classes with **`cn()`**; one-off tweaks go through the class, not deep selectors.
+
+### Don't
+
+- Don't hard-code palette colors (`bg-blue-600`) — use semantic tokens (`bg-primary`).
+- Don't duplicate the variable set ad hoc — `:root` + `.dark` in one place is the source of truth.
+- Don't override component CSS from outside — adjust the owned component or its `cn()` classes.

@@ -31,3 +31,7 @@ Task tool, `subagent_type: "scout"`, pass the blob.
 
 ## Step 5: Synthesize
 Report the Searchable wiring + the search endpoint; show usage (`{Model}::search(...)`) and note any `.env`/config + the `scout:import` re-index step the user must run.
+
+## Not covered by a pattern?
+
+If the request needs a **laravel-scout** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "laravel-scout" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

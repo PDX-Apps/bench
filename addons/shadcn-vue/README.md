@@ -4,5 +4,5 @@ Build Vue UIs with **[shadcn-vue](https://www.shadcn-vue.com)** — copy-paste c
 ## Install
 ```bash
 npx shadcn-vue@latest init
-bench addon add /path/to/bench/addons/shadcn-vue && bench rebuild
+bench addon add shadcn-vue && bench rebuild
 ```

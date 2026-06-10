@@ -12,4 +12,4 @@ This project organizes code by **module** (`nwidart/laravel-modules`), not a fla
 - Register routes in the module's `routes/api.php` / `routes/web.php` (loaded by the module's `RouteServiceProvider`), not the global route files.
 - Form Requests and API Resources resolve from the same module namespace.
 
-Full structure + the artifact path/namespace table: `<PLUGIN_ROOT>/patterns-built/laravel/modules/MODULE-001-structure.md`.
+Generate inside the relevant module (`Modules/{Module}/...`) with the `Modules\{Module}\...` namespace.

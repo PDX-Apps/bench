@@ -13,7 +13,7 @@ Build **server-rendered, reactive UI** for Laravel with **Livewire 3** (optional
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/livewire
+bench addon add livewire
 bench rebuild
 ```
 

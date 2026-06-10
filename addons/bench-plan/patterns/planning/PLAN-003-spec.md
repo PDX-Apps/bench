@@ -1,8 +1,6 @@
 # Spec / design doc (RFC) — format
 
-The **how** of a non-trivial change: the proposed technical solution, the alternatives weighed, and the tradeoffs — written to be reviewed *before* code is committed. ("Spec", "design doc", and "RFC" are the same artifact under different names.) Use it when a change is architecturally significant, crosses service/module boundaries, or needs human sign-off on the approach. For the *what & why* upstream of this, see the PRD (PLAN-004); once a specific choice is locked, record it as an ADR (PLAN-002); to sequence the build, a plan (PLAN-001).
-
-Shared conventions (location, criteria notation, grounding) are in [PLAN-000-conventions](./PLAN-000-conventions.md). Lives at `{artifact_dir}/NNN-feature-slug/spec.md`.
+The **how** of a non-trivial change: the proposed technical solution, the alternatives weighed, and the tradeoffs — written to be reviewed *before* code is committed. ("Spec", "design doc", and "RFC" are the same artifact under different names.) Use it when a change is architecturally significant, crosses service/module boundaries, or needs human sign-off on the approach. For the *what & why* upstream of this, write a PRD; once a specific choice is locked, record it as an ADR; to sequence the build, write a plan. Lives at `{artifact_dir}/NNN-feature-slug/spec.md`.
 
 ```markdown
 # Spec: {Feature / change name}
@@ -16,7 +14,7 @@ Shared conventions (location, criteria notation, grounding) are in [PLAN-000-con
 ## Context & requirements
 {The problem, constraints, and what's true in the codebase today that forces this.
 Link the PRD/ticket if one exists. State the requirements/acceptance criteria the
-design must satisfy (PLAN-000 notation).}
+design must satisfy.}
 
 ## Proposed design
 {The approach. Real components, modules, and seams — name actual classes/files.

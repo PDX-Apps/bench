@@ -1,0 +1,5 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+laravel-boost:
+  first_party: true
+  boost_topic: boost
+  base_url: "https://github.com/laravel/boost"

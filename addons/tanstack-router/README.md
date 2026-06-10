@@ -4,5 +4,5 @@ Generate React routes with **[TanStack Router](https://tanstack.com/router)** (f
 ## Install
 ```bash
 npm install @tanstack/react-router && npm install -D @tanstack/router-plugin
-bench addon add /path/to/bench/addons/tanstack-router && bench rebuild
+bench addon add tanstack-router && bench rebuild
 ```

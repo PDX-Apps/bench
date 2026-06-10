@@ -18,6 +18,7 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 ### 🎯 Entry Points + Tooling
 - **/bench** `[what you want built or fixed]` — top-level entry. Routes any build request (single artifact, feature, spec/PRD/ticket, or bug) to the right stack (`/laravel` or `/frontend`) and delegates. (`/bench-*` commands configure Bench itself.)
 - **/help** `[filter]` — this skill. Lists skills by category.
+- **/lookup** `[topic] [in <package>]` — docs fallback. Looks up a capability in a package's current docs (laravel-boost / Context7 / web) when no pattern covers it, and offers to save what it finds as a project pattern.
 
 ### 🔧 Backend Router (multi-artifact features)
 - **/laravel** `[feature / artifact / spec]` — backend router. Decomposes a request into the right artifact(s) and delegates: a single class, a multi-file feature (endpoint = controller + request + resource + route), or a spec via the `implement` workflow.
@@ -63,11 +64,11 @@ You're the **/help** skill. Show the user the plugin's skill catalog. The user's
 ## Examples
 
 ```
-/bench implement the member-invitation feature
+/bench implement the team-invitation feature
 /laravel create endpoint to mark an order paid
-/controller add MarkBillPaidController (invokable)
-/vue-component create HouseholdMemberCard
-/vue-ui build the household member invitation flow
+/controller add MarkOrderPaidController (invokable)
+/vue-component create OrderSummaryCard
+/vue-ui build the subscription checkout flow
 /help backend
 /help vue-component
 ```

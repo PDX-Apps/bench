@@ -163,6 +163,11 @@ team unless overridden with `->for(...)`.
 @else
     <x-checkout-legacy />
 @endfeature
+
+{{-- active if ANY of the listed features is on --}}
+@featureany(['new-checkout', 'beta-program'])
+    <x-early-access-banner />
+@endfeatureany
 ```
 
 Works with the default scope (authenticated user). For an explicit scope, check

@@ -1,6 +1,6 @@
 # filament
 
-Build **admin panels** for Laravel with **Filament 3** — the TALL-stack (Tailwind, Alpine, Livewire, Laravel) resource builder. Declare a model's CRUD interface in PHP — a form schema and a table — and Filament renders the back-office UI.
+Build **admin panels** for Laravel with **Filament 4** — the TALL-stack (Tailwind, Alpine, Livewire, Laravel) resource builder. Declare a model's CRUD interface in PHP — a form schema and a table — and Filament renders the back-office UI.
 
 ## What it ships
 
@@ -12,7 +12,7 @@ Build **admin panels** for Laravel with **Filament 3** — the TALL-stack (Tailw
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/filament
+bench addon add filament
 bench rebuild
 ```
 
@@ -25,5 +25,5 @@ Then:
 
 ## Requires
 
-- Filament 3 (`composer require filament/filament` + `php artisan filament:install --panels`).
+- Filament 4 (`composer require filament/filament` + `php artisan filament:install --panels`).
 - A panel set up, and ideally a **policy** on each managed model — Filament gates resource access through it.

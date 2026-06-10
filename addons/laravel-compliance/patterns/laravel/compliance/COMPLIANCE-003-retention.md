@@ -62,7 +62,7 @@ final class PurgeExpiredData extends Command
 ```
 
 - Support `--dry-run` and **chunk** large tables (`->chunkById()`) so the purge doesn't exhaust memory or lock the table.
-- Run inside the action's audit context — record a purge entry (COMPLIANCE-002) so the deletion itself is provable.
+- Run inside the action's audit context — record a purge entry so the deletion itself is provable.
 
 ## Right to be forgotten / anonymization
 
@@ -92,4 +92,4 @@ public function anonymize(User $user): void
 - Soft delete is an undo buffer, not retention — it still holds PII and must be purged on its own window.
 - Drive deletion from a config-defined retention window plus a scheduled, dry-run-capable, chunked purge command.
 - "Right to be forgotten" usually means **anonymize** (irreversibly overwrite PII) to preserve integrity + audit obligations, not row deletion.
-- Record every purge/anonymization in the audit trail (COMPLIANCE-002).
+- Record every purge/anonymization in the audit trail.

@@ -2,12 +2,13 @@ name: laravel-cashier
 version: 0.1.0
 description: |
   Laravel Cashier (Stripe) billing — subscriptions, plan swaps, trials,
-  cancellation/grace periods, single charges, invoices, and secure webhook
-  handling. Ships a /cashier command + agent and two CASHIER-00x patterns
-  that wire the Billable model and the common subscription flows.
+  cancellation/grace periods, single charges, Stripe-hosted Checkout + the
+  self-service billing portal, invoices, and secure webhook handling. Ships a
+  /cashier command + agent and the CASHIER-001/002/003 patterns that wire the
+  Billable model and the common billing flows.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/laravel-cashier
+    bench addon add laravel-cashier
 
 depends_on:
   bench: ">=0.8.0"

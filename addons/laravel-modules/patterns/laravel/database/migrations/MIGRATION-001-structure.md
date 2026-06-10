@@ -11,4 +11,4 @@ This project organizes code by **module** (`nwidart/laravel-modules`), not a fla
 - Migration classes stay anonymous/un-namespaced, exactly as in core.
 - The module's service provider auto-loads migrations from this path (`loadMigrationsFrom`); run them with `php artisan module:migrate {Module}` or the global `migrate`.
 
-Full structure + the artifact path/namespace table: `<PLUGIN_ROOT>/patterns-built/laravel/modules/MODULE-001-structure.md`.
+Generate inside the relevant module (`Modules/{Module}/...`) with the `Modules\{Module}\...` namespace.

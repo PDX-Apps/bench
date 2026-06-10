@@ -12,7 +12,7 @@ Horizon is mostly configuration, so this addon ships patterns rather than a comm
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-horizon
+bench addon add laravel-horizon
 bench rebuild
 ```
 

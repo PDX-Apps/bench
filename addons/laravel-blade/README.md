@@ -21,5 +21,5 @@ laravel-blade supports three setups depending on `--frontend`:
 
 ## Install
 ```bash
-bench addon add /path/to/bench/addons/laravel-blade && bench rebuild
+bench addon add laravel-blade && bench rebuild
 ```

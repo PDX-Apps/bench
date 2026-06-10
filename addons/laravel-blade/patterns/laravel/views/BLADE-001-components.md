@@ -55,8 +55,9 @@ final class StatusBadge extends Component
 ## Conventions
 
 - **`@props([...])`** declares inputs (with defaults) — everything else falls through `$attributes`.
-- **`$attributes->merge([...])`** / `->class([...])` so callers can add classes/attrs without breaking the component.
-- **Named slots** via `<x-slot:name>`; default content via `{{ $slot }}`.
+- **`$attributes->merge([...])`** / **conditional `->class(['base', 'is-error' => $hasError])`** so callers can add classes/attrs without breaking the component.
+- **Named slots** via `<x-slot:name>`; default content via `{{ $slot }}`; a slot's own attributes via `$slotName->attributes`.
+- **Runtime component name** → `<x-dynamic-component :component="$name" />`.
 - **One responsibility per component**; compose small ones. Presentational → anonymous; behavioural/derived → class-based.
 - **Escape by default** (`{{ }}`); only `{!! !!}` for trusted HTML you control.
 - Keep PHP in components/view-models, not sprawled in the template; pass ready-to-render data from the controller.
@@ -65,7 +66,3 @@ final class StatusBadge extends Component
 
 - Don't query the database in a component — pass data in from the controller/view composer.
 - Don't `{!! !!}` user input. Don't duplicate a partial that should be a component.
-
-## See also
-
-- [BLADE-002-layouts](BLADE-002-layouts.md) · [BLADE-003-forms](BLADE-003-forms.md) · [BLADE-004-pages](BLADE-004-pages.md)

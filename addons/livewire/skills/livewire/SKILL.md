@@ -34,3 +34,7 @@ Task tool, `subagent_type: "livewire-component"`, pass the blob.
 
 ## Step 5: Synthesize
 Report the component class + view (and Form object if any); show how to render it (`<livewire:show-order :order="$order" />` or `@livewire(...)`).
+
+## Not covered by a pattern?
+
+If the request needs a **livewire** capability this addon's patterns don't cover (an advanced or rarely-used feature), delegate to the `doc-lookup` agent (Task tool) with `{ topic, package: "livewire" }`. It reads the package's current docs, returns grounded guidance, and — on your go-ahead — saves it as a project pattern so the next run has it.

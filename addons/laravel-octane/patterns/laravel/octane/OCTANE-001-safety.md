@@ -95,6 +95,11 @@ prefer the framework cache (`Cache::`), or clear the structure when you're done 
 Anything you stash on a long-lived object is shared by every subsequent request on that
 worker.
 
+> Octane ships an in-memory **`octane` cache driver** (`Cache::store('octane')`) backed by the
+> worker — fast, shared across requests/workers on the server, with `->interval()` caching for
+> values recomputed on a schedule. Use it for genuinely shareable hot data; it's still bounded
+> memory, so don't treat it as unlimited.
+
 ### 4. Flush stateful third-party services between requests
 
 If a package keeps internal state across requests, list it under `flush` in
@@ -135,10 +140,3 @@ Octane::tick('cleanup', function (): void {
 - Stateful third-party services listed under `config/octane.php` `flush` (or reset on a
   request listener).
 - `tick`/`concurrently` callbacks hold no request state and leak no memory.
-
-## Related
-
-- `<PLUGIN_ROOT>/patterns-built/laravel/providers/PROVIDER-001-structure.md` — where
-  container bindings are registered; choose `scoped` vs `singleton` here.
-- `<PLUGIN_ROOT>/patterns-built/laravel/services/SERVICE-002-domain-services.md` — services
-  are the most common place per-request state leaks in.

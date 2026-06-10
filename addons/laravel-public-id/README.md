@@ -13,7 +13,7 @@ Layers (`append` mode) public-ID guidance onto three core patterns, so generated
 ## Install
 
 ```bash
-bench addon add /path/to/bench/addons/laravel-public-id
+bench addon add laravel-public-id
 bench rebuild
 ```
 

@@ -26,15 +26,12 @@ const props = defineProps({ orders: Object, stats: Object })
 ## Conventions
 
 - **Props are server state** — the controller passes API Resources/paginators; the page reads `props`. Refresh by re-visiting (`router.reload({ only: ['orders'] })`).
-- **Mutations**: submit with `useForm` (see INERTIA-002) — on success the server redirects and returns fresh props; no cache to invalidate.
-- **Deferred props** (`Inertia::defer`) render via `<Deferred>`; **polling** via `router.reload` on an interval if needed.
+- **Mutations**: submit with `useForm` — on success the server redirects and returns fresh props; no cache to invalidate.
+- **Deferred props** (`Inertia::defer`) render via `<Deferred>`; **polling** via the v2 `usePoll(ms, { only: [...] })` helper (not a hand-rolled `setInterval`).
+- **Infinite scroll / load-more**: server `Inertia::merge()` on a prop + the `<WhenVisible>` component to fetch the next page as it scrolls into view (v2).
 - **Shared props** (auth, flash) come from `usePage().props`.
 - Only reach for an ad-hoc client fetch (the project's HTTP lib) for genuinely client-only widgets — never for page data.
 
 ## Don't
 
 - Don't install TanStack Query / a service layer for page data — props already are the data. Don't duplicate server state in a client cache.
-
-## See also
-
-- [ROUTE-001](../routing/ROUTE-001-routes.md) · laravel side: `<PLUGIN_ROOT>/patterns-built/laravel/inertia/INERTIA-001-pages.md`, `.../INERTIA-002-forms.md`

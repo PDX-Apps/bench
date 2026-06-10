@@ -58,7 +58,3 @@ describe('useDisclosure', () => {
 - Don't select by brittle class names or copy.
 - Don't hit the network — mock the HTTP boundary.
 - Don't put e2e flows here — that's `playwright`.
-
-## See also
-
-- [COMPONENT-001](../components/COMPONENT-001-conventions.md) · [COMPOSABLE-001](../composables/COMPOSABLE-001-conventions.md) · addon: `playwright`

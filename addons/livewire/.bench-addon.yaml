@@ -9,7 +9,7 @@ description: |
   LIVEWIRE-001/002/003 patterns.
 
   Opt-in addon — install per-project with:
-    bench addon add /path/to/bench/addons/livewire
+    bench addon add livewire
 
 depends_on:
   bench: ">=0.8.0"

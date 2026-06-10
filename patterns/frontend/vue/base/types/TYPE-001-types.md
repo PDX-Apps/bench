@@ -17,7 +17,7 @@ export interface User {
 
 ## Payloads — derive from the Zod schema (single source of truth)
 
-When a value crosses the network boundary, the [Zod schema](../validation/VALIDATOR-001-zod.md) is the source of truth and the type comes from it:
+When a value crosses the network boundary, the Zod schema is the source of truth and the type comes from it:
 
 ```ts
 // validation/user.ts
@@ -49,7 +49,3 @@ export type UpdateUserPayload = Partial<CreateUserPayload>
 
 - Don't keep a hand-written type and a Zod schema in sync manually — derive one from the other.
 - Don't model server-wrapper shapes (`{ data, meta }`) into every entity — unwrap in the HTTP client.
-
-## See also
-
-- [VALIDATOR-001](../validation/VALIDATOR-001-zod.md) · [QUERY-001](../data/QUERY-001-tanstack-query.md)

@@ -50,7 +50,7 @@ description: |                    # required — one-line summary
 
 depends_on:                       # optional
   bench: ">=0.8.0"                 #   minimum core version
-  addons: [bench-ci, playwright]   # require other addons (auto-installed)
+  addons: [laravel-blade]          # require other addons (auto-installed)
 
 # Optional metadata (informational only — not enforced by the loader)
 homepage: https://github.com/your-org/my-framework-kit
@@ -62,7 +62,7 @@ No declarative contribution lists — what the addon contributes is determined b
 
 ### Addon dependencies (`depends_on.addons`)
 
-An addon can **require other addons** instead of duplicating their content — e.g. `bench-quality` declares `depends_on.addons: [bench-ci, playwright]` and delegates to their `ci` / `playwright` agents. At install/rebuild, the loader **resolves each dependency** (by bundled directory name *or* by manifest `name:`), pulls it in **transitively** (deps load before dependents), and de-dups. A missing dependency warns loudly. Dependencies are resolved at build time, not persisted — they follow the dependent automatically. For composition to work, the depended-on functionality should be exposed as a **Task-delegatable agent** (not only a skill).
+An addon can **require other addons** instead of duplicating their content — e.g. `livewire` declares `depends_on.addons: [laravel-blade]` to inherit Blade's page/layout/route ownership. At install/rebuild, the loader **resolves each dependency** (by bundled directory name *or* by manifest `name:`), pulls it in **transitively** (deps load before dependents), and de-dups. A missing dependency warns loudly. Dependencies are resolved at build time, not persisted — they follow the dependent automatically. For composition to work, the depended-on functionality should be exposed as a **Task-delegatable agent** (not only a skill).
 
 ---
 
@@ -160,10 +160,9 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 | Addon | What it does |
 |-------|--------------|
 | `bench-manager` | The `/bench-*` toolkit — `/bench-init`, `/bench-configure`, `/bench-override`, `/bench-slice`, `/bench-list/show/status` + the authoring agents (default-loaded) |
-| `bench-plan` | Turn a ticket/PRD into a technical plan the `implement` workflow can execute (`/plan`) |
-| `bench-quality` | Pre-push pipeline: review → CI → optional e2e → go/no-go (`/quality`); depends on `bench-ci` + `playwright` |
+| `bench-plan` | Research the codebase → emit a plan/spec/PRD/ADR/ticket (`/plan <source> as <type>`) |
 | `bench-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
-| `bench-tdd` | Test-first bug-fix loop (`/bug-fix`) |
+| `bench-bug-fix` | Disciplined bug-fix loop — trace → prove with a test → fix → verify/revert (`/bug-fix`) |
 | `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` |
 
 ### Laravel packages
