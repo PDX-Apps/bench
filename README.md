@@ -39,6 +39,14 @@ cd ~/my-app
 
 > **Bench is per-project, not a global plugin.** Each project gets its own built copy — there is no single build that's correct for every version + override set. Your project must be its own git root.
 
+> **Monorepo or non-standard layout?** Auto-detect reads `composer.json` / `package.json` at the repo root and scans `apps/`, `packages/`, `services/` one or two levels down. If your Laravel or Vue/React app lives elsewhere — or the build prints `Built BACKEND-ONLY` / `frontend=none` when you *do* have a frontend — set the stack explicitly so the right skills are generated:
+>
+> ```bash
+> bench build --frontend=vue --vue=3 --laravel=13 --php=8.5   # or --frontend=react
+> ```
+>
+> The frontend is **fixed at build time**. `/bench-init` and `bench rebuild` replay whatever the build set — they do **not** re-detect or change it. So if Vue/React files are missing, re-run `bench build` with `--frontend=…`, not `bench-init`.
+
 Now open Claude Code in the project and head to **[Using Bench](#using-bench)** → start with `/bench-init`.
 
 ---
@@ -104,7 +112,7 @@ bench addon add tailwind     # by bundled name
 bench addon add /path/to/my-addon  # or a path
 ```
 
-One addon — **`bench-manager`** — is bundled and loaded by default; it provides the `/bench-*` commands above. Everything else is opt-in. Bench ships **40 addons** across:
+One addon — **`bench-manager`** — is bundled and loaded by default; it provides the `/bench-*` commands above. Everything else is opt-in. Bench ships **42 addons** across:
 
 [Setup & workflow](./docs/addons.md#setup--workflow) · [Laravel packages](./docs/addons.md#laravel-packages) · [Laravel UI](./docs/addons.md#laravel-ui) · [Frontend styling](./docs/addons.md#frontend-styling) · [Component libraries](./docs/addons.md#frontend-component-libraries) · [Data & routing](./docs/addons.md#frontend-data--routing) · [Meta-frameworks](./docs/addons.md#meta-frameworks) · [Testing](./docs/addons.md#testing) · [Docs](./docs/addons.md#documentation)
 

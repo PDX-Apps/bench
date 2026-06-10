@@ -12,6 +12,14 @@ You're the **/bench-init** skill. Tailor Bench to this project in two passes —
 
 The user's request: **$ARGUMENTS**
 
+## Pass 0 — Frontend sanity check (monorepo safety net)
+
+Run `<PLUGIN_ROOT>/bin/bench status` and read the active frontend. If it says **none** but the project actually has a Vue/React app, the initial `bench build` missed the framework (common in monorepos where the apps live under `apps/*` and the root `package.json` is just turbo/nx/pnpm orchestration). Scan for a real frontend app — root + `apps/*/package.json` + `packages/*/package.json` — and if one exists, **offer to fix it**, because the frontend is fixed at build time (a plain `rebuild` would just replay `none`):
+
+> "Your build is backend-only, but `apps/web` is a Vue app — its skills/agents weren't generated. Re-run the build with Vue?"
+
+On yes: `<PLUGIN_ROOT>/bin/bench build --frontend=vue --vue=<detected>` (or `react`). This is the one place bench-init runs `build` with flags rather than a plain `rebuild`. Then continue.
+
 ## Pass 1 — Concerns (the essentials; reliable, always asked)
 
 Run the declared concerns at `<PLUGIN_ROOT>/concerns/*.md` (core + installed addons), sorted by `order`. For each:
@@ -35,19 +43,25 @@ Then ask the user how far to go:
 
 For each accepted item: override → the matching author (`pattern-author`/`skill-author`/`agent-author`, `intent: fork`, `defer_rebuild: true`); slice candidate → the slice sequence (`pattern-author` capture → `skill-author` new). Show drafts for approval.
 
-## Pass 3 — Matching addons (offer, don't fork)
+## Pass 3 — Matching addons (offer as a checklist)
 
-Some conventions are better served by a **bundled addon** than a project override — a package has a whole pattern set, not a one-line tweak. List what's available and map detections to addons:
+Many conventions are better served by a **bundled addon** than a hand-written override — a package has a whole pattern set, not a one-line tweak. Detect what's installed and offer the matches as one multi-select.
+
+**Scan monorepo-aware.** Real deps are often NOT at the repo root (a turbo/nx/pnpm root is just orchestration). Read every manifest, skipping `vendor/`/`node_modules/`:
+
+- `composer.json` — root **and** `apps/*/`, `packages/*/`, `services/*/`
+- `package.json` — root **and** `apps/*/`, `packages/*/`
+
+List the bundled addons, then map detections across **both** ecosystems:
 
 ```bash
 <PLUGIN_ROOT>/bin/bench addon available     # name + description of every bundled addon
 ```
 
-Scan `composer.json` / `package.json` for packages that have a matching addon (e.g. `spatie/laravel-permission` → `spatie-permission`, `laravel/octane` → `laravel-octane`, `nwidart/laravel-modules` → `laravel-modules`, `spatie/laravel-query-builder` → `spatie-query-builder`, Inertia/Livewire/Filament/Cashier/Scout/Horizon/Socialite → their addons). For each match, **offer** to install it:
+- **Laravel** — `spatie/laravel-permission`→`spatie-permission`, `spatie/laravel-query-builder`→`spatie-query-builder`, `laravel/octane`→`laravel-octane`, `laravel/horizon`→`laravel-horizon`, `laravel/scout`→`laravel-scout`, `laravel/cashier`→`laravel-cashier`, `laravel/socialite`→`laravel-socialite`, `laravel/reverb`→`laravel-reverb`, `laravel/pennant`→`laravel-pennant`, `laravel/boost`→`laravel-boost`, `nwidart/laravel-modules`→`laravel-modules`, `inertiajs/inertia-laravel`→`inertia`, `livewire/livewire`→`livewire`, `filament/filament`→`filament`, `dedoc/scramble` or `darkaonline/l5-swagger`→`laravel-swagger`.
+- **Frontend** — `vuetify`→`vuetify`, `primevue`→`primevue`, `quasar`→`quasar`, `@chakra-ui/react`→`chakra`, `@mui/material`→`mui`, `radix-ui`/`@radix-ui/*`→`radix`, a `components.json`→`shadcn`/`shadcn-vue`, `tailwindcss`→`tailwind`, `unocss`→`unocss`, `@pinia/colada`→`pinia-colada`, `@tanstack/react-router`→`tanstack-router`, `next`→`nextjs`, `nuxt`→`nuxt`, framework-mode `react-router`→`remix`, `@playwright/test`→`playwright`.
 
-> "Detected `spatie/laravel-permission` — there's a `spatie-permission` addon (roles/permissions scaffolding + authz patterns). Add it?"
-
-On yes, run `<PLUGIN_ROOT>/bin/bench addon add <name>` (it rebuilds). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
+Present every match in **one `AskUserQuestion` (multiSelect)** — "Detected these packages with matching addons — which should I install?" — describing what each addon adds. On confirm, install the chosen set: `<PLUGIN_ROOT>/bin/bench addon add <name>` per addon (batch them, then one rebuild at the end). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
 
 ## Finish — one rebuild + summary
 

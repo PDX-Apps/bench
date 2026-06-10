@@ -704,5 +704,28 @@ if (( prune_count > 0 )); then
   echo "Pruned $prune_count skill/agent file(s) for unused frontend(s) (active: ${active_frontends% })"
 fi
 
+# Loud heads-up when the build ended up backend-only — the #1 silent surprise,
+# especially in monorepos where frontend auto-detection didn't reach the Vue/React
+# app. Backend-only is legitimate, so this informs rather than errors.
+if [[ "$BENCH_FRONTEND" == "none" ]]; then
+  cat <<'FRONTEND_NONE_WARNING'
+
+────────────────────────────────────────────────────────────────────────
+⚠️  Built BACKEND-ONLY — no Vue/React skills, agents, or patterns were generated.
+
+   Correct for an API-only project. But if this project HAS a frontend (common
+   in monorepos, where the Vue/React app lives in a subdirectory the auto-detect
+   didn't reach), the framework wasn't found — re-run with it set explicitly:
+
+       bench build --frontend=vue --vue=3        # or
+       bench build --frontend=react
+
+   …or just open Claude in this project and run /bench-init — it reads your actual
+   layout (monorepo-aware), confirms the framework with you, and re-runs the build
+   for you. (Plain `bench rebuild` can't fix this — it replays whatever was set here.)
+────────────────────────────────────────────────────────────────────────
+FRONTEND_NONE_WARNING
+fi
+
 # Tail message intentionally minimal — init-project.sh prints the user-facing
 # next-steps with project-relative paths.

@@ -46,7 +46,8 @@ PLUGIN_NAME="$(basename "$PLUGIN_SRC")"
 
 PROJECT_ROOT="$PWD"
 MODE="copy"   # copy | symlink
-PASSTHROUGH=()  # version flags forwarded to install.sh
+PASSTHROUGH=()  # flags forwarded to install.sh (versions + addons + profile)
+HAS_VERSION_FLAGS=false  # did the user pass explicit --laravel/--php/--vue/--frontend? (--addon/--profile don't count — they're auto-added, so they must NOT suppress auto-detection)
 
 REGISTER_MODE="ask"   # ask | yes | no — controls whether init writes to .claude/settings.json
 LOAD_MANAGER=true     # bundle the bench-manager addon by default; --no-manager opts out
@@ -56,7 +57,9 @@ while [[ $# -gt 0 ]]; do
     --symlink) MODE="symlink"; shift ;;
     --copy)    MODE="copy"; shift ;;
     --project=*) PROJECT_ROOT="${1#*=}"; shift ;;
-    --laravel=*|--php=*|--vue=*|--frontend=*|--addon=*|--profile=*|--quasar=*|--quvel=*)
+    --laravel=*|--php=*|--vue=*|--frontend=*)
+      PASSTHROUGH+=("$1"); HAS_VERSION_FLAGS=true; shift ;;
+    --addon=*|--profile=*|--quasar=*|--quvel=*)
       PASSTHROUGH+=("$1"); shift ;;
     --register)    REGISTER_MODE="yes"; shift ;;
     --no-register) REGISTER_MODE="no"; shift ;;
@@ -92,7 +95,7 @@ fi
 # laravel/vue/react deps. Tools like turbo + pnpm-workspace.yaml are strong signals
 # that real apps live in subdirs.
 NEEDS_MONOREPO_SCAN=false
-if [[ ${#PASSTHROUGH[@]} -eq 0 && ! -f "$PROJECT_ROOT/composer.json" ]]; then
+if [[ "$HAS_VERSION_FLAGS" == false && ! -f "$PROJECT_ROOT/composer.json" ]]; then
   if [[ ! -f "$PROJECT_ROOT/package.json" ]]; then
     NEEDS_MONOREPO_SCAN=true
   elif ! grep -qE '"(vue|react|laravel)"' "$PROJECT_ROOT/package.json" 2>/dev/null; then
@@ -188,6 +191,39 @@ EOF
     elif grep -qE '^\s*"react":' "$FIRST_FRONTEND/package.json" 2>/dev/null; then
       DETECTED_FRONTEND="react"
     fi
+  fi
+
+  # If the scan didn't turn up a Vue/React app (monorepos often hide it, or declare
+  # `vue` as `catalog:`/`workspace:*`), ask instead of silently building backend-only.
+  if [[ -z "${DETECTED_FRONTEND:-}" && -t 0 ]]; then
+    echo "No Vue or React app was auto-detected in this monorepo."
+    echo "Bench supports Vue and React. Which does this project use?"
+    echo "  1) Vue     2) React     3) None (backend-only)"
+    read -r -p "Choice [1/2/3], or paste the path to the package.json that declares your framework: " FE_ANS
+    case "$FE_ANS" in
+      1|v|vue|Vue)     DETECTED_FRONTEND="vue" ;;
+      2|r|react|React) DETECTED_FRONTEND="react" ;;
+      3|n|none|None|"") DETECTED_FRONTEND="none" ;;
+      *)
+        pj="$FE_ANS"; [[ -d "$pj" ]] && pj="$pj/package.json"
+        if [[ -f "$pj" ]]; then
+          if grep -qE '^[[:space:]]*"vue":' "$pj"; then
+            DETECTED_FRONTEND="vue"
+            DETECTED_VUE=$(grep -E '^[[:space:]]*"vue":' "$pj" | head -1 | sed -E 's|.*"vue":[[:space:]]*"[\^~]*([0-9]+).*|\1|' || true)
+          elif grep -qE '^[[:space:]]*"react":' "$pj"; then
+            DETECTED_FRONTEND="react"
+          else
+            echo "  No vue or react dependency found in $pj — building backend-only."
+            DETECTED_FRONTEND="none"
+          fi
+          echo "  → frontend=$DETECTED_FRONTEND${DETECTED_VUE:+ (vue $DETECTED_VUE)} from $pj"
+        else
+          echo "  '$FE_ANS' is not a file — building backend-only. Re-run with --frontend=vue|react to set it."
+          DETECTED_FRONTEND="none"
+        fi
+        ;;
+    esac
+    echo ""
   fi
 
   # Show what would be passed to build
