@@ -112,7 +112,7 @@ bench addon add tailwind     # by bundled name
 bench addon add /path/to/my-addon  # or a path
 ```
 
-One addon — **`bench-manager`** — is bundled and loaded by default; it provides the `/bench-*` commands above. Everything else is opt-in. Bench ships **42 addons** across:
+One addon — **`bench-manager`** — is bundled and loaded by default; it provides the `/bench-*` commands above. Everything else is opt-in. Bench ships **44 addons** across:
 
 [Setup & workflow](./docs/addons.md#setup--workflow) · [Laravel packages](./docs/addons.md#laravel-packages) · [Laravel UI](./docs/addons.md#laravel-ui) · [Frontend styling](./docs/addons.md#frontend-styling) · [Component libraries](./docs/addons.md#frontend-component-libraries) · [Data & routing](./docs/addons.md#frontend-data--routing) · [Meta-frameworks](./docs/addons.md#meta-frameworks) · [Testing](./docs/addons.md#testing) · [Docs](./docs/addons.md#documentation)
 

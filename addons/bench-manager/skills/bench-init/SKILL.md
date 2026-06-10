@@ -60,7 +60,7 @@ List the bundled addons, then map detections across **both** ecosystems:
 <PLUGIN_ROOT>/bin/bench addon available     # name + description of every bundled addon
 ```
 
-- **Laravel** — `spatie/laravel-permission`→`spatie-permission`, `spatie/laravel-query-builder`→`spatie-query-builder`, `laravel/octane`→`laravel-octane`, `laravel/horizon`→`laravel-horizon`, `laravel/scout`→`laravel-scout`, `laravel/cashier`→`laravel-cashier`, `laravel/socialite`→`laravel-socialite`, `laravel/reverb`→`laravel-reverb`, `laravel/pennant`→`laravel-pennant`, `laravel/boost`→`laravel-boost`, `nwidart/laravel-modules`→`laravel-modules`, `inertiajs/inertia-laravel`→`inertia`, `livewire/livewire`→`livewire`, `filament/filament`→`filament`, `dedoc/scramble` or `darkaonline/l5-swagger`→`laravel-swagger`.
+- **Laravel** — `spatie/laravel-permission`→`spatie-permission`, `spatie/laravel-query-builder`→`spatie-query-builder`, `laravel/octane`→`laravel-octane`, `laravel/horizon`→`laravel-horizon`, `laravel/telescope`→`laravel-telescope`, `laravel/scout`→`laravel-scout`, `laravel/cashier`→`laravel-cashier`, `laravel/socialite`→`laravel-socialite`, `laravel/reverb`→`laravel-reverb`, `laravel/pennant`→`laravel-pennant`, `laravel/boost`→`laravel-boost`, `nwidart/laravel-modules`→`laravel-modules`, `inertiajs/inertia-laravel`→`inertia`, `livewire/livewire`→`livewire`, `filament/filament`→`filament`, `dedoc/scramble` or `darkaonline/l5-swagger`→`laravel-swagger`, `pdxapps/preflight`→`preflight`.
 - **Frontend** — `vuetify`→`vuetify`, `primevue`→`primevue`, `quasar`→`quasar`, `@chakra-ui/react`→`chakra`, `@mui/material`→`mui`, `radix-ui`/`@radix-ui/*`→`radix`, a `components.json`→`shadcn`/`shadcn-vue`, `tailwindcss`→`tailwind`, `unocss`→`unocss`, `@pinia/colada`→`pinia-colada`, `@tanstack/react-router`→`tanstack-router`, `next`→`nextjs`, `nuxt`→`nuxt`, framework-mode `react-router`→`remix`, `@playwright/test`→`playwright`.
 
 Present every match in **one `AskUserQuestion` (multiSelect)** — "Detected these packages with matching addons — which should I install?" — describing what each addon adds. On confirm, install the chosen set: `<PLUGIN_ROOT>/bin/bench addon add <name>` per addon (batch them, then one rebuild at the end). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
@@ -72,17 +72,24 @@ Run the installed CLI (`<PLUGIN_ROOT>` is substituted to this project's real ins
 ```bash
 <PLUGIN_ROOT>/bin/bench rebuild
 ```
+
+**Then tell the user to run `/reload-plugins`.** Claude Code loaded the plugin at session start, so any addons installed or skills/agents changed during this run are NOT live in this session until plugins are reloaded. End the summary with this as the explicit next action — without it, the new `/<addon>` commands won't appear.
+
 ```
 Bench tailored to {project}.
 Concerns configured: {list}
+Addons installed:    {list}
 Overrides/slices:    {list}
 Skipped:             {list}
+
+▶ Run /reload-plugins now to load the new addons + commands into this session.
 
 Your CLAUDE.md was untouched. Adjust anytime:
   /bench-configure <concern>   ·   /bench-override <change>   ·   /bench-slice <domain>
 ```
 
 ## Notes
+- **End with `/reload-plugins`** whenever this run installed an addon or created a new skill/agent (a slice) — Claude Code registers skills/agents at plugin load, so they're invisible until reloaded. (Pure pattern/override changes are read live and don't need a reload, but if in doubt, reloading is harmless — so always surface it after a bench-init run that touched addons.)
 - **Never writes CLAUDE.md** — project context rides inside the `.bench/` overrides each concern/author writes.
 - **Everything is opt-in.** A run that captures nothing is valid.
 - **One rebuild** at the end (`defer_rebuild: true` everywhere).

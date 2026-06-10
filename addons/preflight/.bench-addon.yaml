@@ -1,0 +1,17 @@
+name: preflight
+version: 0.1.0
+description: |
+  Verify and auto-fix PHP code quality with Preflight (pdxapps/preflight) — one
+  command that runs the project's formatters, linters, static analysis, and tests,
+  with an agent-friendly output format and authoritative exit codes. Ships a
+  /preflight command + agent that loop fix→recheck until clean, and the
+  PREFLIGHT-001 pattern (config, scope flags, patch-coverage handling).
+
+  Opt-in addon — install per-project with:
+    bench addon add preflight
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://github.com/PDX-Apps/preflight
+license: MIT

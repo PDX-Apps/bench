@@ -1,0 +1,16 @@
+name: laravel-telescope
+version: 0.1.0
+description: |
+  Set up + configure Laravel Telescope (the local debug dashboard) safely: local-only
+  install, the viewTelescope authorization gate, hiding sensitive request data, recording
+  filters/tags, watcher tuning, and scheduled pruning. Ships a /telescope command + agent
+  and the TELESCOPE-001 pattern.
+
+  Opt-in addon — install per-project with:
+    bench addon add laravel-telescope
+
+depends_on:
+  bench: ">=0.8.0"
+
+homepage: https://laravel.com/docs/telescope
+license: MIT

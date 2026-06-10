@@ -162,6 +162,7 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 | `bench-manager` | The `/bench-*` toolkit — `/bench-init`, `/bench-configure`, `/bench-override`, `/bench-slice`, `/bench-list/show/status` + the authoring agents (default-loaded) |
 | `bench-plan` | Research the codebase → emit a plan/spec/PRD/ADR/ticket (`/plan <source> as <type>`) |
 | `bench-ci` | Quality gate that runs the project's own commands from `.bench/ci.yaml` (`/ci`) |
+| `preflight` | Verify + auto-fix PHP quality with [pdxapps/preflight](https://github.com/PDX-Apps/preflight) — fix→recheck loop until clean (`/preflight`) |
 | `bench-bug-fix` | Disciplined bug-fix loop — trace → prove with a test → fix → verify/revert (`/bug-fix`) |
 | `laravel-boost` | Awareness of [laravel/boost](https://github.com/laravel/boost) MCP + `/boost-install` |
 
@@ -181,6 +182,7 @@ Live under `addons/` at the bench source. Add by short name (`bench addon add <n
 | `laravel-cashier` | Stripe billing — subscriptions, invoices, webhooks (`/cashier`) |
 | `laravel-scout` | Full-text search — the Searchable trait + drivers (`/scout`) |
 | `laravel-horizon` | Redis queue config + conventions |
+| `laravel-telescope` | Set up + lock down the Telescope debug dashboard — gate, hide sensitive data, filter, prune (`/telescope`) |
 | `laravel-socialite` | OAuth social login — redirect/callback flow (`/socialite`) |
 | `laravel-reverb` | Real-time broadcasting over Reverb (WebSockets) — ShouldBroadcast, channels, Echo (`/broadcast`) |
 | `laravel-pennant` | Feature flags — define/check, scopes, `@feature`, middleware (`/feature`) |

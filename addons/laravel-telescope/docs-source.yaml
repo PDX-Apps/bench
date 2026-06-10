@@ -1,0 +1,5 @@
+# Docs source for the doc-lookup agent (aggregated into config/docs-sources.yaml).
+laravel-telescope:
+  first_party: true
+  boost_topic: telescope
+  base_url: "https://laravel.com/docs/telescope"
