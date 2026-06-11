@@ -239,6 +239,12 @@ fi
 
 # ---------- Frontend side (vue or react — single axis on the major version) ----------
 if [[ -z "$SIDE_FILTER" || "$SIDE_FILTER" == "frontend" ]]; then
+  # Clear the ENTIRE frontend output dir first — resolve_and_copy only rm's the side
+  # it builds, so a vue build would otherwise leave a stale frontend/react/ (and vice
+  # versa) from a prior build. install.sh detects the active frontend by which subdir
+  # has content, so a lingering inactive side resurrects the wrong skills/agents on a
+  # rebuild (e.g. /bench-init's rebuild bringing back react in a Vue project).
+  rm -rf "$OUTPUT_DIR/frontend"
   case "$FRONTEND" in
     vue)
       resolve_and_copy "frontend/vue" "vue-${VUE}"
