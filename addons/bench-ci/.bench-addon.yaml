@@ -1,12 +1,13 @@
 name: bench-ci
-version: 0.1.0
+version: 0.2.0
 description: |
-  A quality gate that runs the project's OWN declared checks — an ordered list of
-  steps the project defines (format, static analysis, tests, or any bespoke
-  command), auto-fixing `fix:` steps first, then reporting failures cleanly with
-  an actionable diagnosis. The steps are declared once in .bench/ci.yaml (the `ci`
-  concern captures them at setup, pre-filled with a common baseline), so the
-  runner executes exactly what's defined rather than imposing a scope or guessing.
+  An interview-driven, customizable quality pipeline that maps lifecycle triggers
+  (on_done, before_commit, before_start) to ordered lists of stages — each stage
+  a shell command or bench skill/plugin — executed by the `ci` agent stop-on-first-
+  failure with GREEN/RED reporting. Seeded with a minimal Pint+test default; the
+  setup interview grows the pipeline into a full review→e2e→docs chain and surfaces
+  install commands for any missing addon. Enforced via a pasteable CLAUDE.md snippet
+  (bench never writes the project's CLAUDE.md).
 
   Opt-in addon — install per-project with:
     bench addon add bench-ci

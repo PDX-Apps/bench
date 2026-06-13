@@ -13,7 +13,7 @@ List `<PLUGIN_ROOT>/concerns/*.md` (core + installed addons, mirrored at install
 ## Step 2: Per concern, in order
 1. Read the concern file. If `when:` is a shell test, run it; skip the concern if it fails.
 2. If `detect:` is present, run it — its output is the suggested default.
-3. **Ask the `questions`** with `AskUserQuestion` (bundle a concern's questions into one prompt; pre-fill `default`/detect). Let the user accept the default or change it. Skipping a concern is always allowed.
+3. **Ask the `questions`** with `AskUserQuestion` (bundle a concern's questions into one prompt; pre-fill `default`/detect). A question with `multi: true` is a checklist — render it as a `multiSelect` and record its answer as the **list** of chosen options (empty list if none). Let the user accept the default or change it. Skipping a concern is always allowed.
 4. **Delegate to `concern-runner`** (Task) with `{ concern_file, answers, project_root: cwd, defer_rebuild: true }`.
 
 ## Step 3: One rebuild + report

@@ -28,7 +28,7 @@ Run the declared concerns at `<PLUGIN_ROOT>/concerns/*.md` (core + installed add
 
 1. Read it; if `when:` is a shell test, run it and skip on failure.
 2. Run `detect:` (if present) for a suggested default — both the concern-level `detect:` and any **per-question `detect:`** (a question can carry its own, e.g. reading a value out of `components.json`). Use the detected value to pre-fill that question.
-3. **Ask its `questions`** with `AskUserQuestion` (bundle a concern's questions; pre-fill the detect/default). The user accepts or changes; skipping a concern is allowed.
+3. **Ask its `questions`** with `AskUserQuestion` (bundle a concern's questions; pre-fill the detect/default). A question with `multi: true` is a checklist — render it as a `multiSelect` and record its answer as the **list** of chosen options (empty list if none). The user accepts or changes; skipping a concern is allowed.
 4. Delegate to `concern-runner` (Task) with `{ concern_file, answers, project_root: cwd, defer_rebuild: true }`.
 
 This is the part that must NOT be left to guessing — auth/permissions/test-framework etc. always get asked, and each concern updates **all** the patterns in its `affects:` list (not whichever a scan happened to notice). See `<PLUGIN_ROOT>/patterns-built/authoring/CONCERNS.md`.

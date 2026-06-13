@@ -1,32 +1,59 @@
-# .bench/ci.yaml — the project's quality gate (read by the `ci` agent)
+# .bench/ci.yaml — the project's quality pipeline (read by the `ci` agent)
 #
-# An ORDERED list of steps. The agent runs them top-to-bottom, stops at the first
-# failure, and treats `fix: true` steps as auto-fixers (run first in spirit; they
-# may modify files). The project owns this list — one step or ten, standard tools
-# or a bespoke script. The agent runs exactly what's here; it never guesses,
-# substitutes, or reorders.
+# A map of named TRIGGERS, each an ORDERED list of STAGES. The agent runs a trigger's
+# stages top-to-bottom, stops at the first failure, and reports GREEN/RED. The project
+# owns this file — bench seeds a sensible default; you shape it freely.
 #
-# Each step:
-#   name:  short label shown in the report (and matchable by `/ci --only=<name>`)
-#   run:   the exact shell command
-#   fix:   true for an auto-fixer (optional; default false)
+# Trigger vocabulary (all optional except you'll usually have on_done):
+#   on_done       — all coding for a task is finished (the default; run before reporting done)
+#   before_start  — about to start a unit of work
+#   before_commit — about to commit
+#
+# A STAGE is:
+#   name:          short label (shown in the report; matchable by `/ci --only=<name>`)
+#   run:           a shell command            \  exactly ONE of run/skill
+#   skill:         a bench skill/plugin call  /  (e.g. "code-review", "/e2e-run", "/docs")
+#   when_changed:  optional glob — run the stage only if the diff touches a match
+#                  (omit it for "always"; prefer commands that self-gate, e.g.
+#                   `preflight --changed`, turbo/nx affected — don't reinvent detection)
+#   fix:           true for an auto-fixer (optional; default false)
 
-steps:
-  - name: format
-    run: "./vendor/bin/pint"          # auto-fix formatting; report the diff
-    fix: true
+triggers:
+  on_done:
+    - name: format
+      run: "vendor/bin/pint"        # auto-fix formatting; report the diff
+      fix: true
+    - name: test
+      run: "php artisan test"
 
-  - name: static
-    run: "./vendor/bin/phpstan analyse"
-
-  - name: test
-    run: "php artisan test"           # or ./vendor/bin/phpunit, or "composer test", or a script
-
-  # Optional — only if the project has a frontend:
-  - name: frontend
-    run: "npm run lint && npm run type-check"
-
-# Minimal is fine — a whole gate can be a single step:
-# steps:
-#   - name: test
-#     run: "php artisan test"
+# ── A fuller on_done you can opt into (the "full polished pipeline") ───────────────
+# triggers:
+#   on_done:
+#     - name: php-gate
+#       when_changed: "**/*.php"
+#       run: "vendor/bin/preflight --changed"      # self-gates: skips when nothing changed
+#     - name: fe-tests
+#       when_changed: "apps/web/**"
+#       run: "pnpm turbo test --filter=...[origin/main]"
+#     - name: review
+#       skill: "code-review"                       # run the code-review plugin on the change
+#     - name: e2e-author
+#       skill: "/playwright update the flows touched by this change"
+#     - name: e2e-run
+#       skill: "/e2e-run"
+#     - name: docs
+#       skill: "/docs"
+#
+# ── Extra triggers (optional) ─────────────────────────────────────────────────────
+#   before_start:
+#     - name: sync
+#       run: "git fetch && git status"
+#   before_commit:
+#     - name: gate
+#       skill: "/ci on_done"
+#
+# Minimal is fine — a whole pipeline can be one stage:
+# triggers:
+#   on_done:
+#     - name: test
+#       run: "php artisan test"

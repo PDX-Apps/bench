@@ -17,6 +17,7 @@ questions:
   - id: framework
     ask: "Which test runner does this project use — Pest or PHPUnit?"
     options: [pest, phpunit]     # optional fixed choices
+    multi: false                 # optional; true → checkbox prompt, answer is a LIST of picks
     default: detect              # 'detect' = the detect output; or a literal value
   - id: location
     ask: "Where do feature/unit tests live (e.g. tests/Feature, tests/Unit)?"
@@ -42,6 +43,7 @@ Be explicit: one bullet per affected pattern, with the mode and the content to w
 - **One concern per file**; `concern:` id matches the filename.
 - **`affects` is the contract** — list EVERY pattern the concern owns. This is the reliability win: the runner updates *all* of them (not whichever the scanner happened to notice).
 - **Questions are explicit, never inferred.** `detect` only *suggests* a default; the user confirms.
+- **`multi: true`** turns a question into a **multi-select checklist** — the skill renders it as an `AskUserQuestion` with `multiSelect`, and the answer reaches `concern-runner` as a **list** of the chosen `options` (empty list if none). Use it when the user can pick several at once (e.g. which optional pipeline stages to add). Default is single-select (one value). The `Apply` body must read the answer as a list and handle the empty case.
 - **`output`:**
   - `overrides` → write `.bench/patterns/...` overrides (by mode: append/replace) to the affected patterns. `.bench/` is auto-discovered (no manifest needed); rebuild materializes them.
   - `config:.bench/<file>.yaml` → write a structured config that the owning addon's agent reads (e.g. `ci` → `.bench/ci.yaml`, no detection at run time). **Ship a canonical annotated schema** alongside it at `addons/<addon>/config/<file>.example.yaml`; the build copies it to `<PLUGIN_ROOT>/config/`, so the concern's `Apply` can say "match `<PLUGIN_ROOT>/config/<file>.example.yaml`" and the agent can read it as the schema. See [Config schemas](#config-schemas).

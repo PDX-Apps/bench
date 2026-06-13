@@ -16,7 +16,7 @@ You apply ONE concern. The skill already ran the interview and hands you the con
 ## Inputs (from the calling skill)
 
 - `concern_file` — absolute path to the concern `.md`
-- `answers` — the user's answers, keyed by question id
+- `answers` — the user's answers, keyed by question id. A `multi: true` question's answer is a **list** of the chosen options (possibly empty); all others are a single value. Follow the `## Apply` body for how each is used.
 - `project_root`
 
 ## Process
