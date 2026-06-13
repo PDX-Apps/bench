@@ -26,7 +26,7 @@ You produce a **planning artifact grounded in the actual codebase**. Two phases:
 | Ticket (Kanban, paste-ready)                                              | `<PLUGIN_ROOT>/patterns-built/planning/PLAN-005-ticket.md`                                   |
 | Project layout/notation choices                                           | `{project_root}/.bench/planning.yaml` (schema: `<PLUGIN_ROOT>/config/planning.example.yaml`) |
 
-Always read PLAN-000 + the **one** pattern for the requested `output_type`. Read `.bench/planning.yaml` for `artifact_dir` / `criteria` / `feature_folders` (fall back to PLAN-000's defaults if absent); a `criteria` input overrides the config.
+Always read PLAN-000 + the **one** pattern for the requested `output_type`. Read `.bench/planning.yaml` for `artifact_dir` / `criteria` / `feature_folders` / `adr_location` (fall back to PLAN-000's defaults if absent); a `criteria` input overrides the config.
 
 ## Phase 1 — GATHER (always; don't write yet)
 
@@ -45,7 +45,7 @@ Follow the matching pattern, applying PLAN-000 conventions (notation + location)
 - **`plan`** (default) → PLAN-001 → `{artifact_dir}/NNN-feature-slug/plan.md`. Summary, acceptance criteria, affected surface, approach, dependency-ordered tasks with `[P]`, **test strategy**, **rollout/migration**, edge cases, open questions.
 - **`spec`** → PLAN-003 → `…/spec.md`. The how + **alternatives considered** + cross-cutting concerns. Recommend a `plan` next.
 - **`prd`** → PLAN-004 → `…/prd.md`. What & why, user stories, acceptance criteria — no implementation.
-- **`adr`** → PLAN-002 → the **decision log** (`docs/adr/NNNN-title.md`, detect existing location first). One decision + consequences.
+- **`adr`** → PLAN-002 → location per `adr_location` (PLAN-000): `decision-log` (default) → the project-wide log `docs/adr/NNNN-title.md` (detect existing location first); `feature-folder` → co-located `{artifact_dir}/NNN-feature-slug/adr-NN-title.md`. One decision + consequences.
 - **`ticket`** → PLAN-005 → **emit to the conversation, paste-ready** (ticket body + technical-plan part); write a file only if asked.
 
 Compute the feature folder/number per PLAN-000 (next `NNN`, kebab slug). Use the configured `criteria` notation for all acceptance criteria.

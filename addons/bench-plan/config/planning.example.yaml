@@ -1,8 +1,8 @@
 # .bench/planning.yaml — how this project lays out planning artifacts (read by plan-researcher)
 #
-# Written by the `planning` concern. Governs FEATURE artifacts (plan / spec / PRD).
-# ADRs keep their own decision-log location (docs/adr/, auto-detected); tickets are
-# emitted to the conversation paste-ready. See PLAN-000-conventions for the full rules.
+# Written by the `planning` concern. Governs FEATURE artifacts (plan / spec / PRD) and
+# where ADRs land (adr_location). Tickets are emitted to the conversation paste-ready.
+# See PLAN-000-conventions for the full rules.
 
 artifact_dir: specs        # feature artifacts live under here; the ecosystem default is specs/
                            # one folder per feature → specs/NNN-feature-slug/{plan,spec,prd}.md
@@ -14,3 +14,7 @@ criteria: gherkin          # default acceptance-criteria notation:
 
 feature_folders: true      # true  → group a feature's artifacts in specs/NNN-feature-slug/
                            # false → flat files: specs/NNN-feature-slug.plan.md, …
+
+adr_location: decision-log # decision-log → project-wide log: docs/adr/NNNN-title.md (detected) [default]
+                           # feature-folder → co-locate with the feature: specs/NNN-feature-slug/adr-NN-title.md
+                           #   (a feature dossier; needs feature_folders: true)

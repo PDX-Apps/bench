@@ -7,7 +7,9 @@ bench-plan produces one of several artifact types from the same deep codebase ga
 Read `{project_root}/.bench/planning.yaml` (schema: `<PLUGIN_ROOT>/config/planning.example.yaml`) for the project's choices. Defaults if absent:
 
 - **Feature artifacts** (plan, spec, PRD) live in-repo under **`{artifact_dir}/NNN-feature-slug/`** — `artifact_dir` defaults to `specs/`. One folder per feature, so a feature's `plan.md` / `spec.md` / `prd.md` are siblings (the Spec Kit / Kiro convention). Compute `NNN` as the next zero-padded number after the highest existing folder (`001`, `002`, …); slug = kebab-case feature name.
-- **ADRs** live separately in the **decision log** — `docs/adr/NNNN-title.md` by convention. **Detect** an existing location first (`docs/adr/`, `docs/decisions/`, `doc/adr/`); use it if found, else default `docs/adr/` and confirm. ADRs are numbered independently of feature folders.
+- **ADRs** — location follows `adr_location` (default `decision-log`):
+  - `decision-log` → a project-wide log: `docs/adr/NNNN-title.md`. **Detect** an existing location first (`docs/adr/`, `docs/decisions/`, `doc/adr/`); use it if found, else default `docs/adr/` and confirm. Numbered independently of feature folders — the chronological, browse-by-decision convention.
+  - `feature-folder` → co-located in the feature's own folder: `{artifact_dir}/NNN-feature-slug/adr-NN-title.md`, a sibling of `plan.md` / `spec.md` / `prd.md`, numbered within the feature. The "one folder = one feature dossier" model — everything about the feature, decisions included, in one place. (Presupposes `feature_folders: true`; with flat files there's no folder to co-locate into, so ADRs fall back to the decision log.)
 - **Tickets** are emitted **to the conversation, paste-ready** by default (the team pastes into Jira/Linear/GitHub); only write a file if the user asks.
 
 When `feature_folders: false`, write flat files into `{artifact_dir}/` named `NNN-feature-slug.{plan|spec|prd}.md` instead of a folder.
