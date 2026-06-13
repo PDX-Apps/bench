@@ -55,12 +55,32 @@ directly; there's no auth service to mock.
 public function execute(User $user, CreateOrderData $data): Order { /* ... */ }
 
 // Test — pass a User in
+/** @var User $user */
 $user = User::factory()->make();              // or ->create() if the method queries the DB
 $action->execute($user, new CreateOrderData(...));
 ```
 
 Mock the **Services and other Actions** the class injects — not the User, and never the class
 under test, DTOs, or value objects.
+
+## Type test variables (helps static analysis + AI)
+
+Add a `@var` docblock wherever a value's inferred type is **wider** than what you actually use —
+chiefly factory results. Without the larastan factory extension, `User::factory()->create()` is
+seen as `Model`, so `$user->id` and typed assertions don't check. A one-line docblock fixes it and
+hands AI tools the concrete type too.
+
+```php
+/** @var User $user */
+$user = User::factory()->create();                 // single model
+
+/** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+$users = User::factory()->count(10)->create();     // many → Eloquent Collection (also createMany())
+```
+
+The same applies to other widened types — a `json_decode()` payload, a collaborator typed as its
+interface, a `first()` that may return `null`. Type it where it aids the reader, the IDE, and the
+analyzer; don't litter obvious locals.
 
 ## Testing a Domain Method (no Laravel boot)
 
@@ -131,6 +151,7 @@ class CreateOrderActionTest extends TestCase
 
     public function testCreatesOrderAndChargesPayment(): void
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $pricing = $this->createMock(PricingCalculator::class);
@@ -231,4 +252,6 @@ tests/
 - Test behavior/outcomes via the public API, not internal fields or private methods
 - PHPUnit 12 attributes (`#[CoversClass]`, `#[DataProvider]`, `#[TestDox]`)
 - Choose the TestCase by the code's dependencies (plain PHPUnit → Laravel → +RefreshDatabase)
+- Type widened locals (factory results → concrete model / Eloquent `Collection`) with a `@var` docblock — helps static analysis and AI
+- PSR-12 camelCase test method names
 - Design for testability: explicit DI, no globals (`app()`/`auth()`/session), stateless

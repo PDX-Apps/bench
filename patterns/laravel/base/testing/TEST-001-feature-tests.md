@@ -154,6 +154,25 @@ public function testEnforcesUniqueNamePerUser(): void
 }
 ```
 
+## Type test variables (helps static analysis + AI)
+
+Add a `@var` docblock wherever a value's inferred type is **wider** than what you actually use —
+chiefly factory results. Without the larastan factory extension, `User::factory()->create()` is
+seen as `Model`, so `$user->id` and typed assertions don't check. A one-line docblock fixes it and
+hands AI tools the concrete type too.
+
+```php
+/** @var User $user */
+$user = User::factory()->create();                 // single model
+
+/** @var \Illuminate\Database\Eloquent\Collection<int, User> $users */
+$users = User::factory()->count(10)->create();     // many → Eloquent Collection (also createMany())
+```
+
+The same applies to other widened types — a decoded JSON response (`$response->json()`), a
+collaborator typed as its interface, a `first()` that may return `null`. Type it where it aids the
+reader, the IDE, and the analyzer; don't litter obvious locals.
+
 ## Key Points
 
 **PHPUnit 12 Attributes:**
@@ -172,7 +191,8 @@ public function testEnforcesUniqueNamePerUser(): void
 - Use `$this->actingAsUser()` helper for authentication
 - Use `route()` helper instead of hardcoded URLs
 - Use data providers for validation tests (DRY)
-- Descriptive test method names with TestDox attributes
+- Descriptive, PSR-12 camelCase test method names with TestDox attributes
+- Type widened locals (factory results → concrete model / Eloquent `Collection`) with a `@var` docblock — helps static analysis and AI
 - Assert response status, structure, and database state
 - Test both success and error cases
 - Return type `void` on all test methods
