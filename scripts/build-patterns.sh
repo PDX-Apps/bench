@@ -295,6 +295,16 @@ merge_addon_patterns() {
       continue
     fi
 
+    # Honor the selected frontend axis: an addon that ships both frontend/vue/ and
+    # frontend/react/ variants (e.g. tailwind) must only contribute the active side.
+    # Otherwise the inactive side's files re-create patterns-built/frontend/<other>/
+    # after the core vue-only (or react-only) build, and install.sh then detects that
+    # stray dir as an "active" frontend and resurrects its skills/agents.
+    case "$rel" in
+      frontend/vue/*)   [[ "$FRONTEND" == "vue"   ]] || continue ;;
+      frontend/react/*) [[ "$FRONTEND" == "react" ]] || continue ;;
+    esac
+
     local out_path="$OUTPUT_DIR/$rel"
     local was_present=false
     [[ -f "$out_path" ]] && was_present=true

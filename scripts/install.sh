@@ -140,6 +140,23 @@ elif [[ -f "$VERSIONS_CONFIG" ]]; then
   done < "$VERSIONS_CONFIG"
 fi
 
+# Resolve the active frontend up front, from the resolved version flags (explicit this
+# run, or replayed from a previous build). We use this to AVOID COPYING the inactive
+# frontend's skills/agents at all — instead of copying both vue/ and react/ and deleting
+# the wrong one in the prune step at the end. That copy-then-delete made the inactive
+# frontend's files briefly appear in the project on every rebuild (and any failure
+# between copy and prune left them stranded).
+#
+# Only acted on when a --frontend flag is present — which is the normal case, since it's
+# persisted at first build. When absent (a first `bench build` relying on auto-detect),
+# SELECTED_FRONTEND stays empty and we copy both groups, leaving the post-build prune
+# (which inspects what build-patterns actually produced) as the authority — no change in
+# behavior for that path.
+SELECTED_FRONTEND=""
+for _vf in "${EXPLICIT_VERSIONS[@]+${EXPLICIT_VERSIONS[@]}}" "${PASSTHROUGH[@]+${PASSTHROUGH[@]}}"; do
+  case "$_vf" in --frontend=*) SELECTED_FRONTEND="${_vf#*=}" ;; esac
+done
+
 # Persisted addon resolution:
 #   - If --addon flags were passed explicitly, they REPLACE the persisted config
 #     (write the new set, then use it).
@@ -334,6 +351,13 @@ EOF
   rm -rf "$PLUGIN_ROOT/skills" "$PLUGIN_ROOT/agents"
   mkdir -p "$PLUGIN_ROOT/skills" "$PLUGIN_ROOT/agents"
   for group in "${SKILL_AGENT_GROUPS[@]}"; do
+    # Don't copy the inactive frontend's group at all (when the frontend is known).
+    # A vue project never receives react-* skills/agents to begin with; frontend=none
+    # receives neither. The prune step below stays as a safety net for the auto-detect
+    # path where SELECTED_FRONTEND is empty.
+    if [[ "$SELECTED_FRONTEND" == "vue" && "$group" == "react" ]]; then continue; fi
+    if [[ "$SELECTED_FRONTEND" == "react" && "$group" == "vue" ]]; then continue; fi
+    if [[ "$SELECTED_FRONTEND" == "none" && ( "$group" == "vue" || "$group" == "react" ) ]]; then continue; fi
     if [[ -d "$PLUGIN_SRC/skills/$group" ]]; then
       while IFS= read -r -d '' skill_dir; do
         name=$(basename "$skill_dir")
@@ -725,6 +749,44 @@ if [[ "$BENCH_FRONTEND" == "none" ]]; then
    for you. (Plain `bench rebuild` can't fix this — it replays whatever was set here.)
 ────────────────────────────────────────────────────────────────────────
 FRONTEND_NONE_WARNING
+fi
+
+# ---------- Heads-up: concerns that ship a config the project hasn't set yet ----------
+# A concern with `output: config:.bench/<file>` carries an interactive interview that
+# only Claude can run (/bench-configure). The non-interactive CLI installs the addon on
+# its documented defaults and can't run that interview — so flag any such concern whose
+# config file doesn't exist yet, naming the exact command to personalize it. Defaults
+# already apply; this is informational, never fatal.
+unconfigured_concerns=()
+if [[ -d "$PLUGIN_ROOT/concerns" ]]; then
+  for cfile in "$PLUGIN_ROOT"/concerns/*.md; do
+    [[ -f "$cfile" ]] || continue
+    out_line=$(grep -E '^output:[[:space:]]*config:' "$cfile" | head -1 || true)
+    [[ -n "$out_line" ]] || continue   # only concerns that emit a .bench/ config
+    cfg_rel=$(printf '%s' "$out_line" | sed -E 's/^output:[[:space:]]*config:[[:space:]]*//; s/[[:space:]]+$//')
+    [[ -n "$cfg_rel" ]] || continue
+    [[ -f "$PROJECT_ROOT/$cfg_rel" ]] && continue   # already configured
+    # Honor `when:` — skip concerns that don't apply to this project. A literal
+    # `always` (or no when:) always applies; anything else is a shell test run from
+    # the project root.
+    when_line=$(grep -E '^when:' "$cfile" | head -1 | sed -E 's/^when:[[:space:]]*//; s/[[:space:]]+$//' || true)
+    if [[ -n "$when_line" && "$when_line" != "always" ]]; then
+      ( cd "$PROJECT_ROOT" && eval "$when_line" ) >/dev/null 2>&1 || continue
+    fi
+    cname=$(grep -E '^concern:' "$cfile" | head -1 | sed -E 's/^concern:[[:space:]]*//; s/[[:space:]]+$//')
+    [[ -n "$cname" ]] || cname=$(basename "$cfile" .md)
+    unconfigured_concerns+=("$cname")
+  done
+fi
+if (( ${#unconfigured_concerns[@]} > 0 )); then
+  echo ""
+  echo "────────────────────────────────────────────────────────────────────────"
+  echo "ℹ️  Documented defaults apply now. To personalize, open Claude in this"
+  echo "   project and run the matching command:"
+  for cname in "${unconfigured_concerns[@]}"; do
+    echo "       /bench-configure $cname"
+  done
+  echo "────────────────────────────────────────────────────────────────────────"
 fi
 
 # Tail message intentionally minimal — init-project.sh prints the user-facing
