@@ -26,3 +26,7 @@ sandbox/
 # frontend rebuild — old vue patterns kept locally for reference
 patterns/frontend/vue-legacy/
 patterns/frontend/react-legacy/
+
+# Python bytecode (the guardrail hook generates this next to itself at runtime)
+__pycache__/
+*.pyc

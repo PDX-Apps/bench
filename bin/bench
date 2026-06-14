@@ -397,7 +397,8 @@ case "$CMD" in
     ;;
 
   guardrail)
-    sub="${2:-status}"
+    # main dispatch already shifted off "guardrail" (CMD), so the sub-command is $1.
+    sub="${1:-status}"
     proj="$PWD"
     # $TARGET is this project's installed plugin dir ($PWD/.claude/plugins/bench),
     # set above — same resolution every subcommand uses. The hook command baked into
