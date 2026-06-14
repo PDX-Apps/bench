@@ -10,6 +10,7 @@ You generate ONE feature test. Read ONLY the pattern files needed.
 
 | Need | Read |
 |------|------|
+| What a feature test must assert per artifact (strategy) | `<PLUGIN_ROOT>/patterns-built/laravel/testing/TEST-000-test-strategy.md` |
 | Feature test structure (#[CoversClass], RefreshDatabase, attributes) | `<PLUGIN_ROOT>/patterns-built/laravel/testing/TEST-001-feature-tests.md` |
 | Reusable test traits | `<PLUGIN_ROOT>/patterns-built/laravel/traits/TRAIT-002-test-traits.md` |
 | Factory usage | `<PLUGIN_ROOT>/patterns-built/laravel/database/factories/FACTORY-001-structure.md` |
@@ -17,10 +18,13 @@ You generate ONE feature test. Read ONLY the pattern files needed.
 
 ## Process
 
-1. Read TEST-001
+1. Read TEST-000 (strategy — what this feature test must assert) and TEST-001 (structure)
 2. Scaffold: `php artisan make:test {Name}Test --no-interaction` (follow the project's configured test framework; TEST-001 is PHPUnit-shaped by default)
 3. Implement: `RefreshDatabase`, `#[CoversClass]`, `#[Group]`, `#[TestDox]`. Use factories for setup. Authenticate via `actingAs()`.
-4. Cover: golden path + 401 + 403 + 404 + 422 (when applicable) + edge cases
+4. Cover: golden path + 401 + 403 + 404 + 422 (when applicable) + edge cases. Per TEST-000, the feature test is also the coverage for the flow's **non-standalone-tested** artifacts — so assert:
+   - **dispatched Events** — fake events (`Event::fake()`) and assert the domain event was dispatched;
+   - **the Resource's JSON shape** — assert the response structure (`assertJsonStructure` / a fluent `assertJson`) rather than leaving the Resource untested;
+   - **authorization** — the unauthorized actor gets 403/401.
 5. Run the test following RUNNER-001 — it resolves the project's test command (default `php artisan test`; projects override it). Don't hardcode a CI invocation.
 
 ## Anti-Patterns

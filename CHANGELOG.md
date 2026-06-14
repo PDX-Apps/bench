@@ -25,6 +25,13 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
   `.bench/guardrails.yaml`; `BENCH_ALLOW_HANDWRITE=1` escape hatch. Installs a `.claude/rules/use-bench.md`
   (loads into subagents too) and merges into `.claude/settings.json` non-destructively; `bench-init`
   offers it. `examples/CLAUDE.md` upgraded to a HARD REQUIREMENT block.
+- **Per-artifact test strategy (`TEST-000`)** — a new pattern encoding which test(s) each Laravel
+  artifact gets (test behavior at the owning layer, not every file): Action/Service/Listener/Job → unit
+  test; Controller/FormRequest/Policy → feature test; Event/Resource/DTO/Migration → no standalone test,
+  asserted inside the feature test. The `implement` workflow now emits the prescribed test per artifact
+  (instead of a generic "tests" step), the `feature-test` agent asserts event dispatch + Resource JSON
+  shape + authorization, the `unit-test` agent is the declared logic home, and the Action/Service/
+  Listener/Job/Controller agents surface their "test home" in their report.
 
 ### Changed
 

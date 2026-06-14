@@ -110,6 +110,11 @@ you → /laravel "add an Orders API"
 
 Out of the box: **4 routers** (`/bench`, `/laravel`, `/frontend`, `/help`) + **27 Laravel** and **10 Vue / 10 React** component skills, backed by version-aware patterns for both stacks.
 
+Bench follows a **per-artifact test strategy** (`TEST-000`): logic-bearing artifacts (Actions, Services,
+Listeners, Jobs, domain methods) get **unit tests**; HTTP/glue (Controllers, FormRequests, Policies) get
+**feature tests**; declarative artifacts (Events, Resources, DTOs) are asserted *within* the feature test
+rather than given their own. `implement` emits the right test for each artifact it generates.
+
 ---
 
 ## Addons

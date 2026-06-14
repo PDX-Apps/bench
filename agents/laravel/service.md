@@ -26,6 +26,7 @@ You generate ONE domain Service. The skill provided enriched context.
 
 ## Return
 
+- **Test home** — a **unit test** (`/unit-test`): the Service's logic with mocked dependencies (see TEST-000).
 - Service file path
 - Methods added
 - Dependencies injected

@@ -36,4 +36,5 @@ You generate ONE Laravel controller. Read ONLY the pattern relevant to the chose
 - Controller file path
 - Type (crud/invokable/grouped)
 - Authorization wiring
+- **Test home** — a **feature test** (`/feature-test`): assert status, JSON shape, dispatched events, and authorization (see TEST-000).
 - What was NOT generated (request, resource, route — flag for follow-up)

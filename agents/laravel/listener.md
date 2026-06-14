@@ -29,6 +29,7 @@ You generate ONE event listener. Read ONLY the pattern relevant to the chosen ty
 
 ## Return
 
+- **Test home** — a **unit test** (`/unit-test`): call `handle()` with a faked event and assert side effects (see TEST-000).
 - Listener file path
 - Sync or queued
 - Idempotency strategy

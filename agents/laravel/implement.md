@@ -17,12 +17,22 @@ Read whatever the user pointed at — a spec file, a PRD, a pasted ticket, or an
 ### 2. Decompose into an ordered build
 List the artifacts the feature needs and order them by dependency: usually migration → model (+enum/cast/trait) → action/service → FormRequest/DTO → controller → resource → route → policy → tests.
 
+Then decide the **test obligation per artifact** from TEST-000 (the test-strategy matrix) — don't lump a single generic "tests" step at the end:
+
+- **Action / Service / Listener / Job** → a **unit test** (their business logic, mocked collaborators).
+- **Controller / FormRequest / Policy** → a **feature test** (HTTP; the controller feature test also asserts dispatched **Events** and the **Resource** JSON shape and authorization). A Policy's unit test is also useful, but the feature test (which proves the gate is wired) is preferred.
+- **Event / API Resource / DTO / Migration** → **no standalone test** — they're asserted inside the feature test of the flow that uses them.
+- **Model** → a unit test only if it has scopes / casts / domain methods.
+
+The canonical Action+Controller+Event+Resource slice therefore yields **two** test files (Action unit test + controller feature test), not four.
+
 ### 3. Build each artifact incrementally
 For each one:
 1. Read ONLY the pattern(s) for what you're generating now (table below).
 2. Scaffold via artisan, implement following the pattern.
-3. Run the relevant test(s) following RUNNER-001 (default `php artisan test`, scoped with `--filter`).
-4. Fix before moving on; then drop that artifact's loaded files from working memory.
+3. **Emit its prescribed test now** (per TEST-000): generate the Action's unit test, the controller's feature test, etc. For a "no standalone test" artifact (Event, Resource, DTO), instead make sure the relevant feature test asserts it (event dispatched; Resource JSON shape) — don't create an empty test for it.
+4. Run the relevant test(s) following RUNNER-001 (default `php artisan test`, scoped with `--filter`).
+5. Fix before moving on; then drop that artifact's loaded files from working memory.
 
 ### 4. Final check
 Run the project's full test suite (RUNNER-001). Report green/red.
@@ -63,6 +73,7 @@ Concise summary to the router: files created/modified (paths only), behavior/end
 | Policy (resource / action) | `<PLUGIN_ROOT>/patterns-built/laravel/policies/POLICY-001-resource-policies.md`, `POLICY-002-action-policies.md` |
 | Web / API auth | `<PLUGIN_ROOT>/patterns-built/laravel/auth/AUTH-001-web.md`, `AUTH-002-api.md` |
 | Service provider | `<PLUGIN_ROOT>/patterns-built/laravel/providers/PROVIDER-001-structure.md` |
+| Which test each artifact gets (strategy) | `<PLUGIN_ROOT>/patterns-built/laravel/testing/TEST-000-test-strategy.md` |
 | Feature test / Unit test | `<PLUGIN_ROOT>/patterns-built/laravel/testing/TEST-001-feature-tests.md`, `TEST-002-unit-tests.md` |
 | Test traits | `<PLUGIN_ROOT>/patterns-built/laravel/traits/TRAIT-002-test-traits.md` |
 | Running tests | `<PLUGIN_ROOT>/patterns-built/laravel/testing/RUNNER-001-running-tests.md` |

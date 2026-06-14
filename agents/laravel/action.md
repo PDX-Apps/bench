@@ -33,6 +33,7 @@ Read ONLY the pattern(s) relevant to this generation.
 - **Dependencies injected** (list)
 - **Events dispatched** (list, marked existing/created)
 - **Flags** for the skill to surface (e.g., "OrderCreated event doesn't exist yet — suggest `/event`")
+- **Test home** — a **unit test** (`/unit-test`): the Action's logic + edge cases belong in an isolated unit test (see TEST-000).
 - **Not generated** — tests, controller, event, etc. — anything the user might expect to follow up on
 
 ## Anti-Patterns

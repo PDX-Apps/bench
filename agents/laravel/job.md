@@ -34,6 +34,7 @@ You generate Laravel queued Jobs. Read ONLY the pattern files needed.
 ## Return
 
 A short summary:
+- **Test home** — a **unit test** (`/unit-test`) for `handle()`, plus a dispatch assertion in the caller's test (see TEST-000)
 - Job class path
 - Where it gets dispatched from
 - Retry/timeout config
