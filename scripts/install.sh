@@ -46,6 +46,12 @@ SOURCE_ONLY=(scripts/ patterns/ docs/ README.md)
 # (skills/<name>/SKILL.md, agents/<name>.md) which is what Claude Code expects.
 RUNTIME_ESSENTIAL_FLAT=(.claude-plugin/ bin/)
 [[ -d "$PLUGIN_SRC/hooks" ]] && RUNTIME_ESSENTIAL_FLAT+=(hooks/)
+# Core templates/ (e.g. rules/use-bench.md) and core config/ (e.g. guardrails.example.yaml)
+# ride into the install so `bench guardrail install` and the guardrail hook resolve.
+# Addon config examples are copied separately below (after this mirror), so a --delete
+# on core config/ here is re-populated by that pass on every build.
+[[ -d "$PLUGIN_SRC/templates" ]] && RUNTIME_ESSENTIAL_FLAT+=(templates/)
+[[ -d "$PLUGIN_SRC/config" ]] && RUNTIME_ESSENTIAL_FLAT+=(config/)
 # Concern declarations (auth, test-framework, …) drive guided project setup
 # (bench-init / /bench-configure). Mirror core's; addon concerns are copied below.
 [[ -d "$PLUGIN_SRC/concerns" ]] && RUNTIME_ESSENTIAL_FLAT+=(concerns/)

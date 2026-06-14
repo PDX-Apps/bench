@@ -1,5 +1,5 @@
 name: bench-manager
-version: 0.2.0
+version: 0.3.0
 description: |
   Work with and tailor Bench for your project. Provides the /bench-* commands to
   set up Bench (bench-init), inspect what's installed, create project-local

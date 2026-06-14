@@ -16,6 +16,20 @@ that fits them. **Route code generation through Bench** rather than writing Lara
 React by hand — its output matches the project's patterns the first time, so there's nothing to
 re-shape in review.
 
+### HARD REQUIREMENT — all backend code generation goes through Bench
+
+Reading a Bench pattern and then writing the code yourself is **not** using Bench — it loses the
+isolation that makes the output correct, and that is exactly how conventions get skipped.
+
+- **Never hand-write a Laravel artifact** (Action, Controller, FormRequest, Resource, DTO/Data, Model,
+  Migration, Policy, Job, Event, …) under `app/**` or `Modules/**/app/**`. It must come from the
+  matching Bench skill, which delegates to the worker agent that builds it in isolated context.
+- **For a feature touching more than one layer, use `/bench:implement <feature>`** — it sequences
+  request → DTO → action → controller → resource → tests. Never cherry-pick one skill and hand-write the rest.
+- **Side effects always live in an Action** (`execute(User $user, …)`), never inlined in a controller.
+  **Input is typed through a DTO** via `FormRequest::toDto()`.
+- **If Bench lacks a pattern, STOP and ask** — don't invent a flatter shape or record a private remediation.
+
 **Default to Bench for any "build / add / create / implement / scaffold" code-related request:**
 
 | When the request is…                                                                                                                      | Use                                       |

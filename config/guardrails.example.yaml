@@ -1,0 +1,13 @@
+# .bench/guardrails.yaml — how the use-bench backend guardrail behaves
+# (read by hooks/use-bench-guard.py). Entirely optional: with no file, the hook
+# runs in `warn` mode against the default artifact set.
+
+mode: warn          # warn (just-in-time nudge to route through /bench:*, default)
+                    # block (deny the hand-write outright)
+                    # off   (disable the guardrail)
+
+# Optional: extra artifact suffix globs for an unusual layout. The defaults already
+# cover Actions, Http/{Controllers,Requests,Resources}, Data, Models, Policies, Jobs,
+# Events, and database/migrations — for BOTH flat app/** and nwidart Modules/**/app/**.
+# paths:
+#   - "*/Support/Pipelines/*.php"

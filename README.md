@@ -81,6 +81,13 @@ When generated code doesn't match how *your* team does it, teach Bench — no co
 
 How overrides and addons actually layer onto core — append, replace, and the rest — is covered in [Layering](./docs/layering.md).
 
+### 4. Backend guardrail (optional)
+
+`bench guardrail install` adds a just-in-time hook that nudges you to route Laravel artifacts (Actions,
+Controllers, FormRequests, …) through Bench's skills instead of hand-writing them — Bench's worker
+agents are never nudged. Modes: `warn` (default), `block`, `off` via `.bench/guardrails.yaml`; bench-init
+offers it during setup.
+
 ---
 
 ## How it works

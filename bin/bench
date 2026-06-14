@@ -80,6 +80,15 @@ Usage:
     Show or change the skill profile. 'set' persists + rebuilds.
     compact = routers + help only; standard = every core skill.
 
+  bench guardrail install [--mode=warn|block]
+    Register the use-bench backend hook + rule into the current project.
+
+  bench guardrail remove
+    Unregister the use-bench backend hook and rule.
+
+  bench guardrail status
+    Show whether the backend guardrail is installed.
+
   bench status
     Show what's installed in the current project, detected versions,
     addon count, override count, profile, and last install path.
@@ -385,6 +394,80 @@ case "$CMD" in
         echo "Usage: bench profile [show | set <compact|standard|full>]" >&2
         exit 1 ;;
     esac
+    ;;
+
+  guardrail)
+    sub="${2:-status}"
+    proj="$PWD"
+    # $TARGET is this project's installed plugin dir ($PWD/.claude/plugins/bench),
+    # set above — same resolution every subcommand uses. The hook command baked into
+    # settings.json is the absolute path to the mirrored hook in that install.
+    hook="$TARGET/hooks/use-bench-guard.py"
+    settings="$proj/.claude/settings.json"
+    rules_dir="$proj/.claude/rules"
+    mode="warn"
+    for a in "$@"; do case "$a" in --mode=*) mode="${a#*=}";; esac; done
+    case "$sub" in
+      install)
+        mkdir -p "$proj/.claude" "$rules_dir"
+        SETTINGS="$settings" HOOK="$hook" python3 - <<'PY'
+import json, os
+sp = os.environ["SETTINGS"]; hook = os.environ["HOOK"]
+data = {}
+if os.path.isfile(sp):
+    try: data = json.load(open(sp)) or {}
+    except Exception: data = {}
+hooks = data.setdefault("hooks", {})
+pre = hooks.setdefault("PreToolUse", [])
+cmd = f"python3 {hook}"
+exists = any(
+    h.get("type") == "command" and h.get("command") == cmd
+    for entry in pre if isinstance(entry, dict)
+    for h in entry.get("hooks", []) if isinstance(h, dict)
+)
+if not exists:
+    pre.append({"matcher": "Write|Edit|MultiEdit",
+                "hooks": [{"type": "command", "command": cmd}]})
+    json.dump(data, open(sp, "w"), indent=2)
+    print("hook registered")
+else:
+    print("hook already registered")
+PY
+        cp "$TARGET/templates/rules/use-bench.md" "$rules_dir/use-bench.md" 2>/dev/null \
+          && echo "rule installed: .claude/rules/use-bench.md" \
+          || echo "WARNING: rule template not found at $TARGET/templates/rules/use-bench.md"
+        if [[ "$mode" != "warn" ]]; then
+          mkdir -p "$proj/.bench"; printf 'mode: %s\n' "$mode" > "$proj/.bench/guardrails.yaml"
+          echo "wrote .bench/guardrails.yaml (mode: $mode)"
+        fi
+        echo ""
+        echo "Backend guardrail installed (mode: $mode). Start a NEW Claude Code session to load the hook."
+        echo "Paste the HARD REQUIREMENT block from $TARGET/examples/CLAUDE.md into your CLAUDE.md to complete it."
+        ;;
+      remove)
+        SETTINGS="$settings" HOOK="$hook" python3 - <<'PY'
+import json, os
+sp = os.environ["SETTINGS"]; hook = os.environ["HOOK"]
+if not os.path.isfile(sp): print("no settings.json"); raise SystemExit
+data = json.load(open(sp)); cmd = f"python3 {hook}"
+pre = data.get("hooks", {}).get("PreToolUse", [])
+new = [e for e in pre if not (isinstance(e, dict) and any(
+    h.get("command") == cmd for h in e.get("hooks", []) if isinstance(h, dict)))]
+data.setdefault("hooks", {})["PreToolUse"] = new
+json.dump(data, open(sp, "w"), indent=2)
+print("hook removed")
+PY
+        rm -f "$rules_dir/use-bench.md" && echo "rule removed"
+        ;;
+      status|*)
+        if [[ -f "$settings" ]] && grep -q "use-bench-guard.py" "$settings"; then
+          echo "guardrail: INSTALLED"
+        else
+          echo "guardrail: not installed (run: bench guardrail install)"
+        fi
+        ;;
+    esac
+    exit 0
     ;;
 
   help|-h|--help)

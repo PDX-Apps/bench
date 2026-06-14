@@ -65,6 +65,24 @@ List the bundled addons, then map detections across **both** ecosystems:
 
 Present every match in **one `AskUserQuestion` (multiSelect)** — "Detected these packages with matching addons — which should I install?" — describing what each addon adds. On confirm, install the chosen set: `<PLUGIN_ROOT>/bin/bench addon add <name>` per addon (batch them, then one rebuild at the end). Prefer an addon over a hand-written override when one exists — don't fork patterns a packaged addon already owns.
 
+## Pass 4 — Backend guardrail (offer)
+
+Offer the **use-bench backend guardrail** — a just-in-time hook that nudges the main agent to route
+Laravel artifacts through Bench's skills instead of hand-writing them (the worker agents are never
+nudged). Ask once with `AskUserQuestion`: "Install the backend guardrail hook? It reminds you to use
+`/bench:action`, `/bench:request`, etc. when you'd otherwise hand-write an Action / FormRequest / …"
+
+On **yes**, run the deterministic installer (it merges the hook into `.claude/settings.json` without
+clobbering, installs `.claude/rules/use-bench.md`, and prints the CLAUDE.md snippet to paste):
+
+```bash
+<PLUGIN_ROOT>/bin/bench guardrail install
+```
+
+Note in the summary that a **new Claude Code session** is needed to load the hook (settings.json hooks
+load at session start), and that pasting the HARD REQUIREMENT block from
+`<PLUGIN_ROOT>/examples/CLAUDE.md` into the project's CLAUDE.md completes the setup.
+
 ## Finish — one rebuild + summary
 
 Run the installed CLI (`<PLUGIN_ROOT>` is substituted to this project's real install path at build time — never guess a path or use another project's copy). The install already exists from `bench build`; this only re-resolves the new `.bench/` overrides:

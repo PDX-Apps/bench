@@ -17,6 +17,14 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
 - **`multi: true` concern questions** — a concern question can now be a multi-select checklist (rendered as an `AskUserQuestion` `multiSelect`; the answer reaches `concern-runner` as a list). Used by the bench-ci pipeline checklists; reusable by any addon. Documented in `CONCERNS.md`.
 - **bench-plan configurable ADR location** (`addons/bench-plan/`, v0.2.0) — new `adr_location` planning option: keep ADRs in the project-wide log (`docs/adr/`) or co-locate them inside each feature folder alongside `plan`/`spec`/`prd` (a one-folder feature dossier).
 - **Unconfigured-concern heads-up** — after an install/rebuild/`addon add`, Bench now names the exact `/bench-configure <concern>` command for each documented-default concern that emits a `.bench/` config and isn't set up yet (honoring each concern's `when:` guard).
+- **Backend guardrail (`bench guardrail install`)** — an opt-in, subagent-aware `PreToolUse` hook
+  (`hooks/use-bench-guard.py`) that nudges the **main agent** to route Laravel artifacts (Actions,
+  Controllers, FormRequests, Resources, DTOs, Models, Policies, Jobs, Events, migrations) through the
+  matching `/bench:*` skill instead of hand-writing them — while never nagging Bench's worker subagents
+  (detected via the `agent_type` payload field). Modes `warn` (default) / `block` / `off` via
+  `.bench/guardrails.yaml`; `BENCH_ALLOW_HANDWRITE=1` escape hatch. Installs a `.claude/rules/use-bench.md`
+  (loads into subagents too) and merges into `.claude/settings.json` non-destructively; `bench-init`
+  offers it. `examples/CLAUDE.md` upgraded to a HARD REQUIREMENT block.
 
 ### Changed
 
