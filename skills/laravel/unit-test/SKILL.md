@@ -1,5 +1,5 @@
 ---
-description: Generate a Laravel PHPUnit UNIT test (isolated logic, mocked dependencies). Use for testing Actions, Services, model domain methods in isolation. For HTTP/endpoint tests, use /feature-test.
+description: Generate a Laravel PHPUnit UNIT test (isolated logic, mocked dependencies). Use for testing Actions, Services, model domain methods in isolation. For HTTP/endpoint tests, use /feature-test; to audit a whole feature's tests against the strategy and fill the gaps, use /test-audit.
 argument-hint: [what the user needs]
 ---
 

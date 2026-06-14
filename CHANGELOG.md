@@ -33,6 +33,8 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
   shape + authorization, the `unit-test` agent is the declared logic home, and the Action/Service/
   Listener/Job/Controller agents surface their "test home" in their report.
 
+- **`/test-audit` skill** — audit a feature/module/paths (or "the changed files") against the TEST-000 test-strategy matrix and generate the missing tests in one pass: it works out which artifacts owe which test (Action→unit, Controller→feature, Event/Resource→asserted in the feature test) and fills the gaps. A behavioral audit, explicitly NOT code-coverage measurement. Backed by the new `test-audit` agent; surfaced from the `/feature-test` and `/unit-test` skill descriptions.
+
 ### Changed
 
 - **Patterns are stack-neutral and target Laravel 13 / PHP 8.5** in `base/`, with Laravel 12 / PHP 8.4 rollback overrides. Removed the nwidart/`Modules/` assumption — generation is framework-native (`make:*`, `App\`, `app/`). Laravel patterns reorganized into nested groups (`http/{controllers,requests,resources,responses,middleware,routes}/`, `database/{factories,migrations,seeders}/`, `enums/`, `casts/`, `providers/`, …) with new IDs (`CONTROLLER-001`, `MIGRATION-001`, …). L13 per-action authorization (`#[Authorize]` on the controller) is the default; routes carry only mapping + group middleware.

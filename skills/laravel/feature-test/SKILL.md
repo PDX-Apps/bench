@@ -1,5 +1,5 @@
 ---
-description: Generate a Laravel feature test (HTTP/end-to-end). Use for testing endpoints, controllers, full request→response flows. For isolated logic tests, use /unit-test.
+description: Generate a Laravel feature test (HTTP/end-to-end). Use for testing endpoints, controllers, full request→response flows. For isolated logic tests, use /unit-test; to audit a whole feature's tests against the strategy and fill the gaps, use /test-audit.
 argument-hint: [what the user needs]
 ---
 
