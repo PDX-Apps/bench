@@ -197,9 +197,14 @@ reader, the IDE, and the analyzer; don't litter obvious locals.
 - Test both success and error cases
 - Return type `void` on all test methods
 
-**File Naming:**
-- `{Action}{Model}Test.php` - e.g., `CreateOrderTest.php`, `UpdateOrderTest.php`
+**File Naming & location:**
+- `{Action}{Model}Test.php` / `{Controller}Test.php` - e.g., `CreateOrderTest.php`, `DeviceControllerTest.php`
 - One test class per action/endpoint
+- **Mirror the covered class's sub-namespace** under `Tests\Feature\`: a controller at
+  `App\Http\Controllers\DeviceController` → `Tests\Feature\Http\Controllers\DeviceControllerTest`
+  (`tests/Feature/Http/Controllers/DeviceControllerTest.php`). The test tree mirrors the source tree;
+  set the test's `namespace` to match its directory. In a modules layout the mirror is relative to the
+  module's own roots (defer to the project's `CLAUDE.md` / active addons).
 
 **Reusable Test Helpers:**
 - Extract shared setup to a trait in `tests/Concerns/InteractsWith{Domain}.php` when used in 3+ test classes

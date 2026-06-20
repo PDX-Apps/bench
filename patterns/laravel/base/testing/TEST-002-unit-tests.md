@@ -232,16 +232,32 @@ class GoodAction
 }
 ```
 
-## Directory Structure
+## Directory Structure — mirror the covered class's sub-namespace
+
+A test lives at the **same sub-namespace as the class it covers**, under `Tests\Unit\` (feature tests:
+`Tests\Feature\`). Take the covered class's namespace tail after the app root and reproduce it under the
+tests root — so the test tree mirrors the source tree and a file's test is findable by path.
+
+| Covered class | Unit test |
+|---|---|
+| `App\Services\AuthorizationCodeStore` | `Tests\Unit\Services\AuthorizationCodeStoreTest` → `tests/Unit/Services/AuthorizationCodeStoreTest.php` |
+| `App\Actions\RevokeDeviceAction` | `Tests\Unit\Actions\RevokeDeviceActionTest` → `tests/Unit/Actions/RevokeDeviceActionTest.php` |
+| `App\Models\Order` (domain methods) | `Tests\Unit\Models\OrderTest` |
 
 ```
 tests/
-├── Feature/                 # HTTP/integration tests
-└── Unit/
-    ├── Models/              # domain methods
+├── Feature/                 # HTTP/integration tests — mirror the controller's sub-namespace
+│   └── Http/Controllers/    #   e.g. Tests\Feature\Http\Controllers\DeviceControllerTest
+└── Unit/                    # mirror the covered class's sub-namespace
+    ├── Services/
     ├── Actions/
-    └── Services/
+    └── Models/
 ```
+
+The rule is the **mirror**, not this exact list — whatever sub-namespace the source class has under the
+app root, the test has the same one under the tests root. In a modules layout the mirror is relative to
+the module's own app + tests roots (defer to the project's `CLAUDE.md` / active addons for those roots).
+Set the test's `namespace` to match its directory.
 
 ## Key Points
 

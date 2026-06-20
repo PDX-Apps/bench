@@ -25,6 +25,7 @@ All notable changes to Bench. Format loosely follows [Keep a Changelog](https://
   `.bench/guardrails.yaml`; `BENCH_ALLOW_HANDWRITE=1` escape hatch. Installs a `.claude/rules/use-bench.md`
   (loads into subagents too) and merges into `.claude/settings.json` non-destructively; `bench-init`
   offers it. `examples/CLAUDE.md` upgraded to a HARD REQUIREMENT block.
+- **Tests mirror the covered class's namespace** — the out-of-the-box test patterns (TEST-001/002) and the feature-test/unit-test/test-audit agents now place a test at the same sub-namespace as the file it covers under `Tests\Unit\` / `Tests\Feature\` (e.g. `App\Services\AuthorizationCodeStore` -> `Tests\Unit\Services\AuthorizationCodeStoreTest`), mirroring the source tree (module layouts mirror under the module roots).
 - **Per-artifact test strategy (`TEST-000`)** — a new pattern encoding which test(s) each Laravel
   artifact gets (test behavior at the owning layer, not every file): Action/Service/Listener/Job → unit
   test; Controller/FormRequest/Policy → feature test; Event/Resource/DTO/Migration → no standalone test,

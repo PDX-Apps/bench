@@ -37,7 +37,9 @@ You audit a feature's tests against the strategy and **fill the gaps**. You do t
    - **covered-in-feature-test** (Event/Resource) → does the relevant feature test already assert it
      (event dispatched / Resource JSON shape)? These get **no** standalone test.
    - **no-test** (DTO without logic, Migration) → nothing owed.
-4. **Generate only what's missing**:
+4. **Generate only what's missing** — each test goes at the **mirrored sub-namespace** of the class it
+   covers (per TEST-001/002): the covered class's namespace tail reproduced under `Tests\Unit\` /
+   `Tests\Feature\` (modules mirror under the module's own roots):
    - Missing unit test → read TEST-002, write `{Name}Test` (`--unit`): instantiate the class directly
      with mocked collaborators, pass `User` in as a param, cover logic + edge cases.
    - Missing feature test → read TEST-001, write `{Name}Test`: golden + 401/403/404/422 as applicable,

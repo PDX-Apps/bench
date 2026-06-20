@@ -20,7 +20,7 @@ The unit test is the **home for business logic** — per TEST-000, this is where
 ## Process
 
 1. Read TEST-000 (strategy — confirm this artifact's test home is a unit test) and TEST-002 (structure).
-2. Scaffold: `php artisan make:test {Name}Test --unit --no-interaction`
+2. Scaffold at the **mirrored sub-namespace** (per TEST-002): reproduce the covered class's namespace tail under `Unit/` — e.g. `App\Services\Pkce` → `php artisan make:test Unit/Services/PkceTest --unit --no-interaction` (the nested path is created); set the test's `namespace` to match (`Tests\Unit\Services`). In a modules layout, mirror under the module's own test root (defer to CLAUDE.md / active addons).
 3. Implement:
    - Instantiate the class under test directly (NEVER `app()->make()`)
    - Mock injected Services/Actions via `createMock(X::class)`; pass the authenticated `User` in as a param

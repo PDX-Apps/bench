@@ -19,7 +19,7 @@ You generate ONE feature test. Read ONLY the pattern files needed.
 ## Process
 
 1. Read TEST-000 (strategy — what this feature test must assert) and TEST-001 (structure)
-2. Scaffold: `php artisan make:test {Name}Test --no-interaction` (follow the project's configured test framework; TEST-001 is PHPUnit-shaped by default)
+2. Scaffold at the **mirrored sub-namespace** (per TEST-001): reproduce the covered class's namespace tail under `Feature/` — e.g. `App\Http\Controllers\DeviceController` → `php artisan make:test Feature/Http/Controllers/DeviceControllerTest --no-interaction` (the nested path is created); set the test's `namespace` to match. Follow the project's configured test framework; TEST-001 is PHPUnit-shaped by default. In a modules layout, mirror under the module's own test root (defer to CLAUDE.md / active addons).
 3. Implement: `RefreshDatabase`, `#[CoversClass]`, `#[Group]`, `#[TestDox]`. Use factories for setup. Authenticate via `actingAs()`.
 4. Cover: golden path + 401 + 403 + 404 + 422 (when applicable) + edge cases. Per TEST-000, the feature test is also the coverage for the flow's **non-standalone-tested** artifacts — so assert:
    - **dispatched Events** — fake events (`Event::fake()`) and assert the domain event was dispatched;
